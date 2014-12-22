@@ -176,3 +176,25 @@ base_dir <- function(x) {
 # the shell (require quoting/escaping)
 .shell_chars_regex <- '[ <>()|\\:&;#?*]'
 
+# Find a program within the PATH. On OSX we need to explictly call
+# /usr/bin/which with a forwarded PATH since OSX Yosemite strips
+# the PATH from the environment of child processes
+find_program <- function(program) {
+  if (Sys.info()["sysname"] == "Darwin") {
+    res <- suppressWarnings({
+      # Quote the path (so it can contain spaces, etc.) and escape any quotes 
+      # and escapes in the path itself
+      sanitized_path <- gsub("\\", "\\\\", Sys.getenv("PATH"), fixed = TRUE)      
+      sanitized_path <- gsub("\"", "\\\"", sanitized_path, fixed = TRUE)
+      system(paste("PATH=\"", sanitized_path, "\" /usr/bin/which ", program, sep=""),
+             intern = TRUE)
+    })
+    if (length(res) == 0)
+      ""
+    else
+      res
+  } else {
+    Sys.which(program)
+  }
+}
+

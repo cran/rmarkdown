@@ -162,7 +162,7 @@ knitr_options_pdf <- function(fig_width, fig_height, fig_crop) {
   knit_hooks <- NULL
 
   # apply cropping if requested and we have pdfcrop
-  crop <- fig_crop && !is_windows() && nzchar(Sys.which("pdfcrop"))
+  crop <- fig_crop && !is_windows() && nzchar(find_program("pdfcrop"))
   if (crop) {
     knit_hooks = list(crop = knitr::hook_pdfcrop)
     opts_chunk$crop = TRUE
@@ -495,7 +495,7 @@ parse_yaml_front_matter <- function(input_lines) {
 
 validate_front_matter <- function(front_matter) {
   front_matter <- trim_trailing_ws(front_matter)
-  if (identical(substring(front_matter, nchar(front_matter)), ":"))
+  if (grepl(":$", front_matter))
     stop("Invalid YAML front matter (ends with ':')", call. = FALSE)
 }
 

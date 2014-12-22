@@ -56,6 +56,7 @@
 #'    \item{\code{geometry}}{Options for geometry class (e.g. margin=1in); may be repeated}
 #'    \item{\code{mainfont, sansfont, monofont, mathfont}}{Document fonts (works only with xelatex and lualatex, see the \code{latex_engine} option)}
 #'    \item{\code{linkcolor, urlcolor, citecolor}}{Color for internal, external, and citation links (red, green, magenta, cyan, blue, black)}
+#'    \item{\code{setspace}}{Options for line spacing (e.g. onehalfspacing, doublespacing)}
 #' }
 #'
 #' @examples
@@ -112,7 +113,7 @@ pdf_document <- function(toc = FALSE,
 
   # latex engine
   latex_engine = match.arg(latex_engine, c("pdflatex", "lualatex", "xelatex"))
-  args <- c(args, "--latex-engine", latex_engine)
+  args <- c(args, pandoc_latex_engine_args(latex_engine))
 
   # content includes
   args <- c(args, includes_to_pandoc_args(includes))
@@ -146,13 +147,12 @@ pdf_pre_processor <- function(metadata, input_file, runtime, knit_meta, files_di
 
   args <- c()
 
-  # set the margin to 1 inch if not otherwise specified
-  has_margin <- function(text) {
-    length(grep("^geometry\\:[ \\t]*margin=\\d+(\\.?\\d+)?\\w+$", text)) > 0
+  # set the margin to 1 inch if no other geometry options specified
+  has_geometry <- function(text) {
+    length(grep("^geometry:.*$", text)) > 0
   }
-  if (!has_margin(readLines(input_file, warn = FALSE)))
+  if (!has_geometry(readLines(input_file, warn = FALSE)))
     args <- c(args, "--variable", "geometry:margin=1in")
 
   args
 }
-

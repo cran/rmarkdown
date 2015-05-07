@@ -1,8 +1,8 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 0.5.1
-Date: 2014-09-08
+Version: 0.6.1
+Date: 2015-05-07
 Authors@R: c(
   person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
   person("Joe", "Cheng", role = "aut", email = "joe@rstudio.com"),
@@ -40,8 +40,7 @@ Authors@R: c(
   person(family = "W3C", role = "cph",
          comment = "slidy library")
   )
-Description: Convert R Markdown documents into a variety of formats
-    including HTML, MS Word, PDF, and Beamer.
+Description: Convert R Markdown documents into a variety of formats.
 Depends: R (>= 3.0)
 Imports: tools, utils, knitr (>= 1.6), yaml (>= 2.1.5), htmltools (>=
         0.2.4), caTools
@@ -50,7 +49,8 @@ SystemRequirements: pandoc (>= 1.12.3) -
         http://johnmacfarlane.net/pandoc
 URL: http://rmarkdown.rstudio.com
 License: GPL-3
-Packaged: 2015-01-26 15:07:34 UTC; jjallaire
+NeedsCompilation: no
+Packaged: 2015-05-07 17:57:02 UTC; jjallaire
 Author: JJ Allaire [aut, cre],
   Joe Cheng [aut],
   Yihui Xie [aut],
@@ -75,6 +75,5 @@ Author: JJ Allaire [aut, cre],
   Dave Raggett [ctb] (slidy library),
   W3C [cph] (slidy library)
 Maintainer: JJ Allaire <jj@rstudio.com>
-NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2015-01-26 20:36:19
+Date/Publication: 2015-05-07 21:56:50

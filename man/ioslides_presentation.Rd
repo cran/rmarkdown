@@ -9,7 +9,8 @@ ioslides_presentation(logo = NULL, incremental = FALSE, fig_width = 7.5,
   fig_height = 4.5, fig_retina = if (!fig_caption) 2, fig_caption = FALSE,
   dev = "png", smart = TRUE, self_contained = TRUE, widescreen = FALSE, 
   smaller = FALSE, transition = "default", mathjax = "default", css = NULL, 
-  includes = NULL, keep_md = FALSE, lib_dir = NULL, pandoc_args = NULL, ...)
+  includes = NULL, keep_md = FALSE, lib_dir = NULL, md_extensions = NULL,
+  pandoc_args = NULL, ...)
 }
 \arguments{
   \item{logo}{Path to file that includes a logo for use in
@@ -31,7 +32,7 @@ ioslides_presentation(logo = NULL, incremental = FALSE, fig_width = 7.5,
   scaling. Note that this will always be\code{NULL} when
   \code{keep_md} is specified (this is because
   \code{fig_retina} relies on outputting HTML directly
-  into the markdowndocument).}
+  into the markdown document).}
 
   \item{fig_caption}{\code{TRUE} to render figures with
   captions}
@@ -81,6 +82,10 @@ ioslides_presentation(logo = NULL, incremental = FALSE, fig_width = 7.5,
   (e.g. jquery, bootstrap, etc.) into. By default this will be
   the name of the document with \code{_files} appended to it.}
 
+  \item{md_extensions}{Markdown extensions to be added or 
+  removed from the default definition or R Markdown. See the
+  \code{\link{rmarkdown_format}} for additional details.}
+
   \item{pandoc_args}{Additional command line options to
   pass to pandoc}
 
@@ -91,6 +96,12 @@ ioslides_presentation(logo = NULL, incremental = FALSE, fig_width = 7.5,
 \value{
 R Markdown output format to pass to \code{\link{render}}
 }
+
+\details{
+See the \href{http://rmarkdown.rstudio.com/ioslides_presentation_format.html}{online
+documentation} for additional details on using the \code{ioslides_presentation} format.
+}
+
 \section{Slide Basics}{
 
 You can create a slide show broken up into sections by using the # and ##

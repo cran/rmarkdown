@@ -1,3 +1,28 @@
+rmarkdown 0.6
+--------------------------------------------------------------------------------
+
+* Support for parameterized reports. Parameter names and default values are 
+  defined in YAML and can be specified via the 'params' argument to the
+  render function
+
+* 'md_extensions' option to enable/disable markdown extensions for input files
+
+* Automatically discover and include dependent resources (e.g. images, css, 
+  etc.) for interactive documents.
+  
+* Added pandoc_version function.  
+  
+* Use VignetteEncoding directive in html_vignette format
+
+* Fix issues related to use of non-ASCII characters in ioslides_presentation
+
+* Non-ASCII characters in the YAML data are not marked with the UTF-8 encoding
+  when they are read into R, so character strings in `rmarkdown::metadata` may
+  be displayed incorrectly (#420)
+
+* Various improvements to tufte_handout format
+
+
 rmarkdown 0.5.1
 --------------------------------------------------------------------------------
 

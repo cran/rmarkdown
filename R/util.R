@@ -34,8 +34,17 @@ rmarkdown_system_file <- function(file) {
   system.file(file, package = "rmarkdown")
 }
 
-from_rmarkdown <- function(implicit_figures = TRUE) {
-  rmarkdown_format(ifelse(implicit_figures, "", "-implicit_figures"))
+from_rmarkdown <- function(implicit_figures = TRUE, extensions = NULL) {
+
+  # paste extensions together and remove whitespace
+  extensions <- paste0(extensions, collapse = "")
+  extensions <- gsub(" ", "", extensions)
+  
+  # exclude implicit figures unless the user has added them back
+  if (!implicit_figures && !grepl("implicit_figures", extensions))
+    extensions <- paste0("-implicit_figures", extensions)
+    
+  rmarkdown_format(extensions)
 }
 
 is_null_or_string <- function(text) {
@@ -55,7 +64,30 @@ read_lines_utf8 <- function(file, encoding) {
   if (!identical(encoding, "UTF-8"))
     iconv(lines, from = encoding, to = "UTF-8")
   else
-    lines
+    mark_utf8(lines)
+}
+
+# mark the encoding of character vectors as UTF-8
+mark_utf8 <- function(x) {
+  if (is.character(x)) {
+    Encoding(x) <- 'UTF-8'
+    return(x)
+  }
+  if (!is.list(x)) return(x)
+  attrs <- attributes(x)
+  res <- lapply(x, mark_utf8)
+  attributes(res) <- attrs
+  res
+}
+
+# TODO: remove this when fixed upstream https://github.com/viking/r-yaml/issues/6
+yaml_load_utf8 <- function(string, ...) {
+  string <- paste(string, collapse = '\n')
+  mark_utf8(yaml::yaml.load(enc2utf8(string), ...))
+}
+
+yaml_load_file_utf8 <- function(input, ...) {
+  yaml_load_utf8(readLines(input, encoding = 'UTF-8'), ...)
 }
 
 file_name_without_shell_chars <- function(file) {
@@ -200,5 +232,14 @@ find_program <- function(program) {
   } else {
     Sys.which(program)
   }
+}
+
+# given a string, escape the regex metacharacters it contains:
+# regex metas are these,
+#   . \ | ( ) [ { ^ $ * + ?
+# as defined here:
+#   http://stat.ethz.ch/R-manual/R-devel/library/base/html/regex.html
+escape_regex_metas <- function(in_str) {
+  gsub("([.\\|()[{^$+?])", "\\\\\\1", in_str)
 }
 

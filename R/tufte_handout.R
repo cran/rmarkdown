@@ -14,6 +14,7 @@ tufte_handout <- function(fig_width = 4,
                           highlight = "default",
                           keep_tex = FALSE,
                           includes = NULL,
+                          md_extensions = NULL,
                           pandoc_args = NULL) {
   
   # resolve default highlight
@@ -31,11 +32,12 @@ tufte_handout <- function(fig_width = 4,
                                     fig_height = fig_height,
                                     fig_crop = fig_crop,
                                     dev = dev,
-                                    highlight = "pygments",
+                                    highlight = highlight,
                                     template = template,
                                     keep_tex = keep_tex,
                                     latex_engine = "pdflatex",
                                     includes = includes,
+                                    md_extensions = md_extensions,
                                     pandoc_args = pandoc_args)
                         
   

@@ -17,6 +17,7 @@ ioslides_presentation <- function(logo = NULL,
                                   includes = NULL,
                                   keep_md = FALSE,
                                   lib_dir = NULL,
+                                  md_extensions = NULL,
                                   pandoc_args = NULL,
                                   ...) {
 
@@ -78,7 +79,7 @@ ioslides_presentation <- function(logo = NULL,
           logo_ext <- "png"
         logo_path <- file.path(files_dir, paste("logo", logo_ext, sep = "."))
         file.copy(from = logo, to = logo_path)
-        logo_path <- relative_to(output_dir, logo_path)
+        logo_path <- normalized_relative_to(output_dir, logo_path)
       } else {
         logo_path <- pandoc_path_arg(logo_path)
       }
@@ -88,7 +89,7 @@ ioslides_presentation <- function(logo = NULL,
     # ioslides
     ioslides_path <- rmarkdown_system_file("rmd/ioslides/ioslides-13.5.1")
     if (!self_contained)
-      ioslides_path <- relative_to(output_dir,
+      ioslides_path <- normalized_relative_to(output_dir,
         render_supporting_files(ioslides_path, lib_dir))
     else
       ioslides_path <- pandoc_path_arg(ioslides_path)
@@ -126,7 +127,7 @@ ioslides_presentation <- function(logo = NULL,
     # determine whether we need to run citeproc
     input_lines <- readLines(input_file, warn = FALSE)
     run_citeproc <- citeproc_required(metadata, input_lines)
-
+    
     # write settings to file
     settings <- c()
     add_setting <- function(name, value) {
@@ -146,6 +147,25 @@ ioslides_presentation <- function(logo = NULL,
 
     output_tmpfile <- tempfile("ioslides-output", fileext = ".html")
     on.exit(unlink(output_tmpfile), add = TRUE)
+    
+    # on Windows, cache the current codepage and set it to 65001 (UTF-8) for the
+    # duration of the Pandoc command. Without this, Pandoc fails when attempting
+    # to hand UTF-8 encoded non-ASCII characters over to the custom Lua writer.
+    # See https://github.com/rstudio/rmarkdown/issues/134
+    if (is_windows()) {
+      # 'chcp' returns e.g., "Active code page: 437"; strip characters and parse
+      # the number
+      codepage <- as.numeric(gsub("\\D", "", system2("chcp", stdout = TRUE)))
+      
+      if (!is.na(codepage)) {
+        # if we got a valid codepage, restore it on exit
+        on.exit(system2("chcp", args = codepage, stdout = TRUE), add = TRUE)
+        
+        # change to the UTF-8 codepage
+        system2("chcp", args = 65001, stdout = TRUE)
+      }
+    }
+    
     pandoc_convert(input = input_file,
                    to = relative_to(dirname(input_file), lua_writer),
                    from = from_rmarkdown(fig_caption),
@@ -184,7 +204,7 @@ ioslides_presentation <- function(logo = NULL,
   output_format(
     knitr = knitr_options_html(fig_width, fig_height, fig_retina, keep_md, dev),
     pandoc = pandoc_options(to = "html",
-                            from = from_rmarkdown(fig_caption),
+                            from = from_rmarkdown(fig_caption, md_extensions),
                             args = args),
     keep_md = keep_md,
     clean_supporting = self_contained,

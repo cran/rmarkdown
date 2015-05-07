@@ -5,6 +5,11 @@
 #' that assumes you will include the output into an existing document (e.g.
 #' a blog post).
 #'
+#' @details
+#'
+#' See the \href{http://rmarkdown.rstudio.com/html_document_format.html}{online
+#' documentation} for additional details on using the \code{html_fragment} format.
+#' 
 #' @inheritParams html_document
 #' @return R Markdown output format to pass to \code{\link{render}}
 #' @export
@@ -16,14 +21,15 @@ html_fragment <- function(number_sections = FALSE,
                           dev = 'png',
                           smart = TRUE,
                           keep_md = FALSE,
+                          md_extensions = NULL,
                           pandoc_args = NULL,
                           ...) {
 
   html_document(
     number_sections = number_sections, fig_width = fig_width,
     fig_height = fig_height, fig_retina = fig_retina, fig_caption = fig_caption,
-    dev = dev, smart = smart, keep_md = keep_md, pandoc_args = pandoc_args,
-    mathjax = NULL, highlight = NULL, theme = NULL, ...,
-    template = rmarkdown_system_file("rmd/fragment/default.html")
+    dev = dev, smart = smart, keep_md = keep_md, md_extensions = md_extensions,
+    pandoc_args = pandoc_args, mathjax = NULL, highlight = NULL, theme = NULL, 
+    ..., template = rmarkdown_system_file("rmd/fragment/default.html")
   )
 }

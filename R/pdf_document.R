@@ -24,6 +24,9 @@
 #'
 #' @details
 #'
+#' See the \href{http://rmarkdown.rstudio.com/pdf_document_format.html}{online
+#' documentation} for additional details on using the \code{pdf_document} format.
+#' 
 #' Creating PDF output from R Markdown requires that LaTeX be installed.
 #'
 #' R Markdown documents can have optional metadata that is used to generate a
@@ -31,12 +34,11 @@
 #' see the documentation on R Markdown \link[=rmd_metadata]{metadata}.
 #'
 #' R Markdown documents also support citations. You can find more information on
-#' the markdown syntax for citations within the pandoc documentation on
-#' \href{http://johnmacfarlane.net/pandoc/demo/example19/Citations.html}{citations}
-#' and
-#' \href{http://johnmacfarlane.net/pandoc/demo/example19/Footnotes.html}{footnotes}.
-#'
-#' Many aspects of the LaTeX template used to create PDF documents can be
+#' the markdown syntax for citations in the
+#' \href{http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html}{Bibliographies
+#' and Citations} article in the online documentation.
+#' 
+#' Many aspects of the LaTeX template used to create PDF documents can be 
 #' customized using metadata. For example:
 #'
 #' \tabular{l}{
@@ -89,6 +91,7 @@ pdf_document <- function(toc = FALSE,
                          keep_tex = FALSE,
                          latex_engine = "pdflatex",
                          includes = NULL,
+                         md_extensions = NULL,
                          pandoc_args = NULL) {
 
   # base pandoc options for all PDF output
@@ -133,7 +136,7 @@ pdf_document <- function(toc = FALSE,
   output_format(
     knitr = knitr_options_pdf(fig_width, fig_height, fig_crop, dev),
     pandoc = pandoc_options(to = "latex",
-                            from = from_rmarkdown(fig_caption),
+                            from = from_rmarkdown(fig_caption, md_extensions),
                             args = args,
                             keep_tex = keep_tex),
     clean_supporting = !keep_tex,

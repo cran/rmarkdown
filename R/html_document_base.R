@@ -110,6 +110,14 @@ html_document_base <- function(smart = TRUE,
 
     args
   }
+  
+  intermediates_generator <- function(original_input, encoding, 
+                                      intermediates_dir) {
+    # copy intermediates; skip web resources if not self contained (pandoc can
+    # create references to web resources without the file present)
+    return(copy_render_intermediates(original_input, encoding, 
+                                     intermediates_dir, !self_contained))
+  }
 
   post_processor <- function(metadata, input_file, output_file, clean, verbose) {
     # if there are no preserved chunks to restore and no resource to copy then no
@@ -239,6 +247,7 @@ html_document_base <- function(smart = TRUE,
     keep_md = FALSE,
     clean_supporting = FALSE,
     pre_processor = pre_processor,
+    intermediates_generator = intermediates_generator,
     post_processor = post_processor
   )
 }

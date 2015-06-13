@@ -78,6 +78,7 @@ find_external_resources <- function(input_file,
   discover_single_resource <- function(path, explicit, web) {
     if (is.character(path) && 
         length(path) == 1 && 
+        path != "." && path != ".." && 
         file.exists(file.path(input_dir, path))) {
       discovered_resources <<- rbind(discovered_resources, data.frame(
         path = path, 
@@ -279,6 +280,13 @@ discover_rmd_resources <- function(rmd_file, encoding,
     })
   }
   
+  # check for bibliography and csl files at the top level 
+  for (bibfile in c("bibliography", "csl")) {
+    if (!is.null(front_matter[[bibfile]])) {
+      discover_render_resource(front_matter[[bibfile]])  
+    }
+  }
+  
   # check for knitr child documents in R Markdown documents
   if (tolower(tools::file_ext(rmd_file)) == "rmd") {
     chunk_lines <- gregexpr(knitr::all_patterns$md$chunk.begin, rmd_content,
@@ -307,7 +315,19 @@ discover_rmd_resources <- function(rmd_file, encoding,
  
   # render "raw" markdown to HTML
   html_file <- tempfile(fileext = ".html")
+  
+  # check to see what format this document is going to render as; if it's a 
+  # format that produces HTML, let it render as-is, but if it isn't, render as
+  # html_document to pick up dependencies
+  output_format <- output_format_from_yaml_front_matter(rmd_content)
+  output_format_function <- eval(parse(text = output_format$name))
+  override_output_format <- if (output_format_function()$pandoc$to == "html")
+                              NULL
+                            else
+                              "html_document"
+
   render(input = md_file, output_file = html_file, 
+         output_format = override_output_format,
          output_options = list(self_contained = FALSE), quiet = TRUE,
          encoding = "UTF-8")
   
@@ -342,6 +362,43 @@ discover_rmd_resources <- function(rmd_file, encoding,
       discover_single_resource(quoted_str, FALSE, is_web_file(quoted_str))
     }
   }
+}
+
+# copies the external resources needed to render original_input into 
+# intermediates_dir; with skip_web, skips web resources. returns a character
+# vector containing paths to all resources copied.
+copy_render_intermediates <- function(original_input, encoding, 
+                                      intermediates_dir, skip_web) {
+  # start with an empty set of intermediates
+  intermediates <- c()
+  
+  # extract all the resources used by the input file; note that this actually 
+  # runs another (non-knitting) render, and that recursion is avoided because 
+  # we explicitly render with self-contained = FALSE while discovering
+  # resources
+  resources <- find_external_resources(original_input, encoding)
+  dest_dir <- normalizePath(intermediates_dir, winslash = "/")
+  source_dir <- dirname(normalizePath(original_input, winslash = "/"))
+  
+  # process each returned reosurce
+  by(resources, seq_len(nrow(resources)), function(res) {
+    # skip web resources if requested
+    if (skip_web && res$web)
+      return
+    
+    # compute the new path to this file in the intermediates folder, and 
+    # create the hosting folder if it doesn't exist
+    dest <- file.path(dest_dir, res$path)
+    if (!file.exists(dirname(dest))) 
+      dir.create(dirname(dest), recursive = TRUE)
+    
+    # copy and remember to clean up this file later
+    file.copy(file.path(source_dir, res$path), dest)
+    intermediates <<- c(intermediates, dest)
+  })
+  
+  # return the list of files we generated
+  intermediates
 }
 
 # given a filename, return true if the file appears to be a web file

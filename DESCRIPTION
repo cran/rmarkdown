@@ -1,8 +1,8 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 0.7
-Date: 2015-06-13
+Version: 0.8
+Date: 2015-08-30
 Authors@R: c(
   person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
   person("Joe", "Cheng", role = "aut", email = "joe@rstudio.com"),
@@ -11,6 +11,7 @@ Authors@R: c(
   person("Winston", "Chang", role = "aut", email = "winston@rstudio.com"),
   person("Jeff", "Allen", role = "aut", email = "jeff@rstudio.com"),
   person("Hadley", "Wickham", role = "aut", email = "hadley@rstudio.com"),
+  person("Aron", "Atkins", role = "aut", email = "aron@rstudio.com"),
   person("Rob", "Hyndman", role = "aut", email = "robjhyndman@gmail.com"),
   person(family = "RStudio, Inc.", role = "cph"),
   person(family = "jQuery Foundation", role = "cph",
@@ -42,15 +43,15 @@ Authors@R: c(
   )
 Description: Convert R Markdown documents into a variety of formats.
 Depends: R (>= 3.0)
-Imports: tools, utils, knitr (>= 1.6), yaml (>= 2.1.5), htmltools (>=
-        0.2.4), caTools
+Imports: tools, utils, grDevices, knitr (>= 1.11), yaml (>= 2.1.5),
+        htmltools (>= 0.2.4), caTools
 Suggests: shiny (>= 0.11), testthat, digest
 SystemRequirements: pandoc (>= 1.12.3) -
         http://johnmacfarlane.net/pandoc
 URL: http://rmarkdown.rstudio.com
 License: GPL-3
 NeedsCompilation: no
-Packaged: 2015-06-13 14:36:55 UTC; jjallaire
+Packaged: 2015-08-30 18:02:08 UTC; jjallaire
 Author: JJ Allaire [aut, cre],
   Joe Cheng [aut],
   Yihui Xie [aut],
@@ -58,6 +59,7 @@ Author: JJ Allaire [aut, cre],
   Winston Chang [aut],
   Jeff Allen [aut],
   Hadley Wickham [aut],
+  Aron Atkins [aut],
   Rob Hyndman [aut],
   RStudio, Inc. [cph],
   jQuery Foundation [cph] (jQuery library),
@@ -76,4 +78,4 @@ Author: JJ Allaire [aut, cre],
   W3C [cph] (slidy library)
 Maintainer: JJ Allaire <jj@rstudio.com>
 Repository: CRAN
-Date/Publication: 2015-06-13 16:39:11
+Date/Publication: 2015-08-30 20:52:34

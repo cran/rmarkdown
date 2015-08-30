@@ -169,9 +169,9 @@ knitr_options_pdf <- function(fig_width, fig_height, fig_crop, dev = 'pdf') {
   
   # set the dingbats option for the pdf device if requried
   if (dev == 'pdf') {
-    if (packageVersion("knitr") >= "1.5.31") {
+    if (utils::packageVersion("knitr") >= "1.5.31") {
       opts_chunk$dev.args <- list(pdf = list(useDingbats = FALSE))
-    } else pdf.options(useDingbats = FALSE)
+    } else grDevices::pdf.options(useDingbats = FALSE)
   }
   
   knit_hooks <- NULL
@@ -520,7 +520,9 @@ validate_front_matter <- function(front_matter) {
 partition_yaml_front_matter <- function(input_lines) {
 
   validate_front_matter <- function(delimiters) {
-    if (length(delimiters) >= 2 && (delimiters[2] - delimiters[1] > 1)) {
+    if (length(delimiters) >= 2 &&
+        (delimiters[2] - delimiters[1] > 1) &&
+        grepl("^---\\s*$", input_lines[delimiters[1]])) {
       # verify that it's truly front matter (not preceded by other content)
       if (delimiters[1] == 1)
         TRUE
@@ -532,7 +534,7 @@ partition_yaml_front_matter <- function(input_lines) {
   }
 
   # is there yaml front matter?
-  delimiters <- grep("^---\\s*$", input_lines)
+  delimiters <- grep("^(---|\\.\\.\\.)\\s*$", input_lines)
   if (validate_front_matter(delimiters)) {
 
     front_matter <- input_lines[(delimiters[1]):(delimiters[2])]

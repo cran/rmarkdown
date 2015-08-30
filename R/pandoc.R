@@ -75,6 +75,10 @@ pandoc_convert <- function(input,
   if (citeproc)
     args <- c(args, "--filter", pandoc_citeproc())
 
+  # set pandoc stack size
+  stack_size <- getOption("pandoc.stack.size", default = "512m")
+  args <- c(c("+RTS", paste0("-K", stack_size), "-RTS"), args)
+  
   # additional command line options
   args <- c(args, options)
 

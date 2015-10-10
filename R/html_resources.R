@@ -57,7 +57,7 @@ find_external_resources <- function(input_file,
                                     encoding = getOption("encoding")) {
   # ensure we're working with valid input
   ext <- tolower(tools::file_ext(input_file))
-  if (!(ext %in% c("md", "rmd", "html", "htm"))) {
+  if (!(ext %in% c("md", "rmd", "html", "htm", "r"))) {
     stop("Resource discovery is only supported for R Markdown files or HTML ",
          "files.")
   }
@@ -85,6 +85,12 @@ find_external_resources <- function(input_file,
         discover_r_resources(file.path(input_dir, path), 
                              discover_single_resource)
       }
+      # if this is an implicitly discovered resource, it needs to refer to 
+      # a file rather than a directory 
+      if (!explicit && dir_exists(file.path(input_dir, path))) { 
+        return(FALSE) 
+      }
+      # this looks valid; remember it
       discovered_resources <<- rbind(discovered_resources, data.frame(
         path = path, 
         explicit = explicit, 
@@ -126,6 +132,8 @@ find_external_resources <- function(input_file,
         web = TRUE,
         stringsAsFactors = FALSE))
     }
+  } else if (ext == "r") {
+    discover_r_resources(input_file, discover_single_resource)
   }
   
   # clean row names (they're not meaningful)
@@ -227,7 +235,7 @@ discover_rmd_resources <- function(rmd_file, encoding,
   
   # check for explicitly named resources
   if (!is.null(front_matter$resource_files)) {
-    resources <- lapply(front_matter$resource_files, function(res) {
+    lapply(front_matter$resource_files, function(res) {
       explicit_res <- if (is.character(res)) {
         list(path = res, explicit = TRUE, web = is_web_file(res))
       } else if (is.list(res) && length(names(res)) > 0) {
@@ -251,9 +259,9 @@ discover_rmd_resources <- function(rmd_file, encoding,
             recursive = FALSE,
             include.dirs = FALSE)
           lapply(files, function(f) {
-            list(path = file.path(dirname(explicit_res$path), f), 
-                 explicit = TRUE,
-                 web = is_web_file(f)) })
+            discover_single_resource(file.path(dirname(explicit_res$path), f), 
+                                     TRUE, web = is_web_file(f)) 
+           })
         } else {
           # no wildcard, see whether this resource refers to a directory or to
           # an individual file
@@ -269,9 +277,9 @@ discover_rmd_resources <- function(rmd_file, encoding,
               recursive = TRUE,
               include.dirs = FALSE)
             lapply(files, function(f) {
-              list(path = file.path(explicit_res$path, f), 
-                   explicit = TRUE,
-                   web = is_web_file(f)) })
+              discover_single_resource(file.path(explicit_res$path, f), TRUE,
+                   web = is_web_file(f)) 
+            })
           } else {
             # isdir is false--this is an individual file; return it
             discover_single_resource(explicit_res$path, explicit_res$explicit,

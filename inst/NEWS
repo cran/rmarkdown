@@ -1,3 +1,20 @@
+rmarkdown 0.8.1
+--------------------------------------------------------------------------------
+
+* Support for table of contents in word_document (requires pandoc >= 1.14)
+
+* Support for opts_template in knitr options 
+
+* Don't implicitly discover directories when scanning for dependent resources
+
+* Fix for slide numbers not showing up in ioslides when served from 
+  the filesystem (don't call pushState for file:// urls)
+  
+* Remove inlining of bootstrap CSS (was workaround for bug now fixed in pandoc)
+
+* Allow specifying an R file in calls to find_all_resources
+
+
 rmarkdown 0.8
 --------------------------------------------------------------------------------
 

@@ -11,7 +11,7 @@
 #'   default this is the highest header level in the hierarchy that is followed
 #'   immediately by content, and not another header, somewhere in the document.
 #'   This default can be overridden by specifying an explicit
-#'   \code{slide.level}.
+#'   \code{slide_level}.
 #' @param incremental \code{TRUE} to render slide bullets incrementally. Note
 #'   that if you want to reverse the default incremental behavior for an
 #'   individual bullet you can preceded it with \code{>}. For example:
@@ -28,10 +28,6 @@
 #' documentation} for additional details on using the \code{beamer_presentation} format.
 #'
 #' Creating Beamer output from R Markdown requires that LaTeX be installed.
-#'
-#' For more information on markdown syntax for presentations see
-#' \href{http://johnmacfarlane.net/pandoc/demo/example9/producing-slide-shows-with-pandoc.html}{producing
-#' slide shows with pandoc}.
 #'
 #' R Markdown documents can have optional metadata that is used to generate a
 #' document header that includes the title, author, and date. For more details
@@ -70,6 +66,7 @@ beamer_presentation <- function(toc = FALSE,
                                 template = "default",
                                 keep_tex = FALSE,
                                 latex_engine = "pdflatex",                              
+                                citation_package = c("natbib", "biblatex"),
                                 includes = NULL,
                                 md_extensions = NULL,
                                 pandoc_args = NULL) {
@@ -78,8 +75,10 @@ beamer_presentation <- function(toc = FALSE,
   args <- c()
 
   # template path and assets
-  if (!is.null(template) && !identical(template, "default"))
+  if (!is.null(template)) {
+    if (identical(template, "default")) template <- patch_beamer_template()
     args <- c(args, "--template", pandoc_path_arg(template))
+  }
 
   # table of contents
   if (toc)
@@ -110,8 +109,15 @@ beamer_presentation <- function(toc = FALSE,
   latex_engine = match.arg(latex_engine, c("pdflatex", "lualatex", "xelatex"))
   args <- c(args, pandoc_latex_engine_args(latex_engine))
   
+  # citation package
+  citation_package <- match.arg(citation_package)
+  args <- c(args, paste0("--", citation_package))
+
   # content includes
   args <- c(args, includes_to_pandoc_args(includes))
+
+  # make sure the graphics package is always loaded
+  if (identical(template, "default")) args <- c(args, "--variable", "graphics=yes")
 
   # custom args
   args <- c(args, pandoc_args)
@@ -122,10 +128,30 @@ beamer_presentation <- function(toc = FALSE,
     pandoc = pandoc_options(to = "beamer",
                             from = from_rmarkdown(fig_caption, md_extensions),
                             args = args,
+                            latex_engine = latex_engine,
                             keep_tex = keep_tex),
     clean_supporting = !keep_tex
   )
 }
 
-
-
+patch_beamer_template <- function() {
+  find_pandoc()
+  command <- paste(quoted(pandoc()), paste(quoted(c("-D", "beamer")), collapse = " "))
+  with_pandoc_safe_environment({
+    tpl <- system(command, intern = TRUE)
+  })
+  patch <- c(
+    "% Comment these out if you don't want a slide with just the", 
+    "% part/section/subsection/subsubsection title:", "\\AtBeginPart{", 
+    "  \\let\\insertpartnumber\\relax", "  \\let\\partname\\relax", 
+    "  \\frame{\\partpage}", "}", "\\AtBeginSection{", 
+    "  \\let\\insertsectionnumber\\relax", "  \\let\\sectionname\\relax",
+    "  \\frame{\\sectionpage}", "}", "\\AtBeginSubsection{",
+    "  \\let\\insertsubsectionnumber\\relax", "  \\let\\subsectionname\\relax",
+    "  \\frame{\\subsectionpage}", "}"
+  )
+  tpl <- sub(paste(patch, collapse = '\n'), '', paste(tpl, collapse = '\n'), fixed = TRUE)
+  f <- tempfile(fileext = '.tex')
+  writeLines(tpl, f)
+  f
+}

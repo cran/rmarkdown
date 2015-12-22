@@ -103,10 +103,7 @@ merge_post_processors <- function (base, overlay) {
 merge_output_formats <- function(base, overlay)  {
   structure(list(
     knitr = merge_lists(base$knitr, overlay$knitr),
-    pandoc = pandoc_options(
-      to = merge_scalar(base$pandoc$to, overlay$pandoc$to),
-      from = merge_scalar(base$pandoc$from, overlay$pandoc$from),
-      args = c(base$pandoc$args, overlay$pandoc$args)),
+    pandoc = merge_pandoc_options(base$pandoc, overlay$pandoc),
     keep_md =
       merge_scalar(base$keep_md, overlay$keep_md),
     clean_supporting =
@@ -119,6 +116,12 @@ merge_output_formats <- function(base, overlay)  {
     post_processor =
       merge_post_processors(base$post_processor, overlay$post_processor)
   ), class = "rmarkdown_output_format")
+}
+
+merge_pandoc_options <- function(base, overlay) {
+  res <- merge_lists(base, overlay, recursive = FALSE)
+  res$args <- c(base$args, overlay$args)
+  res
 }
 
 #' Knitr options for an output format
@@ -203,6 +206,8 @@ knitr_options_pdf <- function(fig_width, fig_height, fig_crop, dev = 'pdf') {
 #' @param args Character vector of command line arguments to pass to pandoc
 #' @param keep_tex Keep the intermediate tex file used in the conversion to PDF
 #'   (applies only to 'latex' and 'beamer' target formats)
+#' @param latex_engine LaTeX engine to producing PDF output (applies only to
+#'   'latex' and 'beamer' target formats)
 #' @param ext File extension (e.g. ".tex") for output file (if \code{NULL}
 #'   chooses default based on \code{to}). This is typically used to force
 #'   the final output of a latex or beamer converstion to be \code{.tex}
@@ -222,11 +227,13 @@ pandoc_options <- function(to,
                            from = rmarkdown_format(),
                            args = NULL,
                            keep_tex = FALSE,
+                           latex_engine = c("pdflatex", "lualatex", "xelatex"),
                            ext = NULL) {
   list(to = to,
        from = from,
        args = args,
        keep_tex = keep_tex,
+       latex_engine = match.arg(latex_engine),
        ext = ext)
 }
 
@@ -253,7 +260,7 @@ pandoc_options <- function(to,
 #' }
 #'
 #'
-#' For more on pandoc markdown see the \href{http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html}{pandoc markdown specification}.
+#' For more on pandoc markdown see the \href{http://pandoc.org/README.html}{pandoc online documentation}.
 #'
 #' @examples
 #' \dontrun{

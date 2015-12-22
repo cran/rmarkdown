@@ -138,3 +138,33 @@ test_that("dependencies can be discovered on .R files directly", {
   expected <- as.data.frame(expected[order(expected[[1]]), , drop = FALSE])
   expect_equal(resources, expected)
 })
+
+test_that("filenames with shell characters can use relative resource paths", {
+  skip_on_cran()
+  
+  # save current working directory
+  oldwd <- getwd()
+  on.exit(setwd(oldwd), add = TRUE)
+  
+  file.rename("resources/file-exists.Rmd", "resources/file exists.Rmd")
+  # render the file (contains an expression that stops if its resource is not 
+  # present)
+  capture.output(output_file <- render("resources/file exists.Rmd"))
+  on.exit(unlink(output_file), add = TRUE)
+  file.rename("resources/file exists.Rmd", "resources/file-exists.Rmd")
+})
+
+test_that("empty quoted strings don't confuse resource discovery", {
+  skip_on_cran()
+  
+  resources <- find_external_resources("resources/quotes.Rmd")
+  expected <- data.frame(
+    path = c("empty.csv", "empty.tsv"),
+    explicit = c(FALSE, FALSE),
+    web      = c(FALSE, FALSE),
+    stringsAsFactors = FALSE)
+  
+  resources <- as.data.frame(resources[order(resources[[1]]), , drop = FALSE])
+  expected <- as.data.frame(expected[order(expected[[1]]), , drop = FALSE])
+  expect_equal(resources, expected)
+})

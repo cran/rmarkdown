@@ -54,6 +54,10 @@ render <- function(input,
                        encoding = encoding)
       outputs <- c(outputs, output)
     }
+    if (length(output_file) > 1) {
+      file.rename(outputs, output_file)
+      outputs <- output_file
+    }
     return(invisible(outputs))
   }
 
@@ -96,8 +100,10 @@ render <- function(input,
   # if the input file has shell characters in its name then make a copy that
   # doesn't have shell characters
   if (grepl(.shell_chars_regex, basename(input))) {
+    # form the name of the file w/o shell characters
     input_no_shell_chars <- intermediates_loc(
         file_name_without_shell_chars(basename(input)))
+    
     if (file.exists(input_no_shell_chars)) {
       stop("The name of the input file cannot contain the special shell ",
            "characters: ", .shell_chars_regex, " (attempted to copy to a ", 
@@ -107,6 +113,11 @@ render <- function(input,
     file.copy(input, input_no_shell_chars, overwrite = TRUE)
     intermediates <- c(intermediates, input_no_shell_chars)
     input <- input_no_shell_chars
+    
+    # if an intermediates directory wasn't explicit before, make it explicit now
+    if (is.null(intermediates_dir))
+      intermediates_dir <- 
+        dirname(normalizePath(input_no_shell_chars, winslash = "/"))
   }
 
   # execute within the input file's directory
@@ -192,6 +203,16 @@ render <- function(input,
   cache_dir <- NULL
   knit_meta <- NULL
 
+  # call any intermediate files generator, if we have an intermediates directory
+  # (do this before knitting in case the knit requires intermediates)
+  if (!is.null(intermediates_dir) &&
+      !is.null(output_format$intermediates_generator)) {
+    intermediates <- c(intermediates, 
+                       output_format$intermediates_generator(original_input, 
+                                                             encoding, 
+                                                             intermediates_dir))
+  }
+
   # knit if necessary
   if (tolower(tools::file_ext(input)) %in% c("r", "rmd", "rmarkdown")) {
 
@@ -213,10 +234,13 @@ render <- function(input,
     knitr::render_markdown()
     knitr::opts_chunk$set(tidy = FALSE, error = FALSE)
 
-    # enable knitr hooks to have knowledge of the final output format
-    knitr::opts_knit$set(rmarkdown.pandoc.to = pandoc_to)
-    knitr::opts_knit$set(rmarkdown.keep_md = output_format$keep_md)
-    knitr::opts_knit$set(rmarkdown.version = 2)
+    # store info about the final output format in opts_knit
+    knitr::opts_knit$set(
+      rmarkdown.pandoc.from = output_format$pandoc$from,
+      rmarkdown.pandoc.to = pandoc_to,
+      rmarkdown.keep_md = output_format$keep_md,
+      rmarkdown.version = 2
+    )
 
     # trim whitespace from around source code
     if (utils::packageVersion("knitr") < "1.5.23") {
@@ -282,9 +306,13 @@ render <- function(input,
     # knit environment (unless it is already defined there in which case
     # we emit a warning)
     env <- environment(render)
+    metadata_this <- env$metadata
     do.call("unlockBinding", list("metadata", env))
     on.exit({
-      env$metadata <- list()
+      if (bindingIsLocked("metadata", env)) {
+        do.call("unlockBinding", list("metadata", env))
+      }
+      env$metadata <- metadata_this
       lockBinding("metadata", env)
     }, add = TRUE)
     env$metadata <- yaml_front_matter
@@ -313,9 +341,16 @@ render <- function(input,
     if (!(is_pandoc_to_html(output_format$pandoc) ||
           identical(tolower(tools::file_ext(output_file)), "html")))  {
       if (has_html_dependencies(knit_meta)) {
-        stop("Functions that produce HTML output found in document targeting ",
-             pandoc_to, " output.\nPlease change the output type ",
-             "of this document to HTML.", call. = FALSE)
+        if (!isTRUE(yaml_front_matter$always_allow_html)) {
+          stop("Functions that produce HTML output found in document targeting ",
+               pandoc_to, " output.\nPlease change the output type ",
+               "of this document to HTML. Alternatively, you can allow\n", 
+               "HTML output in non-HTML formats by adding this option to the YAML front",
+               "-matter of\nyour rmarkdown file:\n\n",
+               "  always_allow_html: yes\n\n",
+               "Note however that the HTML output will not be visible in non-HTML formats.\n\n",
+               call. = FALSE)
+        }
       }
       if (!identical(runtime, "static")) {
         stop("Runtime '", runtime, "' is not supported for ",
@@ -347,15 +382,6 @@ render <- function(input,
     output_format$pandoc$args <- c(output_format$pandoc$args, extra_args)
   }
   
-  # call any intermediate files generator, if we have an intermediates directory
-  if (!is.null(intermediates_dir) &&
-      !is.null(output_format$intermediates_generator)) {
-    intermediates <- c(intermediates, 
-                       output_format$intermediates_generator(original_input, 
-                                                             encoding, 
-                                                             intermediates_dir))
-  }
-
   perf_timer_stop("pre-processor")
 
   # if we are running citeproc then explicitly forward the bibliography
@@ -368,25 +394,31 @@ render <- function(input,
   
   perf_timer_start("pandoc")
 
-  # run intermediate conversion if it's been specified
-  if (output_format$pandoc$keep_tex) {
-    pandoc_convert(utf8_input,
-                   pandoc_to,
-                   output_format$pandoc$from,
-                   file_with_ext(output_file, "tex"),
-                   run_citeproc,
-                   output_format$pandoc$args,
-                   !quiet)
+  convert <- function(output, citeproc = FALSE) {
+    pandoc_convert(
+      utf8_input, pandoc_to, output_format$pandoc$from, output, citeproc,
+      output_format$pandoc$args, !quiet
+    )
   }
-
-  # run the main conversion
-  pandoc_convert(utf8_input,
-                 pandoc_to,
-                 output_format$pandoc$from,
-                 output_file,
-                 run_citeproc,
-                 output_format$pandoc$args,
-                 !quiet)
+  texfile <- file_with_ext(output_file, "tex")
+  # compile Rmd to tex when we need to generate --bibliography
+  if (grepl('[.](pdf|tex)$', output_file) &&
+      ('--bibliography' %in% output_format$pandoc$args)) {
+    convert(texfile)
+    # manually compile tex if PDF output is expected
+    if (grepl('[.]pdf$', output_file)) {
+      latexmk(texfile, output_format$pandoc$latex_engine)
+      file.rename(file_with_ext(texfile, "pdf"), output_file)
+    }
+    # clean up the tex file if necessary
+    if ((texfile != output_file) && !output_format$pandoc$keep_tex)
+      on.exit(unlink(texfile), add = TRUE)
+  } else {
+    # run the main conversion if the output file is not .tex
+    convert(output_file, run_citeproc)
+    # run conversion again to .tex if we want to keep the tex source
+    if (output_format$pandoc$keep_tex) convert(texfile, run_citeproc)
+  }
   
   # pandoc writes the output alongside the input, so if we rendered from an 
   # intermediate directory, move the output file

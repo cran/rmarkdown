@@ -1,8 +1,8 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 0.8.1
-Date: 2015-10-09
+Version: 0.9
+Date: 2015-12-21
 Authors@R: c(
   person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
   person("Joe", "Cheng", role = "aut", email = "joe@rstudio.com"),
@@ -50,8 +50,9 @@ SystemRequirements: pandoc (>= 1.12.3) -
         http://johnmacfarlane.net/pandoc
 URL: http://rmarkdown.rstudio.com
 License: GPL-3
+RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2015-10-09 14:37:42 UTC; jjallaire
+Packaged: 2015-12-22 00:36:20 UTC; jjallaire
 Author: JJ Allaire [aut, cre],
   Joe Cheng [aut],
   Yihui Xie [aut],
@@ -78,4 +79,4 @@ Author: JJ Allaire [aut, cre],
   W3C [cph] (slidy library)
 Maintainer: JJ Allaire <jj@rstudio.com>
 Repository: CRAN
-Date/Publication: 2015-10-10 01:15:53
+Date/Publication: 2015-12-22 08:01:44

@@ -36,7 +36,7 @@
 #' pandoc_convert("input.md", to = "html", citeproc = TRUE)
 #'
 #' # add some pandoc options
-#' pandoc_convert("input.md", to="pdf, options = c("--listings"))
+#' pandoc_convert("input.md", to="pdf", options = c("--listings"))
 #' }
 #'
 #' @export
@@ -72,8 +72,12 @@ pandoc_convert <- function(input,
     args <- c(args, "--output", output)
 
   # citeproc filter if requested
-  if (citeproc)
+  if (citeproc) {
     args <- c(args, "--filter", pandoc_citeproc())
+    # --natbib/--biblatex conflicts with '--filter pandoc-citeproc'
+    i <- stats::na.omit(match(c("--natbib", "--biblatex"), options))
+    if (length(i)) options <- options[-i]
+  }
 
   # set pandoc stack size
   stack_size <- getOption("pandoc.stack.size", default = "512m")
@@ -239,19 +243,21 @@ pandoc_highlight_args <- function(highlight, default = "tango") {
 #' @rdname pandoc_args
 #' @export
 pandoc_latex_engine_args <- function(latex_engine) {
-  
+  c("--latex-engine", find_latex_engine(latex_engine))
+}
+
+find_latex_engine <- function(latex_engine) {
   # use a full path to the latex engine on OSX since the stripping
   # of the PATH environment variable by OSX 10.10 Yosemite prevents
   # pandoc from finding the engine in e.g. /usr/texbin
-  if (Sys.info()["sysname"] == "Darwin") {
+  if (is_osx()) {
     # resolve path if it's not already an absolute path
     if (!grepl("/", latex_engine, fixed = TRUE))
       program_path <- find_program(latex_engine)
-      if (nzchar(program_path))
-        latex_engine <- program_path  
+    if (nzchar(program_path))
+      latex_engine <- program_path
   }
-  
-  c("--latex-engine", latex_engine)
+  latex_engine
 }
 
 #' @rdname pandoc_args

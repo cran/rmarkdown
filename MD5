@@ -1,7 +1,7 @@
-671d34ae8d2ebf93bdf8b4a1108a7ccf *DESCRIPTION
+3a69150a6a5999085a2f12d8a23f2194 *DESCRIPTION
 b9efd011059cf70ffa31dd113ef90314 *NAMESPACE
 c402f852206fc1a76b0d4999671bff93 *R/base64.R
-c552b5440cc70fb66c0637497b44baa8 *R/beamer_presentation.R
+85b5599d1e31d4b2bfd6e8dac292ed09 *R/beamer_presentation.R
 58e5c555a3ce5c43e102cb7fd2bd5ca7 *R/draft.R
 ff9befa2ee0e1ce5915f9fbce8cb03ee *R/html_dependencies.R
 3395a1e0703f84674807c59b30fbfa9e *R/html_document.R
@@ -9,7 +9,7 @@ ff9befa2ee0e1ce5915f9fbce8cb03ee *R/html_dependencies.R
 67bac8e857852b0264cb37c3924d4154 *R/html_extras.R
 af226c7963ff199ff09315da315db757 *R/html_fragment.R
 9794664b36f46d303c61c948dbabffbf *R/html_parser.R
-3fbdea9a1a29995b0a45b0f07dfdfc5d *R/html_resources.R
+177a25f05383a53b0256086e72cd7ee0 *R/html_resources.R
 3470c1a6028ae0a22c1a7f0db6834eee *R/html_vignette.R
 f10d9fde1ebf00f0c79fbf797cd494ee *R/includes.R
 74d39ba90d764f1d638f5bdd37a5c2ee *R/ioslides_presentation.R
@@ -17,17 +17,17 @@ f10d9fde1ebf00f0c79fbf797cd494ee *R/includes.R
 acaad23a84698495bbf4bba50a53ec60 *R/output_format.R
 50b127b109bc75c2b1ab92efcc10f320 *R/pandoc.R
 d9f7c28861ad80a17a29b5c954aa8bb0 *R/params.R
-31510d90a6025fef9b69b25efc19e82c *R/pdf_document.R
+c8d05b4ef7aeef91d56ee2fcf1826852 *R/pdf_document.R
 97073798c29d6fc492b0799004ee773e *R/performance.R
 2f4f638ee9a999fcc53bc36ca11bb0bc *R/relative_to.R
-8a7e66d26f0c073a53028dac01467961 *R/render.R
+75bd9a42c4f13b78a1d04505ab102ced *R/render.R
 7111dc67e97de7caf41d2c72b4f15800 *R/shiny.R
 30820bf713b4938e913272571666431d *R/slidy_presentation.R
-646d4a2ee1b561851f223f1d32f0c7d5 *R/tufte_handout.R
+5a6ec9089d18b7c33854701bc7a3bf82 *R/tufte_handout.R
 73731e800487dabf86c25da2836a47b1 *R/util.R
 6931a53c73cc82de6e48550a4e9cbeeb *R/word_document.R
 b550b2c6aa8b6547482dc99e87039d94 *inst/COPYING
-0482bf2d7bea76ba35c5f6ae2489e483 *inst/NEWS
+e0da2eb202d9b03555d6f7b1d532f590 *inst/NEWS
 59a0b73ba11a11a27ef15b768cc63169 *inst/NOTICE
 1f1e4ab0e88ebf79ebc7621014066895 *inst/rmarkdown/templates/html_vignette/resources/vignette.css
 9c1157c67baaadd6bce038f5f8deb009 *inst/rmarkdown/templates/html_vignette/skeleton/skeleton.Rmd
@@ -157,7 +157,7 @@ e21f5d3dbffe0d0ea2f145dbeab2dc0b *inst/rmd/slidy/Slidy2/scripts/slidy-irc.js
 7f31790fc15e7f45b3ffbdbe5b98a3e1 *inst/rmd/slidy/Slidy2/styles/slidy.css
 65178a013ea4d6101126253e0fd0b1ad *inst/rmd/slidy/Slidy2/styles/w3c-blue.css
 300c4980fd141fe4f2b453ed0bedad7b *inst/rmd/slidy/default.html
-ad1c2f674e87134870cb97dbe0c41380 *man/beamer_presentation.Rd
+e182e57bc65fad510a9f5596ba9ea5a2 *man/beamer_presentation.Rd
 bcd490d571097e08a22c77b8da636eaf *man/compile_notebook.Rd
 0ea4cea80c0c639683818c72a144df19 *man/default_output_format.Rd
 17702474548719101df9966d793eecac *man/draft.Rd
@@ -182,7 +182,7 @@ b1ab16920cdbbcffaa829eed315ab6df *man/pandoc_options.Rd
 3802d026e7a3a9530a61d42a0d5ad0c5 *man/pandoc_path_arg.Rd
 7596f7980ace62be8f9f4cf46d42bda1 *man/pandoc_self_contained_html.Rd
 58c2f40874ef2c9722daea1991e9cf71 *man/pandoc_template.Rd
-425b7f09e68465522abeeec0bb76f38d *man/pdf_document.Rd
+f0691d39f0fcbfa41210f4c306ff4e7f *man/pdf_document.Rd
 2518ecf2f83281eb40b19ab352acf9c4 *man/relative_to.Rd
 93833fb5b4bbd4a03dcf35149d17a49b *man/render.Rd
 c74162ee6bd5347b90166dfe175a888a *man/render_delayed.Rd
@@ -192,7 +192,7 @@ fb259b4e22f797c6ef1da23b94b0a3a2 *man/render_supporting_files.Rd
 45185ad8f2c7016229a6e803b8de920c *man/rmd_metadata.Rd
 b703f48de877b1c808e2f7eae5db6fd3 *man/run.Rd
 348b7ba7aa94e533fa72b0048507d2a1 *man/slidy_presentation.Rd
-db8ee4a7062e53688db33b4e1999a16d *man/tufte_handout.Rd
+fc66bdb87996032e36c07b2081ee9d43 *man/tufte_handout.Rd
 fa839ad7bcce05a7e703994767cdf5a6 *man/word_document.Rd
 b559a09451c2562bbbd05dcb1d362a90 *tests/testthat.R
 d41d8cd98f00b204e9800998ecf8427e *tests/testthat/resources/csvs/csv1.csv
@@ -228,4 +228,4 @@ b77061c71237d77a8a3f6a8d0ae21791 *tests/testthat/test-dependencies.R
 1022fba6ce3608e0ad64b962312a765f *tests/testthat/test-formats.R
 3290280e90c5a7b8b3315eb35d294156 *tests/testthat/test-formats.Rmd
 df3349f4f99cde06a0e896798e0ec127 *tests/testthat/test-htmlparse.R
-e9965606bb6ae4c406670c3303175312 *tests/testthat/test-resources.R
+45c407c528fbeb9bce9f04db20cba1e9 *tests/testthat/test-resources.R

@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 0.9.1
+Version: 0.9.2
 Date: 2015-12-30
 Authors@R: c(
   person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
@@ -52,7 +52,7 @@ URL: http://rmarkdown.rstudio.com
 License: GPL-3
 RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2015-12-31 02:15:57 UTC; jjallaire
+Packaged: 2016-01-01 11:59:09 UTC; jjallaire
 Author: JJ Allaire [aut, cre],
   Joe Cheng [aut],
   Yihui Xie [aut],
@@ -79,4 +79,4 @@ Author: JJ Allaire [aut, cre],
   W3C [cph] (slidy library)
 Maintainer: JJ Allaire <jj@rstudio.com>
 Repository: CRAN
-Date/Publication: 2015-12-31 15:12:24
+Date/Publication: 2016-01-01 20:58:19

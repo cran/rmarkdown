@@ -1,4 +1,4 @@
-3a69150a6a5999085a2f12d8a23f2194 *DESCRIPTION
+217ad8a4e5b46f86202768af666cecac *DESCRIPTION
 b9efd011059cf70ffa31dd113ef90314 *NAMESPACE
 c402f852206fc1a76b0d4999671bff93 *R/base64.R
 85b5599d1e31d4b2bfd6e8dac292ed09 *R/beamer_presentation.R
@@ -20,14 +20,14 @@ d9f7c28861ad80a17a29b5c954aa8bb0 *R/params.R
 c8d05b4ef7aeef91d56ee2fcf1826852 *R/pdf_document.R
 97073798c29d6fc492b0799004ee773e *R/performance.R
 2f4f638ee9a999fcc53bc36ca11bb0bc *R/relative_to.R
-75bd9a42c4f13b78a1d04505ab102ced *R/render.R
+bc0860534007862772cd5e3d55e4b528 *R/render.R
 7111dc67e97de7caf41d2c72b4f15800 *R/shiny.R
 30820bf713b4938e913272571666431d *R/slidy_presentation.R
 5a6ec9089d18b7c33854701bc7a3bf82 *R/tufte_handout.R
 73731e800487dabf86c25da2836a47b1 *R/util.R
 6931a53c73cc82de6e48550a4e9cbeeb *R/word_document.R
 b550b2c6aa8b6547482dc99e87039d94 *inst/COPYING
-e0da2eb202d9b03555d6f7b1d532f590 *inst/NEWS
+bcfac1af9d760d91205990c998e98e52 *inst/NEWS
 59a0b73ba11a11a27ef15b768cc63169 *inst/NOTICE
 1f1e4ab0e88ebf79ebc7621014066895 *inst/rmarkdown/templates/html_vignette/resources/vignette.css
 9c1157c67baaadd6bce038f5f8deb009 *inst/rmarkdown/templates/html_vignette/skeleton/skeleton.Rmd

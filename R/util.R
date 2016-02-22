@@ -43,11 +43,11 @@ from_rmarkdown <- function(implicit_figures = TRUE, extensions = NULL) {
   # paste extensions together and remove whitespace
   extensions <- paste0(extensions, collapse = "")
   extensions <- gsub(" ", "", extensions)
-  
+
   # exclude implicit figures unless the user has added them back
   if (!implicit_figures && !grepl("implicit_figures", extensions))
     extensions <- paste0("-implicit_figures", extensions)
-    
+
   rmarkdown_format(extensions)
 }
 
@@ -212,6 +212,13 @@ base_dir <- function(x) {
   base
 }
 
+# Check if two paths are the same after being normalized
+same_path <- function(path1, path2, ...) {
+  if (length(path1) * length(path2) != 1)
+    stop('The two paths must be both of length 1')
+  normalize_path(path1, ...) == normalize_path(path2, ...)
+}
+
 # Regular expression representing characters likely to be considered special by
 # the shell (require quoting/escaping)
 .shell_chars_regex <- '[ <>()|\\:&;#?*\']'
@@ -222,9 +229,9 @@ base_dir <- function(x) {
 find_program <- function(program) {
   if (is_osx()) {
     res <- suppressWarnings({
-      # Quote the path (so it can contain spaces, etc.) and escape any quotes 
+      # Quote the path (so it can contain spaces, etc.) and escape any quotes
       # and escapes in the path itself
-      sanitized_path <- gsub("\\", "\\\\", Sys.getenv("PATH"), fixed = TRUE)      
+      sanitized_path <- gsub("\\", "\\\\", Sys.getenv("PATH"), fixed = TRUE)
       sanitized_path <- gsub("\"", "\\\"", sanitized_path, fixed = TRUE)
       system(paste("PATH=\"", sanitized_path, "\" /usr/bin/which ", program, sep=""),
              intern = TRUE)
@@ -260,7 +267,10 @@ latexmk <- function(file, engine) {
     system2_quiet(latexmk_path, c(
       '-pdf -latexoption=-halt-on-error -interaction=batchmode',
       paste0('-pdflatex=', shQuote(engine)), shQuote(file)
-    ), error = show_latex_error(file))
+    ), error = {
+      check_latexmk_version(latexmk_path)
+      show_latex_error(file)
+    })
     system2(latexmk_path, '-c', stdout = FALSE)  # clean up nonessential files
   } else {
     warning("Perl must be installed and put on PATH for latexmk to work")
@@ -349,4 +359,20 @@ show_latex_error <- function(file) {
     message(paste(m, collapse = '\n'))
     stop(e, ' See ', logfile, ' for more info.', call. = FALSE)
   }
+}
+
+# check the version of latexmk
+check_latexmk_version <- function(latexmk_path = find_program('latexmk')) {
+  out <- system2(latexmk_path, '-v', stdout = TRUE)
+  reg <- '^.*Version (\\d+[.]\\d+).*$'
+  out <- grep(reg, out, value = TRUE)
+  if (length(out) == 0) return()
+  ver <- as.numeric_version(gsub(reg, '\\1', out[1]))
+  if (ver >= '4.43') return()
+  system2(latexmk_path, '-v')
+  warning(
+    'Your latexmk version seems to be too low. ',
+    'You may need to update the latexmk package or your LaTeX distribution.',
+    call. = FALSE
+  )
 }

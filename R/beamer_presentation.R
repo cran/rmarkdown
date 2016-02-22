@@ -7,14 +7,14 @@
 #'
 #' @param toc \code{TRUE} to include a table of contents in the output (only
 #'   level 1 headers will be included in the table of contents).
-#' @param slide_level The heading level which defines indvidual slides. By
+#' @param slide_level The heading level which defines individual slides. By
 #'   default this is the highest header level in the hierarchy that is followed
 #'   immediately by content, and not another header, somewhere in the document.
 #'   This default can be overridden by specifying an explicit
 #'   \code{slide_level}.
 #' @param incremental \code{TRUE} to render slide bullets incrementally. Note
 #'   that if you want to reverse the default incremental behavior for an
-#'   individual bullet you can preceded it with \code{>}. For example:
+#'   individual bullet you can precede it with \code{>}. For example:
 #'   \emph{\code{> - Bullet Text}}
 #' @param theme Beamer theme (e.g. "AnnArbor").
 #' @param colortheme Beamer color theme (e.g. "dolphin").
@@ -65,7 +65,7 @@ beamer_presentation <- function(toc = FALSE,
                                 highlight = "default",
                                 template = "default",
                                 keep_tex = FALSE,
-                                latex_engine = "pdflatex",                              
+                                latex_engine = "pdflatex",
                                 citation_package = c("none", "natbib", "biblatex"),
                                 includes = NULL,
                                 md_extensions = NULL,
@@ -77,7 +77,8 @@ beamer_presentation <- function(toc = FALSE,
   # template path and assets
   if (!is.null(template)) {
     if (identical(template, "default")) template <- patch_beamer_template()
-    args <- c(args, "--template", pandoc_path_arg(template))
+    if (!is.null(template))
+      args <- c(args, "--template", pandoc_path_arg(template))
   }
 
   # table of contents
@@ -108,7 +109,7 @@ beamer_presentation <- function(toc = FALSE,
   # latex engine
   latex_engine = match.arg(latex_engine, c("pdflatex", "lualatex", "xelatex"))
   args <- c(args, pandoc_latex_engine_args(latex_engine))
-  
+
   # citation package
   citation_package <- match.arg(citation_package)
   if (citation_package != "none") args <- c(args, paste0("--", citation_package))
@@ -135,23 +136,24 @@ beamer_presentation <- function(toc = FALSE,
 }
 
 patch_beamer_template <- function() {
-  find_pandoc()
-  command <- paste(quoted(pandoc()), paste(quoted(c("-D", "beamer")), collapse = " "))
+  if (pandoc_version() >= '1.15.2') return()  # no need to patch the template
+  f <- tempfile(fileext = '.tex')
+  command <- paste(quoted(pandoc()), "-D beamer >", quoted(f))
   with_pandoc_safe_environment({
-    tpl <- system(command, intern = TRUE)
+    if (system(command) != 0) stop("Failed to execute the command '", command, "'")
   })
   patch <- c(
-    "% Comment these out if you don't want a slide with just the", 
-    "% part/section/subsection/subsubsection title:", "\\AtBeginPart{", 
-    "  \\let\\insertpartnumber\\relax", "  \\let\\partname\\relax", 
-    "  \\frame{\\partpage}", "}", "\\AtBeginSection{", 
+    "% Comment these out if you don't want a slide with just the",
+    "% part/section/subsection/subsubsection title:", "\\AtBeginPart{",
+    "  \\let\\insertpartnumber\\relax", "  \\let\\partname\\relax",
+    "  \\frame{\\partpage}", "}", "\\AtBeginSection{",
     "  \\let\\insertsectionnumber\\relax", "  \\let\\sectionname\\relax",
     "  \\frame{\\sectionpage}", "}", "\\AtBeginSubsection{",
     "  \\let\\insertsubsectionnumber\\relax", "  \\let\\subsectionname\\relax",
     "  \\frame{\\subsectionpage}", "}"
   )
+  tpl <- readLines(f, encoding = 'UTF-8')
   tpl <- sub(paste(patch, collapse = '\n'), '', paste(tpl, collapse = '\n'), fixed = TRUE)
-  f <- tempfile(fileext = '.tex')
-  writeLines(tpl, f)
+  writeLines(enc2utf8(tpl), f, useBytes = TRUE)
   f
 }

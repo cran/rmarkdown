@@ -1,19 +1,32 @@
 #' @import htmltools
 NULL
 
+#' Provide common HTML dependencies for R Markdown formats
+#'
+#' These functions provide common HTML dependencies (e.g. jquery, bootstrap)
+#' for re-use by other R Markdown formats.
+#'
+#' @inheritParams html_document
+#' @name html-dependencies
+NULL
+
 # create an html dependency for our embedded jquery
+#' @rdname html-dependencies
+#' @export
 html_dependency_jquery <- function()  {
   htmlDependency(name = "jquery",
-                 version = "1.11.0",
-                 src = rmarkdown_system_file("rmd/h/jquery-1.11.0"),
+                 version = "1.11.3",
+                 src = rmarkdown_system_file("rmd/h/jquery-1.11.3"),
                  script = "jquery.min.js")
 }
 
 # create an html dependency for our embedded bootstrap
+#' @rdname html-dependencies
+#' @export
 html_dependency_bootstrap <- function(theme) {
   htmlDependency(name = "bootstrap",
-                 version = "3.3.1",
-                 rmarkdown_system_file("rmd/h/bootstrap-3.3.1"),
+                 version = "3.3.5",
+                 rmarkdown_system_file("rmd/h/bootstrap-3.3.5"),
                  meta = list(viewport = "width=device-width, initial-scale=1"),
                  script = c(
                    "js/bootstrap.min.js",
@@ -23,6 +36,29 @@ html_dependency_bootstrap <- function(theme) {
                  ),
                  stylesheet = paste("css/", theme, ".min.css", sep=""))
 }
+
+# create an html_dependency for our embedded jqueryui
+#' @rdname html-dependencies
+#' @export
+html_dependency_jqueryui <- function() {
+  htmlDependency(name = 'jqueryui',
+                 version = '1.11.4',
+                 src = rmarkdown_system_file("rmd/h/jqueryui-1.11.4"),
+                 script = 'jquery-ui.min.js'
+  )
+}
+
+# create an html_dependency for tocify
+#' @rdname html-dependencies
+#' @export
+html_dependency_tocify <- function() {
+  htmlDependency(name = "tocify",
+                 version = "1.9.1",
+                 src = rmarkdown_system_file("rmd/h/tocify-1.9.1"),
+                 script = "jquery.tocify.js",
+                 stylesheet = "jquery.tocify.css")
+}
+
 
 # flattens an arbitrarily nested list and returns all of the html_dependency
 # objects it contains

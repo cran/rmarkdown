@@ -13,7 +13,7 @@ md_document(variant = "markdown_strict", preserve_yaml = FALSE,
 \item{variant}{Markdown variant to produce (defaults to "markdown_strict").
 Other valid values are "markdown_github", "markdown_mmd",
 markdown_phpextra", or even "markdown" (which produces pandoc markdown).
-You can also compose custom markdown variants, see the 
+You can also compose custom markdown variants, see the
 \href{http://pandoc.org/README.html}{pandoc online documentation}
 for details.}
 
@@ -39,8 +39,8 @@ width of the image explicitly.}
 document (typically created using the \code{\link{includes}} function).}
 
 \item{md_extensions}{Markdown extensions to be added or removed from the
-default definition or R Markdown. See the \code{\link{rmarkdown_format}}
-for additional details.}
+default definition or R Markdown. See the \code{\link{rmarkdown_format}} for
+additional details.}
 
 \item{pandoc_args}{Additional command line options to pass to pandoc}
 }

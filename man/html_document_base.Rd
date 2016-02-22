@@ -16,33 +16,33 @@ quotes to curly quotes, --- to em-dashes, -- to en-dashes, and ... to
 ellipses.}
 
 \item{theme}{Visual theme ("default", "cerulean", "journal", "flatly",
-"readable", "spacelab", "united", or "cosmo"). Pass \code{NULL} for
-no theme (in this case you can use the \code{css} parameter to add your own
-styles).}
+"readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone",
+"simplex", or "yeti"). Pass \code{NULL} for no theme (in this case you can
+use the \code{css} parameter to add your own styles).}
 
 \item{self_contained}{Produce a standalone HTML file with no external
 dependencies, using data: URIs to incorporate the contents of linked
-scripts, stylesheets, images, and videos. Note that even for self
-contained documents MathJax is still loaded externally (this is
-necessary because of it's size).}
+scripts, stylesheets, images, and videos. Note that even for self contained
+documents MathJax is still loaded externally (this is necessary because of
+it's size).}
 
 \item{lib_dir}{Directory to copy dependent HTML libraries (e.g. jquery,
-bootstrap, etc.) into. By default this will be the name of the document
-with \code{_files} appended to it.}
+bootstrap, etc.) into. By default this will be the name of the document with
+\code{_files} appended to it.}
 
 \item{mathjax}{Include mathjax. The "default" option uses an https URL from
-the official MathJax CDN. The "local" option uses a local version of
-MathJax (which is copied into the output directory). You can pass an
-alternate URL or pass \code{NULL} to exclude MathJax entirely.}
+the official MathJax CDN. The "local" option uses a local version of MathJax
+(which is copied into the output directory). You can pass an alternate URL
+or pass \code{NULL} to exclude MathJax entirely.}
 
 \item{pandoc_args}{Additional command line options to pass to pandoc}
 
-\item{template}{Pandoc template to use for rendering. Pass "default"
-to use the rmarkdown package default template; pass \code{NULL}
-to use pandoc's built-in template; pass a path to use a custom template
-that you've created. Note that if you don't use the "default" template
-then some features of \code{html_document} won't be available (see the
-Templates section below for more details).}
+\item{template}{Pandoc template to use for rendering. Pass "default" to use
+the rmarkdown package default template; pass \code{NULL} to use pandoc's
+built-in template; pass a path to use a custom template that you've created.
+Note that if you don't use the "default" template then some features of
+\code{html_document} won't be available (see the Templates section below for
+more details).}
 
 \item{dependency_resolver}{A dependency resolver}
 
@@ -52,14 +52,13 @@ Templates section below for more details).}
 
 \item{bootstrap_compatible}{Bootstrap compatible}
 
-\item{...}{Additional function arguments to pass to the base R Markdown HTML
-output formatter}
+\item{...}{Ignored}
 }
 \value{
 HTML base output format.
 }
 \description{
-Creates an HTML base output format suitable for passing as the 
+Creates an HTML base output format suitable for passing as the
 \code{base_format} argument of the \code{\link{output_format}} function.
 }
 

@@ -8,7 +8,7 @@ reset_accumulator <- function () {
 
 html_accumulator <- function(tag, att, val, idx) {
   accumulated <<- rbind(accumulated, data.frame(
-    tag = tag, 
+    tag = tag,
     attribute = att,
     value = val,
     stringsAsFactors = FALSE))
@@ -57,6 +57,22 @@ test_that("common resource types are found in a simple document", {
     tag = c("script", "link", "img", "iframe"),
     attribute = c("src", "href", "src", "src"),
     value = c("foo.js", "bar.css", "baz.png", "quux.html"),
+    stringsAsFactors = FALSE))
+  reset_accumulator()
+})
+
+test_that("resources referenced in CSS files are discovered", {
+  call_css_resource_attrs(paste(
+    "body {\n",
+    "  background-image: url('foo.png');\n",
+    "}\n",
+    "p {\n",
+    "  background-image: url(bar.png), url(\"baz.png\");\n",
+    "}\n)"), html_accumulator)
+  expect_equal(accumulated, data.frame(
+    tag = c("css", "css", "css"),
+    attribute = c("url", "url", "url"),
+    value = c("foo.png", "bar.png", "baz.png"),
     stringsAsFactors = FALSE))
   reset_accumulator()
 })

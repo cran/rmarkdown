@@ -16,7 +16,7 @@ beamer_presentation(toc = FALSE, slide_level = NULL, incremental = FALSE,
 \item{toc}{\code{TRUE} to include a table of contents in the output (only
 level 1 headers will be included in the table of contents).}
 
-\item{slide_level}{The heading level which defines indvidual slides. By
+\item{slide_level}{The heading level which defines individual slides. By
 default this is the highest header level in the hierarchy that is followed
 immediately by content, and not another header, somewhere in the document.
 This default can be overridden by specifying an explicit
@@ -24,7 +24,7 @@ This default can be overridden by specifying an explicit
 
 \item{incremental}{\code{TRUE} to render slide bullets incrementally. Note
 that if you want to reverse the default incremental behavior for an
-individual bullet you can preceded it with \code{>}. For example:
+individual bullet you can precede it with \code{>}. For example:
 \emph{\code{> - Bullet Text}}}
 
 \item{fig_width}{Default width (in inches) for figures}
@@ -67,8 +67,8 @@ or \code{biblatex}. Use \code{none} if neither package is to be used.}
 document (typically created using the \code{\link{includes}} function).}
 
 \item{md_extensions}{Markdown extensions to be added or removed from the
-default definition or R Markdown. See the \code{\link{rmarkdown_format}}
-for additional details.}
+default definition or R Markdown. See the \code{\link{rmarkdown_format}} for
+additional details.}
 
 \item{pandoc_args}{Additional command line options to pass to pandoc}
 }

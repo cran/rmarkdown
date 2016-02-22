@@ -52,8 +52,8 @@ or \code{biblatex}. Use \code{none} if neither package is to be used.}
 document (typically created using the \code{\link{includes}} function).}
 
 \item{md_extensions}{Markdown extensions to be added or removed from the
-default definition or R Markdown. See the \code{\link{rmarkdown_format}}
-for additional details.}
+default definition or R Markdown. See the \code{\link{rmarkdown_format}} for
+additional details.}
 
 \item{pandoc_args}{Additional command line options to pass to pandoc}
 }
@@ -78,7 +78,7 @@ the markdown syntax for citations in the
 \href{http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html}{Bibliographies
 and Citations} article in the online documentation.
 
-Many aspects of the LaTeX template used to create PDF documents can be 
+Many aspects of the LaTeX template used to create PDF documents can be
 customized using metadata. For example:
 
 \tabular{l}{

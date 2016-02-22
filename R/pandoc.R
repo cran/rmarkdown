@@ -71,6 +71,13 @@ pandoc_convert <- function(input,
   if (!is.null(output))
     args <- c(args, "--output", output)
 
+  # set pandoc stack size
+  stack_size <- getOption("pandoc.stack.size", default = "512m")
+  args <- c(c("+RTS", paste0("-K", stack_size), "-RTS"), args)
+
+  # additional command line options
+  args <- c(args, options)
+
   # citeproc filter if requested
   if (citeproc) {
     args <- c(args, "--filter", pandoc_citeproc())
@@ -78,13 +85,6 @@ pandoc_convert <- function(input,
     i <- stats::na.omit(match(c("--natbib", "--biblatex"), options))
     if (length(i)) options <- options[-i]
   }
-
-  # set pandoc stack size
-  stack_size <- getOption("pandoc.stack.size", default = "512m")
-  args <- c(c("+RTS", paste0("-K", stack_size), "-RTS"), args)
-  
-  # additional command line options
-  args <- c(args, options)
 
   # build the conversion command
   command <- paste(quoted(pandoc()), paste(quoted(args), collapse = " "))
@@ -104,21 +104,21 @@ pandoc_convert <- function(input,
 }
 
 #' Check pandoc availabilty and version
-#' 
-#' Determine whether pandoc is currently available on the system (optionally 
-#' checking for a specific version or greater). Determine the specific version 
+#'
+#' Determine whether pandoc is currently available on the system (optionally
+#' checking for a specific version or greater). Determine the specific version
 #' of pandoc available.
-#' 
+#'
 #' @param version Required version of pandoc
-#'   
-#' @return \code{pandoc_available} returns a logical indicating whether the 
-#'   required version of pandoc is available. \code{pandoc_version} returns a 
+#'
+#' @return \code{pandoc_available} returns a logical indicating whether the
+#'   required version of pandoc is available. \code{pandoc_version} returns a
 #'   \code{\link[base]{numeric_version}} with the version of pandoc found.
-#'   
+#'
 #' @details
-#' 
-#' The system path as well as the version of pandoc shipped with RStudio (if 
-#' running under RStudio) are scanned for pandoc and the highest version 
+#'
+#' The system path as well as the version of pandoc shipped with RStudio (if
+#' running under RStudio) are scanned for pandoc and the highest version
 #' available is used.
 #'
 #' @examples
@@ -188,7 +188,7 @@ pandoc_version <- function() {
 #' pandoc_include_args(before_body = "header.tex")
 #'
 #' pancoc_highlight_args("kate")
-#' 
+#'
 #' pandoc_latex_engine_args("pdflatex")
 #'
 #' pandoc_toc_args(toc = TRUE, toc_depth = 2)
@@ -276,17 +276,17 @@ pandoc_toc_args <- function(toc, toc_depth = 3) {
 
 
 #' Transform path for passing to pandoc
-#' 
-#' Transform a path for passing to pandoc on the command line. Calls 
-#' \code{\link[base:path.expand]{path.expand}} on all platforms. On Windows, 
-#' transform it to a short path name if it contains spaces, and then convert 
+#'
+#' Transform a path for passing to pandoc on the command line. Calls
+#' \code{\link[base:path.expand]{path.expand}} on all platforms. On Windows,
+#' transform it to a short path name if it contains spaces, and then convert
 #' forward slashes to back slashes (as required by pandoc for some path
 #' references)
-#' 
+#'
 #' @param path Path to transform
-#'   
+#'
 #' @return Transformed path that can be passed to pandoc on the command line
-#'   
+#'
 #' @export
 pandoc_path_arg <- function(path) {
 
@@ -361,11 +361,13 @@ pandoc_self_contained_html <- function(input, output) {
   template <- tempfile(fileext = ".html")
   writeLines("$body$", template)
 
-  # call pandoc with from format of "markdown_strict" to
-  # get as close as possible to html -> html conversion
-  rmarkdown::pandoc_convert(
+  # convert from markdown to html to get base64 encoding
+  # (note there is no markdown in the source document but
+  # we still need to do this "conversion" to get the
+  # base64 encoding)
+  pandoc_convert(
     input = input,
-    from = "markdown_strict",
+    from = "markdown",
     output = output,
     options = c(
       "--self-contained",
@@ -427,7 +429,7 @@ pandoc_mathjax_args <- function(mathjax,
 
 
 pandoc_mathjax_local_path <- function() {
-  
+
   local_path <- Sys.getenv("RMARKDOWN_MATHJAX_PATH", unset = NA)
   if (is.na(local_path)) {
     local_path <- unix_mathjax_path()
@@ -458,6 +460,22 @@ unix_mathjax_path <- function() {
 }
 
 
+pandoc_html_navigation_args <- function(self_contained,
+                                        files_dir,
+                                        output_dir) {
+  args <- c()
+  navigation_path <- rmarkdown_system_file("rmd/h/navigation-1.0")
+  if (self_contained) {
+    navigation_path <- pandoc_path_arg(navigation_path)
+  }
+  else {
+    navigation_path <- normalized_relative_to(output_dir,
+                                              render_supporting_files(
+                                               navigation_path, files_dir))
+  }
+  args <- c(args,
+            "--variable", paste("navigationjs=", navigation_path, sep=""))
+}
 
 pandoc_html_highlight_args <- function(highlight,
                                        template,
@@ -630,7 +648,7 @@ pandoc_citeproc <- function() {
 quoted <- function(args) {
   # some characters are legal in filenames but without quoting are likely to be
   # interpreted by the shell (e.g. redirection, wildcard expansion, etc.) --
-  # wrap arguments containing these characters in quotes. 
+  # wrap arguments containing these characters in quotes.
   shell_chars <- grepl(.shell_chars_regex, args)
   args[shell_chars] <- shQuote(args[shell_chars])
   args

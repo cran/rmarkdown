@@ -11,12 +11,11 @@
 #'@param number_sections \code{TRUE} to number section headings
 #'@param fig_width Default width (in inches) for figures
 #'@param fig_height Default width (in inches) for figures
-#'@param fig_retina Scaling to perform for retina displays (defaults to 2 when
-#'  \code{fig_caption} is \code{FALSE}, which currently works for all widely
-#'  used retina displays). Set to \code{NULL} to prevent retina scaling. Note
-#'  that this will always be \code{NULL} when \code{keep_md} is specified (this
-#'  is because \code{fig_retina} relies on outputting HTML directly into the
-#'  markdown document).
+#'@param fig_retina Scaling to perform for retina displays (defaults to 2, which
+#'  currently works for all widely used retina displays). Set to\code{NULL} to
+#'  prevent retina scaling. Note that this will always be\code{NULL} when
+#'  \code{keep_md} is specified (this is because \code{fig_retina} relies on
+#'  outputting HTML directly into the markdown document).
 #'@param fig_caption \code{TRUE} to render figures with captions
 #'@param dev Graphics device to use for figure output (defaults to png)
 #'@param code_folding Enable document readers to toggle the display of R code
@@ -85,11 +84,30 @@
 #'@section Navigation Bars:
 #'
 #'  If you have a set of html documents which you'd like to provide a common
-#'  global navigation bar for, you can include a "_navbar.html" file within the
-#'  same directory as your html document and it will automatically be included
-#'  at the top of the document. For a simple example of including a navigation
-#'  bar see
-#'  .\href{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}
+#'  global navigation bar for, you can include a "_navbar.yml" or "_navbar.html"
+#'  file within the same directory as your html document and it will automatically
+#'  be included at the top of the document.
+#'
+#'  The "_navbar.yml" file includes \code{title}, \code{type}, \code{left}, and
+#'  \code{right} fields (to define menu items for the left and right of the navbar
+#'  resspectively). Menu items include \code{title} and \code{href} fields. For example:
+#'
+#'  \preformatted{ title: "My Website"
+#'  type: default
+#'  left:
+#'    - title: "Home"
+#'      href: index.html
+#'    - title: "Other"
+#'      href: other.html
+#'  right:
+#'    - title: GitHub
+#'      href: https://github.com}
+#'  The \code{type} field is optional and can take the value "default" or "inverse" (which
+#'  provides a different color scheme for the navigation bar).
+#'
+#'  Alternatively, you can include a "_navbar.html" file which is a full HTML definition
+#'  of a bootstrap navigation bar. For a simple example of including a navigation bar see
+#'  \href{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}.
 #'   For additional documentation on creating Bootstrap navigation bars see
 #'  \href{http://getbootstrap.com/components/#navbar}{http://getbootstrap.com/components/#navbar}.
 #'
@@ -168,8 +186,8 @@ html_document <- function(toc = FALSE,
                           number_sections = FALSE,
                           fig_width = 7,
                           fig_height = 5,
-                          fig_retina = if (!fig_caption) 2,
-                          fig_caption = FALSE,
+                          fig_retina = 2,
+                          fig_caption = TRUE,
                           dev = 'png',
                           code_folding = c("none", "show", "hide"),
                           smart = TRUE,
@@ -193,11 +211,11 @@ html_document <- function(toc = FALSE,
   # use section divs
   args <- c(args, "--section-divs")
 
-  # table of contents
-  args <- c(args, pandoc_toc_args(toc, toc_depth))
-
   # toc_float
-  if (toc && !identical(toc_float, FALSE)) {
+  if (!identical(toc_float, FALSE)) {
+
+    # force toc on
+    toc <- TRUE
 
     # must have a theme
     if (is.null(theme))
@@ -233,6 +251,9 @@ html_document <- function(toc = FALSE,
       args <- c(args, pandoc_variable_arg("toc_smooth_scroll", "1"))
   }
 
+  # table of contents
+  args <- c(args, pandoc_toc_args(toc, toc_depth))
+
   # template path and assets
   if (identical(template, "default"))
     args <- c(args, "--template",
@@ -250,6 +271,59 @@ html_document <- function(toc = FALSE,
 
   # validate code_folding
   code_folding <- match.arg(code_folding)
+
+  # dummy pre_knit function so that merging of outputs works
+  pre_knit <- function(input, ...) {}
+
+  # pre-processor for arguments that may depend on the name of the
+  # the input file AND which need to inject html dependencies
+  # (otherwise we could just call the pre_processor)
+  post_knit <- function(metadata, input_file, runtime, ...) {
+
+    # extra args
+    args <- c()
+
+    # navbar (requires theme)
+    if (!is.null(theme)) {
+
+      # add navbar to includes if necessary
+      navbar <- file.path(normalize_path(dirname(input_file)), "_navbar.html")
+
+      # if there is no _navbar.html look for a _navbar.yml
+      if (!file.exists(navbar)) {
+        navbar_yaml <- file.path(dirname(navbar), "_navbar.yml")
+        if (file.exists(navbar_yaml))
+          navbar <- navbar_html_from_yaml(navbar_yaml)
+        # if there is no _navbar.yml then look in site config (if we have it)
+        config <- site_config(input_file)
+        if (!is.null(config) && !is.null(config$navbar))
+          navbar <- navbar_html(config$navbar)
+      }
+
+      if (file.exists(navbar)) {
+
+        # include the navbar html
+        includes <- list(before_body = navbar)
+        args <- c(args, includes_to_pandoc_args(includes,
+                                  filter = if (identical(runtime, "shiny"))
+                                    function(x) normalize_path(x, mustWork = FALSE)
+                                  else
+                                    identity))
+
+        # flag indicating we need extra navbar css and js
+        args <- c(args, pandoc_variable_arg("navbar", "1"))
+        # variables controlling padding from navbar
+        args <- c(args, pandoc_body_padding_variable_args(theme))
+
+        # navbar icon dependencies
+        iconDeps <- navbar_icon_dependencies(navbar)
+        if (length(iconDeps) > 0)
+          knit_meta_add(list(iconDeps))
+      }
+    }
+
+    args
+  }
 
   # pre-processor for arguments that may depend on the name of the
   # the input file (e.g. ones that need to copy supporting files)
@@ -277,19 +351,6 @@ html_document <- function(toc = FALSE,
       args <- c(args, pandoc_html_navigation_args(self_contained,
                                                   lib_dir,
                                                   output_dir))
-
-      # add navbar to includes if necessary
-      navbar <- file.path(normalize_path(dirname(input_file)), "_navbar.html")
-      if (file.exists(navbar)) {
-        if (is.null(includes))
-          includes <- list()
-        # include the navbar html
-        includes$before_body <- c(navbar, includes$before_body)
-        # flag indicating we need extra navbar css and js
-        args <- c(args, pandoc_variable_arg("navbar", "1"))
-        # variables controlling padding from navbar
-        args <- c(args, pandoc_body_padding_variable_args(theme))
-      }
     }
 
     # code_folding
@@ -322,6 +383,7 @@ html_document <- function(toc = FALSE,
                             args = args),
     keep_md = keep_md,
     clean_supporting = self_contained,
+    post_knit = post_knit,
     pre_processor = pre_processor,
     base_format = html_document_base(smart = smart, theme = theme,
                                      self_contained = self_contained,
@@ -419,6 +481,90 @@ pandoc_body_padding_variable_args <- function(theme) {
     pandoc_variable_arg("header_padding", headerPadding))
 }
 
+navbar_html_from_yaml <- function(navbar_yaml) {
+
+  # parse the yaml
+  navbar <- yaml_load_file_utf8(navbar_yaml)
+
+  # generate the html
+  navbar_html(navbar)
+}
+
+navbar_html <- function(navbar) {
+
+  # title and type
+  if (is.null(navbar$title))
+    navbar$title <- ""
+  if (is.null(navbar$type))
+    navbar$type <- "default"
+
+  # menu entries
+  left <- navbar_links_html(navbar$left)
+  right <- navbar_links_html(navbar$right)
+
+  # build the navigation bar and return it as a temp file
+  template_file <- rmarkdown_system_file("rmd/h/_navbar.html")
+  template <- paste(readLines(template_file), collapse = "\n")
+  navbar_html <- sprintf(template,
+                         navbar$type,
+                         navbar$title,
+                         left,
+                         right)
+  as_tmpfile(navbar_html)
+}
+
+
+navbar_links_html <- function(links) {
+  as.character(navbar_links_tags(links))
+}
+
+navbar_links_tags <- function(links) {
+  if (!is.null(links)) {
+    tags <- lapply(links, function(x) {
+
+      # sub-menu
+      if (!is.null(x$menu)) {
+        submenuLinks <- navbar_links_tags(x$menu)
+        tags$li(class = "dropdown",
+          tags$a(href = "#", class = "dropdown-toggle", `data-toggle` = "dropdown",
+                 role = "button", `aria-expanded` = "false",
+                   navbar_link_text(x, " ", tags$span(class = "caret"))),
+          tags$ul(class = "dropdown-menu", role = "menu", submenuLinks)
+        )
+
+      # divider
+      } else if (!is.null(x$text) && grepl("^\\s*-{3,}\\s*$", x$text)) {
+        tags$li(class = "divider")
+
+      # header
+      } else if (!is.null(x$text) && is.null(x$href)) {
+        tags$li(class = "dropdown-header", x$text)
+
+      # standard menu item
+      } else {
+        textTags <- navbar_link_text(x)
+        tags$li(tags$a(href = x$href, textTags))
+      }
+    })
+    tagList(tags)
+  } else {
+    tagList()
+  }
+}
+
+navbar_link_text <- function(x, ...) {
+  if (!is.null(x$icon)) {
+    # find the iconset
+    split <- strsplit(x$icon, "-")
+    if (length(split[[1]]) > 1)
+      iconset <- split[[1]][[1]]
+    else
+      iconset <- ""
+    tagList(tags$span(class = paste(iconset, x$icon)), " ", x$text, ...)
+  }
+  else
+    tagList(x$text, ...)
+}
 
 
 

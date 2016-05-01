@@ -6,7 +6,7 @@
 \usage{
 html_document(toc = FALSE, toc_depth = 3, toc_float = FALSE,
   number_sections = FALSE, fig_width = 7, fig_height = 5,
-  fig_retina = if (!fig_caption) 2, fig_caption = FALSE, dev = "png",
+  fig_retina = 2, fig_caption = TRUE, dev = "png",
   code_folding = c("none", "show", "hide"), smart = TRUE,
   self_contained = TRUE, theme = "default", highlight = "default",
   mathjax = "default", template = "default", extra_dependencies = NULL,
@@ -29,12 +29,11 @@ options that control the behavior of the floating table of contents. See the
 
 \item{fig_height}{Default width (in inches) for figures}
 
-\item{fig_retina}{Scaling to perform for retina displays (defaults to 2 when
-\code{fig_caption} is \code{FALSE}, which currently works for all widely
-used retina displays). Set to \code{NULL} to prevent retina scaling. Note
-that this will always be \code{NULL} when \code{keep_md} is specified (this
-is because \code{fig_retina} relies on outputting HTML directly into the
-markdown document).}
+\item{fig_retina}{Scaling to perform for retina displays (defaults to 2, which
+currently works for all widely used retina displays). Set to\code{NULL} to
+prevent retina scaling. Note that this will always be\code{NULL} when
+\code{keep_md} is specified (this is because \code{fig_retina} relies on
+outputting HTML directly into the markdown document).}
 
 \item{fig_caption}{\code{TRUE} to render figures with captions}
 
@@ -122,11 +121,30 @@ and Citations} article in the online documentation.
 
 
  If you have a set of html documents which you'd like to provide a common
- global navigation bar for, you can include a "_navbar.html" file within the
- same directory as your html document and it will automatically be included
- at the top of the document. For a simple example of including a navigation
- bar see
- .\href{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}
+ global navigation bar for, you can include a "_navbar.yml" or "_navbar.html"
+ file within the same directory as your html document and it will automatically
+ be included at the top of the document.
+
+ The "_navbar.yml" file includes \code{title}, \code{type}, \code{left}, and
+ \code{right} fields (to define menu items for the left and right of the navbar
+ resspectively). Menu items include \code{title} and \code{href} fields. For example:
+
+ \preformatted{ title: "My Website"
+ type: default
+ left:
+   - title: "Home"
+     href: index.html
+   - title: "Other"
+     href: other.html
+ right:
+   - title: GitHub
+     href: https://github.com}
+ The \code{type} field is optional and can take the value "default" or "inverse" (which
+ provides a different color scheme for the navigation bar).
+
+ Alternatively, you can include a "_navbar.html" file which is a full HTML definition
+ of a bootstrap navigation bar. For a simple example of including a navigation bar see
+ \href{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}.
   For additional documentation on creating Bootstrap navigation bars see
  \href{http://getbootstrap.com/components/#navbar}{http://getbootstrap.com/components/#navbar}.
 }

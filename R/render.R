@@ -222,6 +222,25 @@ render <- function(input,
                                                              intermediates_dir))
   }
 
+  # reset knit_meta (and ensure it's always reset before exiting render)
+  knit_meta_reset()
+  on.exit(knit_meta_reset(), add = TRUE)
+
+  # presume that we're rendering as a static document unless specified
+  # otherwise in the parameters
+  runtime <- match.arg(runtime)
+  if (identical(runtime, "auto")) {
+    if (!is.null(yaml_front_matter$runtime))
+      runtime <- yaml_front_matter$runtime
+    else
+      runtime <- "static"
+  }
+
+  # call any pre_knit handler
+  if (!is.null(output_format$pre_knit)) {
+    output_format$pre_knit(input = original_input)
+  }
+
   # knit if necessary
   if (tolower(tools::file_ext(input)) %in% c("r", "rmd", "rmarkdown")) {
 
@@ -232,12 +251,10 @@ render <- function(input,
     on.exit(knitr::opts_chunk$restore(optc), add = TRUE)
     hooks <- knitr::knit_hooks$get()
     on.exit(knitr::knit_hooks$restore(hooks), add = TRUE)
+    ohooks <- knitr::opts_hooks$get()
+    on.exit(knitr::opts_hooks$restore(ohooks), add = TRUE)
     templates <- knitr::opts_template$get()
     on.exit(knitr::opts_template$restore(templates), add = TRUE)
-
-    # reset knit_meta (and ensure it's always reset before exiting render)
-    knit_meta_reset()
-    on.exit(knit_meta_reset(), add = TRUE)
 
     # default rendering and chunk options
     knitr::render_markdown()
@@ -277,17 +294,10 @@ render <- function(input,
       knitr::opts_chunk$set(as.list(output_format$knitr$opts_chunk))
       knitr::opts_template$set(as.list(output_format$knitr$opts_template))
       knitr::knit_hooks$set(as.list(output_format$knitr$knit_hooks))
+      knitr::opts_hooks$set(as.list(output_format$knitr$opts_hooks))
     }
 
-    # presume that we're rendering as a static document unless specified
-    # otherwise in the parameters
-    runtime <- match.arg(runtime)
-    if (identical(runtime, "auto")) {
-      if (!is.null(yaml_front_matter$runtime))
-        runtime <- yaml_front_matter$runtime
-      else
-        runtime <- "static"
-    }
+    # setting the runtime (static/shiny) type
     knitr::opts_knit$set(rmarkdown.runtime = runtime)
 
     # make the params available within the knit environment
@@ -336,36 +346,44 @@ render <- function(input,
                          encoding = encoding)
 
     perf_timer_stop("knitr")
+  }
 
-    # pull any R Markdown warnings from knit_meta and emit
-    rmd_warnings <- knit_meta_reset(class = "rmd_warning")
-    for (rmd_warning in rmd_warnings) {
-      message("Warning: ", rmd_warning)
-    }
+  # call any post_knit handler
+  if (!is.null(output_format$post_knit)) {
+    post_knit_extra_args <- output_format$post_knit(yaml_front_matter,
+                                                    knit_input,
+                                                    runtime)
+    output_format$pandoc$args <- c(output_format$pandoc$args, post_knit_extra_args)
+  }
 
-    # collect remaining knit_meta
-    knit_meta <- knit_meta_reset()
+  # pull any R Markdown warnings from knit_meta and emit
+  rmd_warnings <- knit_meta_reset(class = "rmd_warning")
+  for (rmd_warning in rmd_warnings) {
+    message("Warning: ", rmd_warning)
+  }
 
-    # if this isn't html and there are html dependencies then flag an error
-    if (!(is_pandoc_to_html(output_format$pandoc) ||
-          identical(tolower(tools::file_ext(output_file)), "html")))  {
-      if (has_html_dependencies(knit_meta)) {
-        if (!isTRUE(yaml_front_matter$always_allow_html)) {
-          stop("Functions that produce HTML output found in document targeting ",
-               pandoc_to, " output.\nPlease change the output type ",
-               "of this document to HTML. Alternatively, you can allow\n",
-               "HTML output in non-HTML formats by adding this option to the YAML front",
-               "-matter of\nyour rmarkdown file:\n\n",
-               "  always_allow_html: yes\n\n",
-               "Note however that the HTML output will not be visible in non-HTML formats.\n\n",
-               call. = FALSE)
-        }
-      }
-      if (!identical(runtime, "static")) {
-        stop("Runtime '", runtime, "' is not supported for ",
+  # collect remaining knit_meta
+  knit_meta <- knit_meta_reset()
+
+  # if this isn't html and there are html dependencies then flag an error
+  if (!(is_pandoc_to_html(output_format$pandoc) ||
+        identical(tolower(tools::file_ext(output_file)), "html")))  {
+    if (has_html_dependencies(knit_meta)) {
+      if (!isTRUE(yaml_front_matter$always_allow_html)) {
+        stop("Functions that produce HTML output found in document targeting ",
              pandoc_to, " output.\nPlease change the output type ",
-             "of this document to HTML.", call. = FALSE)
+             "of this document to HTML. Alternatively, you can allow\n",
+             "HTML output in non-HTML formats by adding this option to the YAML front",
+             "-matter of\nyour rmarkdown file:\n\n",
+             "  always_allow_html: yes\n\n",
+             "Note however that the HTML output will not be visible in non-HTML formats.\n\n",
+             call. = FALSE)
       }
+    }
+    if (!identical(runtime, "static")) {
+      stop("Runtime '", runtime, "' is not supported for ",
+           pandoc_to, " output.\nPlease change the output type ",
+           "of this document to HTML.", call. = FALSE)
     }
   }
 

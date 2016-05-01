@@ -7,7 +7,11 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+
+$if(theme)$
+$else$
 <meta name="viewport" content="width=device-width, initial-scale=1">
+$endif$
 
 $for(author-meta)$
 <meta name="author" content="$author-meta$" />
@@ -49,6 +53,11 @@ $if(highlighting-css)$
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
 $highlighting-css$
+$if(code_folding)$
+div.sourceCode {
+  overflow-x: visible;
+}
+$endif$
 </style>
 $if(theme)$
 <style type="text/css">
@@ -69,6 +78,35 @@ $if(abstract)$
     margin: auto;
     width: 90%;
   }
+</style>
+$endif$
+
+$if(theme)$
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
 </style>
 $endif$
 
@@ -94,27 +132,6 @@ code {
 img {
   max-width:100%;
   height: auto;
-}
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -205,6 +222,12 @@ $if(toc_float)$
 
 <script>
 $$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $$('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
     // establish options
     var options = {
       selectors: "$toc_selectors$",
@@ -213,7 +236,7 @@ $$(document).ready(function ()  {
       hashGenerator: function (text) {
         return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
       },
-      ignoreSelector: "h1.title, .toc-ignore",
+      ignoreSelector: ".toc-ignore",
       scrollTo: 0
     };
 $if(toc_collapsed)$
@@ -315,11 +338,12 @@ $for(include-before)$
 $include-before$
 $endfor$
 
+$if(theme)$
 <div class="fluid-row" id="$idprefix$header">
 
 $if(code_folding)$
 <div class="btn-group pull-right">
-<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="text-muted">Code</span> <span class="text-muted caret"></span></button>
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
 <ul class="dropdown-menu" style="min-width: 50px;">
 <li><a id="rmd-show-all-code" href="#">Show All</a></li>
 <li><a id="rmd-hide-all-code" href="#">Hide All</a></li>
@@ -327,8 +351,10 @@ $if(code_folding)$
 </div>
 $endif$
 
+$endif$
+
 $if(title)$
-<h1 class="title">$title$</h1>
+<h1 class="title toc-ignore">$title$</h1>
 $if(subtitle)$
 <h3 class="subtitle"><em>$subtitle$</em></h3>
 $endif$
@@ -357,7 +383,9 @@ $abstract$
 $endif$
 $endif$
 
+$if(theme)$
 </div>
+$endif$
 
 $if(toc_float)$
 $else$

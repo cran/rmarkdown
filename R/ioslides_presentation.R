@@ -4,8 +4,8 @@ ioslides_presentation <- function(logo = NULL,
                                   incremental = FALSE,
                                   fig_width = 7.5,
                                   fig_height = 4.5,
-                                  fig_retina = if (!fig_caption) 2,
-                                  fig_caption = FALSE,
+                                  fig_retina = 2,
+                                  fig_caption = TRUE,
                                   dev = 'png',
                                   smart = TRUE,
                                   self_contained = TRUE,
@@ -13,6 +13,8 @@ ioslides_presentation <- function(logo = NULL,
                                   smaller = FALSE,
                                   transition = "default",
                                   mathjax = "default",
+                                  analytics = NULL,
+                                  template = NULL,
                                   css = NULL,
                                   includes = NULL,
                                   keep_md = FALSE,
@@ -49,9 +51,16 @@ ioslides_presentation <- function(logo = NULL,
   args <- c(args, includes_to_pandoc_args(includes))
 
   # template path and assets
-  args <- c(args,
-            "--template",
-            pandoc_path_arg(rmarkdown_system_file("rmd/ioslides/default.html")))
+  if (!is.null(template) && file.exists(template))
+    args <- c(args, "--template", template)
+  else
+    args <- c(args,
+              "--template",
+              pandoc_path_arg(rmarkdown_system_file("rmd/ioslides/default.html")))
+
+  # analytics
+  if(!is.null(analytics))
+    args <- c(args, pandoc_variable_arg("analytics", analytics))
 
   # pre-processor for arguments that may depend on the name of the
   # the input file (e.g. ones that need to copy supporting files)

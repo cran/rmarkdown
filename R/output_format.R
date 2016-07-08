@@ -35,6 +35,8 @@
 #'   \code{metadata}, \code{input_file}, \code{output_file}, \code{clean},
 #'   and \code{verbose} parmaeters, and can return an alternative
 #'   \code{output_file}.
+#' @param on_exit A function to call when \code{rmarkdown::render()} finishes
+#'   execution (as registered with a \code{\link{on.exit}} handler).
 #' @param base_format An optional format to extend.
 #'
 #' @return An R Markdown output format definition that can be passed to
@@ -58,17 +60,23 @@ output_format <- function(knitr,
                           pre_processor = NULL,
                           intermediates_generator = NULL,
                           post_processor = NULL,
+                          on_exit = NULL,
                           base_format = NULL) {
-  format <- structure(list(knitr = knitr,
-                 pandoc = pandoc,
-                 keep_md = keep_md,
-                 clean_supporting = clean_supporting && !keep_md,
-                 pre_knit = pre_knit,
-                 post_knit = post_knit,
-                 pre_processor = pre_processor,
-                 intermediates_generator = intermediates_generator,
-                 post_processor = post_processor),
-            class = "rmarkdown_output_format")
+
+  format <- list(
+    knitr = knitr,
+    pandoc = pandoc,
+    keep_md = keep_md,
+    clean_supporting = clean_supporting && !keep_md,
+    pre_knit = pre_knit,
+    post_knit = post_knit,
+    pre_processor = pre_processor,
+    intermediates_generator = intermediates_generator,
+    post_processor = post_processor,
+    on_exit = on_exit
+  )
+
+  class(format) <- "rmarkdown_output_format"
 
   # if a base format was supplied, merge it with the format we just created
   if (!is.null(base_format))
@@ -132,8 +140,17 @@ merge_output_formats <- function(base, overlay)  {
       merge_function_outputs(base$intermediates_generator,
                              overlay$intermediates_generator, c),
     post_processor =
-      merge_post_processors(base$post_processor, overlay$post_processor)
+      merge_post_processors(base$post_processor, overlay$post_processor),
+    on_exit =
+      merge_on_exit(base$on_exit, overlay$on_exit)
   ), class = "rmarkdown_output_format")
+}
+
+merge_on_exit <- function(base, overlay) {
+  function() {
+    if (is.function(base)) base()
+    if (is.function(overlay)) overlay()
+  }
 }
 
 merge_pandoc_options <- function(base, overlay) {
@@ -356,6 +373,53 @@ default_output_format <- function(input, encoding = getOption("encoding")) {
                                 recursive = FALSE)
   format
 }
+
+#' Resolve the output format for an R Markdown document
+#'
+#' Read the YAML metadata (and any common _output.yml file) for the
+#' document and return an output format object that can be
+#' passed to the \code{\link{render}} function.
+#'
+#' @param input Input file (Rmd or plain markdown)
+#' @param output_format Name of output format (or \code{NULL} to use
+#'   the default format for the input file).
+#' @param output_options List of output options that should override the
+#'   options specified in metadata.
+#' @param encoding The encoding of the input file; see \code{\link{file}}
+#'
+#' @return An R Markdown output format definition that can be passed to
+#'   \code{\link{render}}.
+#'
+#' @details
+#'
+#' This function is useful for front-end tools that need to modify
+#' the default behavior of an output format.
+#'
+#' @export
+resolve_output_format <- function(input,
+                                  output_format = NULL,
+                                  output_options = NULL,
+                                  encoding = getOption("encoding")) {
+
+  # read the input file
+  input_lines <- read_lines_utf8(input, encoding)
+
+  # read the yaml front matter
+  yaml_front_matter <- parse_yaml_front_matter(input_lines)
+
+  # validate that the output format is either NULL or a character vector
+  if (!is.null(output_format) && !is.character(output_format))
+    stop("output_format must be a character vector")
+
+  # resolve the output format by looking at the yaml
+  output_format <- output_format_from_yaml_front_matter(input_lines,
+                                                        output_options,
+                                                        output_format)
+
+  # return it
+  create_output_format(output_format$name, output_format$options)
+}
+
 
 #' Determine all output formats for an R Markdown document
 #'

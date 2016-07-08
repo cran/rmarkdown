@@ -7,11 +7,12 @@
 html_document(toc = FALSE, toc_depth = 3, toc_float = FALSE,
   number_sections = FALSE, fig_width = 7, fig_height = 5,
   fig_retina = 2, fig_caption = TRUE, dev = "png",
-  code_folding = c("none", "show", "hide"), smart = TRUE,
-  self_contained = TRUE, theme = "default", highlight = "default",
-  mathjax = "default", template = "default", extra_dependencies = NULL,
-  css = NULL, includes = NULL, keep_md = FALSE, lib_dir = NULL,
-  md_extensions = NULL, pandoc_args = NULL, ...)
+  code_folding = c("none", "show", "hide"), code_download = FALSE,
+  smart = TRUE, self_contained = TRUE, theme = "default",
+  highlight = "default", mathjax = "default", template = "default",
+  extra_dependencies = NULL, css = NULL, includes = NULL,
+  keep_md = FALSE, lib_dir = NULL, md_extensions = NULL,
+  pandoc_args = NULL, ...)
 }
 \arguments{
 \item{toc}{\code{TRUE} to include a table of contents in the output}
@@ -30,8 +31,8 @@ options that control the behavior of the floating table of contents. See the
 \item{fig_height}{Default width (in inches) for figures}
 
 \item{fig_retina}{Scaling to perform for retina displays (defaults to 2, which
-currently works for all widely used retina displays). Set to\code{NULL} to
-prevent retina scaling. Note that this will always be\code{NULL} when
+currently works for all widely used retina displays). Set to \code{NULL} to
+prevent retina scaling. Note that this will always be \code{NULL} when
 \code{keep_md} is specified (this is because \code{fig_retina} relies on
 outputting HTML directly into the markdown document).}
 
@@ -40,11 +41,14 @@ outputting HTML directly into the markdown document).}
 \item{dev}{Graphics device to use for figure output (defaults to png)}
 
 \item{code_folding}{Enable document readers to toggle the display of R code
-chunks. Defaults to \code{"none"} which displays all code chunks (assuming
+chunks. Specify \code{"none"} to display all code chunks (assuming
 they were knit with \code{echo = TRUE}). Specify \code{"hide"} to hide all R
 code chunks by default (users can show hidden code chunks either
 individually or document-wide). Specify \code{"show"} to show all R code
 chunks by default.}
+
+\item{code_download}{Embed the Rmd source code within the document and provide
+a link that can be used by readers to download the code.}
 
 \item{smart}{Produce typographically correct output, converting straight
 quotes to curly quotes, --- to em-dashes, -- to en-dashes, and ... to
@@ -156,11 +160,12 @@ and Citations} article in the online documentation.
  control the behavior of the floating table of contents. Options include:
 
  \itemize{ \item{\code{collapsed} (defaults to \code{TRUE}) controls whether
- the table of contents appers with only the top-level (H2) headers. When
+ the table of contents appears with only the top-level (H2) headers. When
  collapsed the table of contents is automatically expanded inline when
  necessary.} \item{\code{smooth_scroll} (defaults to \code{TRUE}) controls
  whether page scrolls are animated when table of contents items are navigated
- to via mouse clicks.} }
+ to via mouse clicks.} \item{\code{print} (defaults to \code{TRUE}) controls
+ whether the table of contents appears when user prints out the HTML page.}}
 }
 
 \section{Tabbed Sections}{

@@ -1,8 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 0.9.6
-Date: 2016-04-28
+Version: 1.0
 Authors@R: c(
   person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
   person("Joe", "Cheng", role = "aut", email = "joe@rstudio.com"),
@@ -36,6 +35,8 @@ Authors@R: c(
          comment = "highlight.js library"),
   person("Greg", "Franko", role = c("ctb", "cph"),
          comment = "tocify library"),
+  person("Eli", "Grey", role = c("ctb", "cph"),
+         comment = "FileSaver library"),
   person("John", "MacFarlane", role = c("ctb", "cph"),
          comment = "Pandoc templates"),
   person(family = "Google, Inc.", role = c("ctb", "cph"),
@@ -53,8 +54,8 @@ Authors@R: c(
   )
 Description: Convert R Markdown documents into a variety of formats.
 Depends: R (>= 3.0)
-Imports: tools, utils, grDevices, knitr (>= 1.12), yaml (>= 2.1.5),
-        htmltools (>= 0.2.4), caTools
+Imports: tools, utils, grDevices, knitr (>= 1.13), yaml (>= 2.1.5),
+        htmltools (>= 0.2.4), caTools, evaluate, base64enc, jsonlite
 Suggests: shiny (>= 0.11), tufte, testthat, digest
 SystemRequirements: pandoc (>= 1.12.3) -
         http://johnmacfarlane.net/pandoc
@@ -62,7 +63,7 @@ URL: http://rmarkdown.rstudio.com
 License: GPL-3
 RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2016-04-30 12:37:11 UTC; jjallaire
+Packaged: 2016-07-08 11:06:30 UTC; jjallaire
 Author: JJ Allaire [aut, cre],
   Joe Cheng [aut],
   Yihui Xie [aut],
@@ -86,6 +87,7 @@ Author: JJ Allaire [aut, cre],
   Scott Jehl [ctb, cph] (Respond.js library),
   Ivan Sagalaev [ctb, cph] (highlight.js library),
   Greg Franko [ctb, cph] (tocify library),
+  Eli Grey [ctb, cph] (FileSaver library),
   John MacFarlane [ctb, cph] (Pandoc templates),
   Google, Inc. [ctb, cph] (ioslides library),
   Dave Raggett [ctb] (slidy library),
@@ -95,4 +97,4 @@ Author: JJ Allaire [aut, cre],
   Drifty [cph] (Ionicons)
 Maintainer: JJ Allaire <jj@rstudio.com>
 Repository: CRAN
-Date/Publication: 2016-05-01 00:30:05
+Date/Publication: 2016-07-08 22:15:43

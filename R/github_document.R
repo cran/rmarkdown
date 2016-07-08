@@ -5,6 +5,9 @@
 #' @inheritParams html_document
 #' @inheritParams md_document
 #'
+#' @param hard_line_breaks \code{TRUE} to genreate markdown that uses a simple
+#'   newline to represent a line break (as opposed to two-spaces and a newline).
+#'
 #' @param html_preview \code{TRUE} to also generate an HTML file for the purpose of
 #'   locally previewing what the document will look like on GitHub.
 #'
@@ -18,6 +21,7 @@ github_document <- function(toc = FALSE,
                             dev = 'png',
                             includes = NULL,
                             md_extensions = NULL,
+                            hard_line_breaks = TRUE,
                             pandoc_args = NULL,
                             html_preview = TRUE) {
 
@@ -27,7 +31,10 @@ github_document <- function(toc = FALSE,
                     "rmarkdown/templates/github_document/resources/default.md")))
 
   # use md_document as base
-  format <- md_document(variant = "markdown_github",
+  variant <- "markdown_github"
+  if (!hard_line_breaks)
+    variant <- paste0(variant, "-hard_line_breaks")
+  format <- md_document(variant = variant,
                         toc = toc,
                         toc_depth = toc_depth,
                         fig_width = fig_width,
@@ -63,7 +70,7 @@ github_document <- function(toc = FALSE,
       preview_file <- file_with_ext(output_file, "html")
       pandoc_convert(input = output_file,
                      to = "html",
-                     from = "markdown_github",
+                     from = variant,
                      output = preview_file,
                      options = args,
                      verbose = verbose)

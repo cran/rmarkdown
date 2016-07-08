@@ -1,3 +1,41 @@
+rmarkdown 1.0
+--------------------------------------------------------------------------------
+
+* `toc_float` no longer automatically sets `toc = TRUE`
+
+* Added an argument `error` to `pandoc_available()` to signal an error when (if
+  `error = TRUE`) pandoc with the required version is not found.
+
+* Added `html_notebook` format for creating HTML documents that include source
+  code and output.
+
+* Added `resolve_output_format` function (useful for front ends that need to
+  mirror the default format resolution logic of `render`).
+
+* Added `code_download` option to `html_document` to provide an option to
+  embed a downloadable copy of the Rmd source code within the document.
+
+* Added `slide_level` option to ioslides_presentation to set the level of
+  heading used for individual slides.
+
+* Added `hard_line_breaks` option to `github_document` to deal with change
+  in behavior of GitHub's markdown renderer with respect to line breaks.
+
+* Use "markdown_strict" rather than "markdown" for `pandoc_self_contained_html`
+  when pandoc >= 1.17 (pandoc hanging bug was fixed in this version)
+
+* Default highlighting engine for `html_document` now highlights bash, c++,
+  css, ini, javascript, perl, python, r, ruby, scala, stan and xml
+
+* Added `print` sub-option to `toc_float` to control whether the table of
+  contents appears when user prints out the HTML page.
+
+* Added `readme` option to `html_vignette` which automatically creates a
+  package level README.md (for GitHub) in addition to rendering the vignette.
+
+* Support for `keep_md` in `html_vignette` format.
+
+
 rmarkdown 0.9.6
 --------------------------------------------------------------------------------
 

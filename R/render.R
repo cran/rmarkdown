@@ -28,6 +28,9 @@ render <- function(input,
 
   perf_timer_start("render")
 
+  init_render_context()
+  on.exit(clear_render_context(), add = TRUE)
+
   # check for "all" output formats
   if (identical(output_format, "all")) {
     output_format <- enumerate_output_formats(input, envir, encoding)
@@ -67,10 +70,7 @@ render <- function(input,
 
   # check for required version of pandoc
   required_pandoc <- "1.12.3"
-  if (!pandoc_available(required_pandoc)) {
-    stop("pandoc version ", required_pandoc, " or higher ",
-         "is required and was not found.", call. = FALSE)
-  }
+  pandoc_available(required_pandoc, error = TRUE)
 
   # setup a cleanup function for intermediate files
   intermediates <- c()
@@ -256,6 +256,11 @@ render <- function(input,
     templates <- knitr::opts_template$get()
     on.exit(knitr::opts_template$restore(templates), add = TRUE)
 
+    # run render on_exit (run after the knit hooks are saved so that
+    # any hook restoration can take precedence)
+    if (is.function(output_format$on_exit))
+      on.exit(output_format$on_exit(), add = TRUE)
+
     # default rendering and chunk options
     knitr::render_markdown()
     knitr::opts_chunk$set(tidy = FALSE, error = FALSE)
@@ -428,10 +433,65 @@ render <- function(input,
     perf_timer_start("pandoc")
 
     convert <- function(output, citeproc = FALSE) {
-      pandoc_convert(
-        utf8_input, pandoc_to, output_format$pandoc$from, output, citeproc,
-        output_format$pandoc$args, !quiet
+
+      # ensure we expand paths (for Windows where leading `~/` does
+      # not get expanded by pandoc)
+      utf8_input <- path.expand(utf8_input)
+      output     <- path.expand(output)
+
+      # if we don't detect any invalid shell characters in the
+      # target path, then just call pandoc directly
+      if (!grepl(.shell_chars_regex, output) && !grepl(.shell_chars_regex, utf8_input)) {
+        return(pandoc_convert(
+          utf8_input, pandoc_to, output_format$pandoc$from, output,
+          citeproc, output_format$pandoc$args, !quiet
+        ))
+      }
+
+      # render to temporary file (preserve extension)
+      # this also ensures we don't pass a file path with invalid
+      # characters to our pandoc invocation
+      file_ext <- tools::file_ext(output)
+      ext <- if (nzchar(file_ext))
+        paste(".", file_ext, sep = "")
+      else
+        ""
+
+      # render to a path in the current working directory
+      # (avoid passing invalid characters to shell)
+      pandoc_output_tmp <- basename(tempfile("pandoc", tmpdir = getwd(), fileext = ext))
+
+      # clean up temporary file on exit
+      on.exit({
+        if (file.exists(pandoc_output_tmp))
+          unlink(pandoc_output_tmp)
+      }, add = TRUE)
+
+      # call pandoc to render file
+      status <- pandoc_convert(
+        utf8_input, pandoc_to, output_format$pandoc$from, pandoc_output_tmp,
+        citeproc, output_format$pandoc$args, !quiet
       )
+
+      # construct output path (when passed only a file name to '--output',
+      # pandoc seems to render in the same directory as the input file)
+      pandoc_output_tmp_path <- file.path(dirname(utf8_input), pandoc_output_tmp)
+
+      # rename output file to desired location
+      renamed <- suppressWarnings(file.rename(pandoc_output_tmp_path, output))
+
+      # rename can fail if the temporary directory and output path
+      # lie on different volumes; in such a case attempt a file copy
+      # see: https://github.com/rstudio/rmarkdown/issues/705
+      if (!renamed) {
+        copied <- file.copy(pandoc_output_tmp_path, output, overwrite = TRUE)
+        if (!copied) {
+          stop("failed to copy rendered pandoc artefact to '", output, "'")
+        }
+      }
+
+      # return status
+      status
     }
     texfile <- file_with_ext(output_file, "tex")
     # compile Rmd to tex when we need to generate bibliography with natbib/biblatex
@@ -571,6 +631,29 @@ md_header_from_front_matter <- function(front_matter) {
   md
 }
 
+# render context (render-related state can be stuffed here)
+.render_context <- NULL # initialized in .onLoad
+render_context <- function() {
+  .render_context$peek()
+}
 
+init_render_context <- function() {
+  .render_context$push(new_render_context())
+}
 
+clear_render_context <- function() {
+  .render_context$pop()
+}
 
+new_render_context <- function() {
+  env <- new.env(parent = emptyenv())
+  env$chunk.index <- 1
+  env
+}
+
+merge_render_context <- function(context) {
+  elements <- ls(envir = render_context(), all.names = TRUE)
+  for (el in elements)
+    context[[el]] <- get(el, envir = render_context())
+  context
+}

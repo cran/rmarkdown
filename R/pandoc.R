@@ -110,6 +110,8 @@ pandoc_convert <- function(input,
 #' of pandoc available.
 #'
 #' @param version Required version of pandoc
+#' @param error Whether to signal an error if pandoc with the required version
+#'   is not found
 #'
 #' @return \code{pandoc_available} returns a logical indicating whether the
 #'   required version of pandoc is available. \code{pandoc_version} returns a
@@ -117,9 +119,12 @@ pandoc_convert <- function(input,
 #'
 #' @details
 #'
-#' The system path as well as the version of pandoc shipped with RStudio (if
-#' running under RStudio) are scanned for pandoc and the highest version
-#' available is used.
+#' The system environment variable \samp{PATH} as well as the version of pandoc
+#' shipped with RStudio (its location is set via the environment variable
+#' \samp{RSTUDIO_PANDOC} by RStudio products like the RStudio IDE, RStudio
+#' Server, Shiny Server, and RStudio Connect, etc) are scanned for pandoc and
+#' the highest version available is used. Please do not modify the environment
+#' varaible \samp{RSTUDIO_PANDOC} unless you know what it means.
 #'
 #' @examples
 #' \dontrun{
@@ -132,19 +137,21 @@ pandoc_convert <- function(input,
 #'   cat("requried version of pandoc is available!\n")
 #' }
 #' @export
-pandoc_available <- function(version = NULL) {
+pandoc_available <- function(version = NULL, error = FALSE) {
 
   # ensure we've scanned for pandoc
   find_pandoc()
 
   # check availability
-  if (!is.null(.pandoc$dir))
-    if (!is.null(version))
-      .pandoc$version >= version
-  else
-    TRUE
-  else
-    FALSE
+  found <- !is.null(.pandoc$dir) && (is.null(version) || .pandoc$version >= version)
+
+  msg <- c(
+    "pandoc", if (!is.null(version)) c("version", version, "or higher"),
+    "is required and was not found (see the help page ?rmarkdown::pandoc_available)."
+  )
+  if (error && !found) stop(paste(msg, collapse = " "), call. = FALSE)
+
+  found
 }
 
 
@@ -365,9 +372,19 @@ pandoc_self_contained_html <- function(input, output) {
   # (note there is no markdown in the source document but
   # we still need to do this "conversion" to get the
   # base64 encoding)
+
+  # determine from (there are bugs in pandoc < 1.17 that
+  # cause markdown_strict to hang on very large script
+  # elements)
+  from <- if (pandoc_available("1.17"))
+            "markdown_strict"
+          else
+            "markdown"
+
+  # do the conversion
   pandoc_convert(
     input = input,
-    from = "markdown",
+    from = from,
     output = output,
     options = c(
       "--self-contained",
@@ -464,7 +481,7 @@ pandoc_html_navigation_args <- function(self_contained,
                                         files_dir,
                                         output_dir) {
   args <- c()
-  navigation_path <- rmarkdown_system_file("rmd/h/navigation-1.0")
+  navigation_path <- rmarkdown_system_file("rmd/h/navigation-1.1")
   if (self_contained) {
     navigation_path <- pandoc_path_arg(navigation_path)
   }

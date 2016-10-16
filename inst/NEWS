@@ -1,3 +1,50 @@
+rmarkdown 1.1
+--------------------------------------------------------------------------------
+
+* Fixed an issue where attempts to render an R Notebook could fail if the
+  path contained multibyte characters.
+
+* Fixed an issue where the default Beamer template did not provide vertical
+  padding between paragraphs with certain versions of pandoc (<= 1.17.2).
+
+* Try to install latexmk automatically on Windows
+
+* Added `df_print` option to html_document format for optionally printing data
+  frames using `knitr::kable`, the `tibble` package, or an arbitrary function
+
+* Fix for render_site not showing Chinese characters correctly
+
+* Fix for ignoring knit_meta that is explicitly passed to render
+
+* Parameter editing: don't allow NULL to overwrite previous state
+
+* Parameter editing: fix incorrect name for parameters with expressions
+
+* Parameter editing: allow multiple values when the parameter is configured
+  to use a "multiple" selector
+
+* Switched the order in which format dependencies are added for
+  `html_document` so that `extra_dependencies` are added at the end, after
+  bootstrap, etc. (#737)
+
+* `pdf_document(keep_tex = TRUE)` will generate the .tex document even if PDF
+  conversion fails (#779).
+
+* Move latex header includes to just before \begin{document}
+
+* Special 'global' chunk label for runtime: shiny which designates
+  a chunk to be run once and only once in the global environment
+  (startup performance improvement for multi-user shiny documents)
+
+* Ensure supporting files are writeable (#800)
+
+* Make the "show code" buttons more CSS-friendly (#795)
+
+* Exclude `output_dir` from site files (#803)
+
+* Export `navbar_html` and `yaml_front_matter` functions
+
+
 rmarkdown 1.0
 --------------------------------------------------------------------------------
 
@@ -35,6 +82,8 @@ rmarkdown 1.0
 
 * Support for `keep_md` in `html_vignette` format.
 
+* Try to install the latexmk package automatically on Windows if the executable
+  latexmk.exe exists.
 
 rmarkdown 0.9.6
 --------------------------------------------------------------------------------

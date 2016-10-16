@@ -6,7 +6,7 @@
 \usage{
 html_document(toc = FALSE, toc_depth = 3, toc_float = FALSE,
   number_sections = FALSE, fig_width = 7, fig_height = 5,
-  fig_retina = 2, fig_caption = TRUE, dev = "png",
+  fig_retina = 2, fig_caption = TRUE, dev = "png", df_print = "default",
   code_folding = c("none", "show", "hide"), code_download = FALSE,
   smart = TRUE, self_contained = TRUE, theme = "default",
   highlight = "default", mathjax = "default", template = "default",
@@ -39,6 +39,15 @@ outputting HTML directly into the markdown document).}
 \item{fig_caption}{\code{TRUE} to render figures with captions}
 
 \item{dev}{Graphics device to use for figure output (defaults to png)}
+
+\item{df_print}{Method to be used for printing data frames. Valid values
+include "default", "kable", and "tibble". The "default" method uses
+\code{print.data.frame}. The "kable" method uses the
+\code{\link[knitr:kable]{knitr::kable}} function. The "tibble" method uses
+the \pkg{tibble} package to print a summary of the data frame. In addition
+to the named methods you can also pass an arbitrary function to be used
+for printing data frames. You can disable the df_print behavior entirely
+by setting the option \code{rmarkdown.df_print} to \code{FALSE}.}
 
 \item{code_folding}{Enable document readers to toggle the display of R code
 chunks. Specify \code{"none"} to display all code chunks (assuming

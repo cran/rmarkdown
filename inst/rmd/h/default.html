@@ -119,6 +119,11 @@ $for(css)$
 <link rel="stylesheet" href="$css$" $if(html5)$$else$type="text/css" $endif$/>
 $endfor$
 
+$if(pagedtablejs)$
+<link rel="stylesheet" href="$pagedtablejs$/css/pagedtable.css"
+      $if(html5)$$else$type="text/css" $endif$/>
+<script src="$pagedtablejs$/js/pagedtable.js"></script>
+$endif$
 </head>
 
 <body>
@@ -145,6 +150,33 @@ button.code-folding-btn:focus {
   outline: none;
 }
 </style>
+
+$if(kable-scroll)$
+<style type="text/css">
+.kable-table {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: auto;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-bottom: 20px;
+  max-height: 350px;
+}
+
+.kable-table table {
+  margin-bottom: 0px;
+}
+
+.kable-table table>thead>tr>th {
+  border: none;
+  border-bottom: 2px solid #dddddd;
+}
+
+.kable-table table>thead {
+  background-color: #fff;
+}
+</style>
+$endif$
 
 $if(navbar)$
 <style type="text/css">
@@ -213,6 +245,10 @@ $$(document).ready(function () {
 
 <!-- code folding -->
 $if(code_menu)$
+<style type="text/css">
+.code-folding-btn { margin-bottom: -22px; }
+.code-folding-btn.collapsed { margin-bottom: 4px; }
+</style>
 <script src="$navigationjs$/codefolding.js"></script>
 $if(source_embed)$
 <script src="$navigationjs$/FileSaver.min.js"></script>
@@ -449,6 +485,20 @@ $endif$
 $$(document).ready(function () {
   $$('tr.header').parent('thead').parent('table').addClass('table table-condensed');
 });
+
+$if(kable-scroll)$
+$$(document).ready(function () {
+  $$('.knitsql-table').addClass('kable-table');
+  var container = $$('.kable-table');
+  container.each(function() {
+
+    // move the caption out of the table
+    var table = $$(this).children('table');
+    var caption = table.children('caption').detach();
+    caption.insertBefore($$(this)).css('display', 'inherit');
+  });
+});
+$endif$
 
 </script>
 $endif$

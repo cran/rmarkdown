@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 1.0
+Version: 1.1
 Authors@R: c(
   person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
   person("Joe", "Cheng", role = "aut", email = "joe@rstudio.com"),
@@ -11,7 +11,7 @@ Authors@R: c(
   person("Jeff", "Allen", role = "aut", email = "jeff@rstudio.com"),
   person("Hadley", "Wickham", role = "aut", email = "hadley@rstudio.com"),
   person("Aron", "Atkins", role = "aut", email = "aron@rstudio.com"),
-  person("Rob", "Hyndman", role = "aut", email = "robjhyndman@gmail.com"),
+  person("Rob", "Hyndman", role = "aut", email = "Rob.Hyndman@monash.edu"),
   person(family = "RStudio, Inc.", role = "cph"),
   person(family = "jQuery Foundation", role = "cph",
          comment = "jQuery library"),
@@ -54,16 +54,16 @@ Authors@R: c(
   )
 Description: Convert R Markdown documents into a variety of formats.
 Depends: R (>= 3.0)
-Imports: tools, utils, grDevices, knitr (>= 1.13), yaml (>= 2.1.5),
-        htmltools (>= 0.2.4), caTools, evaluate, base64enc, jsonlite
+Imports: tools, utils, grDevices, knitr (>= 1.14), yaml (>= 2.1.5),
+        htmltools (>= 0.2.4), caTools, evaluate (>= 0.8), base64enc,
+        jsonlite, tibble
 Suggests: shiny (>= 0.11), tufte, testthat, digest
-SystemRequirements: pandoc (>= 1.12.3) -
-        http://johnmacfarlane.net/pandoc
+SystemRequirements: pandoc (>= 1.12.3) - http://pandoc.org
 URL: http://rmarkdown.rstudio.com
 License: GPL-3
 RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2016-07-08 11:06:30 UTC; jjallaire
+Packaged: 2016-10-16 15:33:24 UTC; jjallaire
 Author: JJ Allaire [aut, cre],
   Joe Cheng [aut],
   Yihui Xie [aut],
@@ -97,4 +97,4 @@ Author: JJ Allaire [aut, cre],
   Drifty [cph] (Ionicons)
 Maintainer: JJ Allaire <jj@rstudio.com>
 Repository: CRAN
-Date/Publication: 2016-07-08 22:15:43
+Date/Publication: 2016-10-16 19:23:18

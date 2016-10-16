@@ -2,6 +2,7 @@
 #'
 #' Format for converting from R Markdown to a Beamer presentation.
 #'
+#' @inheritParams output_format
 #' @inheritParams pdf_document
 #' @inheritParams html_document
 #'
@@ -59,6 +60,7 @@ beamer_presentation <- function(toc = FALSE,
                                 fig_crop = TRUE,
                                 fig_caption = TRUE,
                                 dev = 'pdf',
+                                df_print = "default",
                                 theme = "default",
                                 colortheme = "default",
                                 fonttheme = "default",
@@ -131,19 +133,15 @@ beamer_presentation <- function(toc = FALSE,
                             args = args,
                             latex_engine = latex_engine,
                             keep_tex = keep_tex),
-    clean_supporting = !keep_tex
+    clean_supporting = !keep_tex,
+    df_print = df_print
   )
 }
 
-patch_beamer_template <- function() {
-  pandoc_available(error = TRUE)
-  if (pandoc_version() >= '1.15.2') return()  # no need to patch the template
-  f <- tempfile(fileext = '.tex')
-  command <- paste(quoted(pandoc()), "-D beamer >", quoted(f))
-  with_pandoc_safe_environment({
-    if (system(command) != 0) stop("Failed to execute the command '", command, "'")
-  })
-  patch <- c(
+
+patch_beamer_template_pagenumber <- function(template) {
+
+  patch <- paste(
     "% Comment these out if you don't want a slide with just the",
     "% part/section/subsection/subsubsection title:", "\\AtBeginPart{",
     "  \\let\\insertpartnumber\\relax", "  \\let\\partname\\relax",
@@ -151,10 +149,83 @@ patch_beamer_template <- function() {
     "  \\let\\insertsectionnumber\\relax", "  \\let\\sectionname\\relax",
     "  \\frame{\\sectionpage}", "}", "\\AtBeginSubsection{",
     "  \\let\\insertsubsectionnumber\\relax", "  \\let\\subsectionname\\relax",
-    "  \\frame{\\subsectionpage}", "}"
+    "  \\frame{\\subsectionpage}", "}",
+    sep = "\n"
   )
-  tpl <- readLines(f, encoding = 'UTF-8')
-  tpl <- sub(paste(patch, collapse = '\n'), '', paste(tpl, collapse = '\n'), fixed = TRUE)
-  writeLines(enc2utf8(tpl), f, useBytes = TRUE)
-  f
+
+  pasted <- paste(template, collapse = "\n")
+  patched <- sub(patch, "", pasted, fixed = TRUE)
+  strsplit(patched, "\n", fixed = TRUE)[[1]]
+}
+
+patch_beamer_template_paragraph_spacing <- function(template) {
+
+  patch <- c(
+    "\\setlength{\\parindent}{0pt}",
+    "\\setlength{\\parskip}{6pt plus 2pt minus 1pt}"
+  )
+
+  lines <- unlist(lapply(patch, function(line) {
+    index <- grep(line, template, fixed = TRUE)
+    if (length(index) == 1) index else -1
+  }))
+
+  # bail if we already have these lines in the document
+  if (all(lines >= 0) && lines[[1]] == lines[[2]] - 1)
+    return(template)
+
+  # find patch location -- we insert before this line
+  targetLine <- "\\setlength{\\emergencystretch}{3em}  % prevent overfull lines"
+  targetIdx <- grep(targetLine, template, fixed = TRUE)
+  if (!length(targetIdx))
+    return(template)
+
+  # insert patch
+  c(
+    utils::head(template, n = targetIdx - 1),
+    patch,
+    utils::tail(template, n = -(targetIdx - 1))
+  )
+}
+
+patch_beamer_template <- function() {
+  pandoc_available(error = TRUE)
+
+  # invoke pandoc to read default template
+  command <- paste(quoted(pandoc()), "-D beamer")
+  template <- with_pandoc_safe_environment({
+    tryCatch(
+      system(command, intern = TRUE),
+      error = function(e) NULL
+    )
+  })
+
+  # make failure to read template non-fatal
+  if (is.null(template))
+    return(NULL)
+
+  # trim whitespace
+  template <- gsub("^\\s+|\\s+$", "", template, perl = TRUE)
+
+  # apply patches (store original version of template so we can
+  # compare after applying patches)
+  original <- template
+  version <- pandoc_version()
+
+  if (version < "1.15.2")
+    template <- patch_beamer_template_pagenumber(template)
+
+  if (version > "1.15.2" && version < "1.17.3")
+    template <- patch_beamer_template_paragraph_spacing(template)
+
+  # if the template hasn't changed, return NULL (we don't need
+  # to apply a custom template)
+  if (identical(template, original))
+    return(NULL)
+
+  # write and return path to template
+  tempfile <- tempfile(fileext = ".tex")
+  template <- paste(template, collapse = "\n")
+  writeLines(enc2utf8(template), tempfile, useBytes = TRUE)
+  tempfile
 }

@@ -185,7 +185,8 @@ render <- function(input,
   if (!is_output_format(output_format)) {
     output_format <- output_format_from_yaml_front_matter(input_lines,
                                                           output_options,
-                                                          output_format)
+                                                          output_format,
+                                                          encoding = encoding)
     output_format <- create_output_format(output_format$name,
                                           output_format$options)
   }
@@ -236,9 +237,26 @@ render <- function(input,
       runtime <- "static"
   }
 
+  # set df_print
+  context <- render_context()
+  context$df_print <- output_format$df_print
+
   # call any pre_knit handler
   if (!is.null(output_format$pre_knit)) {
     output_format$pre_knit(input = original_input)
+  }
+
+  # function used to call post_knit handler
+  call_post_knit_handler <- function() {
+    if (!is.null(output_format$post_knit)) {
+      post_knit_extra_args <- output_format$post_knit(yaml_front_matter,
+                                                      knit_input,
+                                                      runtime,
+                                                      encoding = encoding)
+    } else {
+      post_knit_extra_args <- NULL
+    }
+    c(output_format$pandoc$args, post_knit_extra_args)
   }
 
   # knit if necessary
@@ -305,6 +323,43 @@ render <- function(input,
     # setting the runtime (static/shiny) type
     knitr::opts_knit$set(rmarkdown.runtime = runtime)
 
+    # install global chunk handling for runtime: shiny (evaluate the 'global'
+    # chunk only once, and in the global environment)
+    if (identical(runtime, "shiny") &&
+        !is.null(shiny::getDefaultReactiveDomain())) {
+
+      # install evaluate hook to ensure that the 'global' chunk for this source
+      # file is evaluated only once and is run outside of a user reactive domain
+      knitr::knit_hooks$set(evaluate = function(code, envir, ...) {
+
+        # check for 'global' chunk label
+        if (identical(knitr::opts_current$get("label"), "global")) {
+
+          # check list of previously evaludated global chunks
+          code_string <- paste(code, collapse = '\n')
+          if (!code_string %in% .globals$evaluated_global_chunks) {
+
+            # save it in our list of evaluated global chunks
+            .globals$evaluated_global_chunks <-
+              c(.globals$evaluated_global_chunks, code_string)
+
+            # evaluate with no reactive domain to prevent any shiny code (e.g.
+            # a reactive timer) from attaching to the current user session
+            # (resulting in it's destruction when that session ends)
+            shiny::withReactiveDomain(NULL, {
+              evaluate::evaluate(code, envir = globalenv(), ...)
+            })
+
+          } else {
+            list()
+          }
+        # delegate to standard evaluate for everything else
+        } else {
+          evaluate::evaluate(code, envir, ...)
+        }
+      })
+    }
+
     # make the params available within the knit environment
     # (only do this if there are parameters in the front matter
     # so we don't require recent knitr for all users)
@@ -312,18 +367,34 @@ render <- function(input,
 
       params <- knit_params_get(input_lines, params)
 
-      # make the params available in the knit environment
-      if (!exists("params", envir = envir, inherits = FALSE)) {
-        assign("params", params, envir = envir)
-        lockBinding("params", envir)
-        on.exit({
-          do.call("unlockBinding", list("params", envir))
-          remove("params", envir = envir)
-        }, add = TRUE)
-      } else {
-        stop("params object already exists in knit environment ",
-             "so can't be overwritten by render params", call. = FALSE)
+      # bail if an object called 'params' exists in this environment,
+      # and it seems to be an unrelated user-created object. store
+      # references so we can restore them post-render
+      hasParams <- exists("params", envir = envir, inherits = FALSE)
+      envirParams <- NULL
+
+      if (hasParams) {
+        envirParams <- get("params", envir = envir, inherits = FALSE)
+        isKnownParamsObject <-
+          inherits(envirParams, "knit_param_list") ||
+          inherits(envirParams, "knit_param")
+
+        if (!isKnownParamsObject) {
+          stop("params object already exists in knit environment ",
+               "so can't be overwritten by render params", call. = FALSE)
+        }
       }
+
+      # make the params available in the knit environment
+      assign("params", params, envir = envir)
+      lockBinding("params", envir)
+      on.exit({
+        do.call("unlockBinding", list("params", envir))
+        if (hasParams)
+          assign("params", envirParams, envir = envir)
+        else
+          remove("params", envir = envir)
+      }, add = TRUE)
     }
 
     # make the yaml_front_matter available as 'metadata' within the
@@ -351,24 +422,22 @@ render <- function(input,
                          encoding = encoding)
 
     perf_timer_stop("knitr")
-  }
 
-  # call any post_knit handler
-  if (!is.null(output_format$post_knit)) {
-    post_knit_extra_args <- output_format$post_knit(yaml_front_matter,
-                                                    knit_input,
-                                                    runtime)
-    output_format$pandoc$args <- c(output_format$pandoc$args, post_knit_extra_args)
-  }
+    # call post_knit handler
+    output_format$pandoc$args <- call_post_knit_handler()
 
-  # pull any R Markdown warnings from knit_meta and emit
-  rmd_warnings <- knit_meta_reset(class = "rmd_warning")
-  for (rmd_warning in rmd_warnings) {
-    message("Warning: ", rmd_warning)
-  }
+    # pull any R Markdown warnings from knit_meta and emit
+    rmd_warnings <- knit_meta_reset(class = "rmd_warning")
+    for (rmd_warning in rmd_warnings) {
+      message("Warning: ", rmd_warning)
+    }
 
-  # collect remaining knit_meta
-  knit_meta <- knit_meta_reset()
+    # collect remaining knit_meta
+    knit_meta <- knit_meta_reset()
+
+  } else {
+    output_format$pandoc$args <- call_post_knit_handler()
+  }
 
   # if this isn't html and there are html dependencies then flag an error
   if (!(is_pandoc_to_html(output_format$pandoc) ||
@@ -506,10 +575,10 @@ render <- function(input,
       if ((texfile != output_file) && !output_format$pandoc$keep_tex)
         on.exit(unlink(texfile), add = TRUE)
     } else {
+      # generate .tex if we want to keep the tex source
+      if (output_format$pandoc$keep_tex) convert(texfile, run_citeproc)
       # run the main conversion if the output file is not .tex
       convert(output_file, run_citeproc)
-      # run conversion again to .tex if we want to keep the tex source
-      if (output_format$pandoc$keep_tex) convert(texfile, run_citeproc)
     }
 
     # pandoc writes the output alongside the input, so if we rendered from an
@@ -593,7 +662,8 @@ render_supporting_files <- function(from, files_dir, rename_to = NULL) {
   if (!dir_exists(target_dir) && !dir_exists(target_stage_dir)) {
     file.copy(from = from,
               to = files_dir,
-              recursive = TRUE)
+              recursive = TRUE,
+              copy.mode = FALSE)
     if (!is.null(rename_to)) {
       file.rename(from = target_stage_dir,
                   to = target_dir)
@@ -657,3 +727,40 @@ merge_render_context <- function(context) {
     context[[el]] <- get(el, envir = render_context())
   context
 }
+
+resolve_df_print <- function(df_print) {
+
+  # available methods
+  valid_methods <- c("default", "kable", "tibble", "paged")
+
+  # if we are passed NULL then select the first method
+  if (is.null(df_print))
+    df_print <- valid_methods[[1]]
+
+  # if we are passed all of valid_methods then select the first one
+  if (identical(valid_methods, df_print))
+    df_print <- valid_methods[[1]]
+
+  if (!is.function(df_print)) {
+    if (df_print == "kable")
+      df_print <- knitr::kable
+    else if (df_print == "tibble")
+      df_print <- function(x) print(tibble::as_tibble(x))
+    else if (df_print == "paged")
+      df_print <- function(x) knitr::asis_output(paged_table_html(x))
+    else if (df_print == "default")
+      df_print <- print
+    else
+      stop('Invalid value for df_print (valid values are ',
+           paste(valid_methods, collapse = ", "), call. = FALSE)
+  }
+
+  df_print
+}
+
+
+# package level globals
+.globals <- new.env(parent = emptyenv())
+.globals$evaluated_global_chunks <- character()
+
+

@@ -14,6 +14,7 @@
 #' @param code Source code.
 #' @param meta An \R list of arbitrary meta-data. The data will
 #'   be converted to JSON, base64-encoded, and injected into the header comment.
+#' @param format The image format; one of \code{"png"} or \code{"jpeg"}.
 #'
 #' @details For more details on the HTML file format produced by
 #'  \code{html_notebook}, see \href{http://rmarkdown.rstudio.com/r_notebook_format.html}{http://rmarkdown.rstudio.com/r_notebook_format.html}.
@@ -60,10 +61,12 @@ html_notebook_output_html <- function(html,
 html_notebook_output_img <- function(path = NULL,
                                      bytes = NULL,
                                      attributes = NULL,
-                                     meta = NULL)
+                                     meta = NULL,
+                                     format = c("png", "jpeg"))
 {
-  format <- '<img%s src="data:image/png;base64,%s" />'
-  html <- html_notebook_render_base64_data(path, bytes, attributes, format)
+  template <- paste0('<img%s src="data:image/', match.arg(format),
+                     ';base64,%s" />')
+  html <- html_notebook_render_base64_data(path, bytes, attributes, template)
   html_notebook_annotated_output(html, "plot", meta)
 }
 
@@ -77,19 +80,16 @@ html_notebook_output_code <- function(code,
                                       attributes = list(class = "r"),
                                       meta = NULL)
 {
-  # normalize code
-  joined <- htmltools::htmlEscape(join(code, collapse = "\n"))
-
-  # generate html
-  format <- '<pre%s><code>%s</code></pre>'
-  html <- sprintf(format, to_html_attributes(attributes), joined)
+  # generate code
+  code <- sprintf(
+    "```%s\n%s\n```",
+    attributes$class,
+    paste(code, collapse = "\n")
+  )
 
   # update metadata
-  if ("data" %in% names(meta)) {
-    warning("'data' element of metadata will be overwritten")
-    meta$data <- code
-  }
+  meta$data <- code
 
   # render
-  html_notebook_annotated_output(html, "source", meta)
+  html_notebook_annotated_output(code, "source", meta)
 }

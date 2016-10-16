@@ -107,7 +107,7 @@ file_name_without_shell_chars <- function(file) {
 as_tmpfile <- function(str) {
   if (length(str) > 0) {
     str_tmpfile <- tempfile("rmarkdown-str", fileext = ".html")
-    writeLines(str, str_tmpfile)
+    writeLines(str, str_tmpfile, useBytes =  TRUE)
     str_tmpfile
   } else {
     NULL
@@ -286,7 +286,7 @@ latexmk <- function(file, engine) {
   if (latexmk_path == '') {
     # latexmk not found
     latexmk_emu(file, engine)
-  } else if (find_program('perl') != '') {
+  } else if (find_program('perl') != '' && latexmk_installed(latexmk_path)) {
     system2_quiet(latexmk_path, c(
       '-pdf -latexoption=-halt-on-error -interaction=batchmode',
       paste0('-pdflatex=', shQuote(engine)), shQuote(file)
@@ -296,7 +296,6 @@ latexmk <- function(file, engine) {
     })
     system2(latexmk_path, '-c', stdout = FALSE)  # clean up nonessential files
   } else {
-    warning("Perl must be installed and put on PATH for latexmk to work")
     latexmk_emu(file, engine)
   }
 }
@@ -323,7 +322,7 @@ latexmk_emu <- function(file, engine) {
     files3 <- setdiff(files2, files1)
     aux <- c(
       'aux', 'log', 'bbl', 'blg', 'fls', 'out', 'lof', 'lot', 'idx', 'toc',
-      'nav', 'snm', 'vrb'
+      'nav', 'snm', 'vrb', 'ilg', 'ind'
     )
     if (keep_log) aux <- setdiff(aux, 'log')
     unlink(files3[tools::file_ext(files3) %in% aux])
@@ -384,6 +383,16 @@ show_latex_error <- function(file) {
   }
 }
 
+# check if latexmk was correctly installed; see more info at
+# https://github.com/rstudio/bookdown/issues/121
+latexmk_installed <- function(latexmk_path) {
+  if (system2_quiet(latexmk_path, '-v') == 0) return(TRUE)
+  warning('The LaTeX package latexmk was not correctly installed.', call. = FALSE)
+  if (!is_windows()) return(FALSE)
+  shell('latexmk -v')  # hopefully MiKTeX can fix it automatically
+  system2_quiet(latexmk_path, '-v') == 0
+}
+
 # check the version of latexmk
 check_latexmk_version <- function(latexmk_path = find_program('latexmk')) {
   out <- system2(latexmk_path, '-v', stdout = TRUE)
@@ -406,19 +415,17 @@ n_bytes <- function(string) {
 
 starts_with_bytes <- function(string, bytes) {
   Encoding(string) <- Encoding(bytes) <- "bytes"
-  if (nchar(bytes) > nchar(string))
+  if (n_bytes(bytes) > n_bytes(string))
     return(FALSE)
-  substring(string, 1, nchar(bytes)) == bytes
+  substring(string, 1, n_bytes(bytes)) == bytes
 }
 
 ends_with_bytes <- function(string, bytes) {
   Encoding(string) <- Encoding(bytes) <- "bytes"
-  if (nchar(bytes) > nchar(string))
+  if (n_bytes(bytes) > n_bytes(string))
     return(FALSE)
-  substring(string, nchar(string) - nchar(bytes) + 1, nchar(string)) == bytes
+  substring(string, n_bytes(string) - n_bytes(bytes) + 1, n_bytes(string)) == bytes
 }
-
-
 
 base64_encode_object <- function(object) {
   object <- rapply(object, unclass, how = "list")
@@ -559,4 +566,31 @@ replace_binding <- function(binding, package, override) {
 
 join <- function(..., sep = "", collapse = "") {
   paste(..., sep = sep, collapse = collapse)
+}
+
+shell_exec <- function(cmd, intern = FALSE, wait = TRUE, ...) {
+  if (Sys.info()[["sysname"]] == "Windows")
+    shell(cmd, intern = intern, wait = wait, ...)
+  else
+    system(cmd, intern = intern, wait = wait, ...)
+}
+
+pagedtable_resource <- function(version = "0.0.1", resource) {
+  resourcePath <- system.file(
+    paste("rmd/h/pagedtable-", version, resource, sep = ""),
+    package = "rmarkdown")
+
+  resourceFile <- file(resourcePath)
+  contents <- readLines(resourceFile)
+  close(resourceFile)
+
+  paste(contents, collapse = "\n")
+}
+
+pagedtable_script <- function(version = "0.0.1") {
+  pagedtable_resource(version, "/js/pagedtable.js")
+}
+
+pagedtable_style <- function(version = "0.0.1") {
+  pagedtable_resource(version, "/css/pagedtable.css")
 }

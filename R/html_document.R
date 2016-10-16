@@ -2,6 +2,8 @@
 #'
 #'Format for converting from R Markdown to an HTML document.
 #'
+#' @inheritParams output_format
+#'
 #'@param toc \code{TRUE} to include a table of contents in the output
 #'@param toc_depth Depth of headers to include in table of contents
 #'@param toc_float \code{TRUE} to float the table of contents to the left of the
@@ -192,6 +194,7 @@ html_document <- function(toc = FALSE,
                           fig_retina = 2,
                           fig_caption = TRUE,
                           dev = 'png',
+                          df_print = "default",
                           code_folding = c("none", "show", "hide"),
                           code_download = FALSE,
                           smart = TRUE,
@@ -276,6 +279,13 @@ html_document <- function(toc = FALSE,
   # validate code_folding
   code_folding <- match.arg(code_folding)
 
+  # manage list of exit_actions (backing out changes to knitr options)
+  exit_actions <- list()
+  on_exit <- function() {
+    for (action in exit_actions)
+      try(action())
+  }
+
   # capture the source code if requested
   source_code <- NULL
   source_file <- NULL
@@ -289,10 +299,21 @@ html_document <- function(toc = FALSE,
     }
   }
 
+  # pagedtable global options
+  if (identical(df_print, "paged")) {
+    options("dplyr.tibble.print" = function(x, n, width, ...) {
+      isSQL <- "tbl_sql" %in% class(x)
+      n <- if (isSQL) getOption("sql.max.print", 1000) else getOption("max.print", 1000)
+
+      df <- as.data.frame(utils::head(x, n))
+      print(df)
+    })
+  }
+
   # pre-processor for arguments that may depend on the name of the
   # the input file AND which need to inject html dependencies
   # (otherwise we could just call the pre_processor)
-  post_knit <- function(metadata, input_file, runtime, ...) {
+  post_knit <- function(metadata, input_file, runtime, encoding, ...) {
 
     # extra args
     args <- c()
@@ -309,7 +330,7 @@ html_document <- function(toc = FALSE,
         if (file.exists(navbar_yaml))
           navbar <- navbar_html_from_yaml(navbar_yaml)
         # if there is no _navbar.yml then look in site config (if we have it)
-        config <- site_config(input_file)
+        config <- site_config(input_file, encoding)
         if (!is.null(config) && !is.null(config$navbar))
           navbar <- navbar_html(config$navbar)
       }
@@ -353,6 +374,13 @@ html_document <- function(toc = FALSE,
 
     # highlight
     args <- c(args, pandoc_html_highlight_args(highlight,
+                                               template,
+                                               self_contained,
+                                               lib_dir,
+                                               output_dir))
+
+    # pagedtable
+    args <- c(args, pandoc_html_pagedtable_args(df_print,
                                                template,
                                                self_contained,
                                                lib_dir,
@@ -416,9 +444,11 @@ html_document <- function(toc = FALSE,
                             args = args),
     keep_md = keep_md,
     clean_supporting = self_contained,
+    df_print = df_print,
     pre_knit = pre_knit,
     post_knit = post_knit,
     pre_processor = pre_processor,
+    on_exit = on_exit,
     base_format = html_document_base(smart = smart, theme = theme,
                                      self_contained = self_contained,
                                      lib_dir = lib_dir, mathjax = mathjax,
@@ -524,6 +554,14 @@ navbar_html_from_yaml <- function(navbar_yaml) {
   navbar_html(navbar)
 }
 
+
+#' Create a navbar HTML file from a navbar definition
+#'
+#' @param navbar Navbar definition
+#' @return Path to temporary file with navbar definition
+#'
+#' @keywords internal
+#' @export
 navbar_html <- function(navbar) {
 
   # title and type

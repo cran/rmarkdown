@@ -171,8 +171,16 @@ params_get_control <- function(param) {
   control
 }
 
+# Returns true if the parameter can be configurable with Shiny UI elements.
 params_configurable <- function(param) {
-  length(param$value) <= 1 && !is.null(params_get_control(param))
+  if (is.null(params_get_control(param))) {
+    return(FALSE)                       # no Shiny control
+  }
+  multiple_ok <- (!is.null(param$multiple) && param$multiple)
+  if (multiple_ok) {
+    return(TRUE)
+  }
+  return (length(param$value) <= 1)     # multiple values only when multi-input controls
 }
 
 # Returns a new empty named list.
@@ -280,7 +288,9 @@ knit_params_ask <- function(file = NULL,
           }
         } else {
           ## Not a special field. Blindly promote to the input control.
-          arguments[[name]] <<- param[[name]]
+          arguments[[name]] <<- if (inherits(param[[name]], 'knit_param_expr')) {
+            param[[name]][['value']]
+          } else param[[name]]
         }
       })
 
@@ -356,12 +366,10 @@ knit_params_ask <- function(file = NULL,
       shiny::observe({
         # A little reactive magic to keep in mind. If you're in one of the
         # "default/custom" selector scenarios, this will never fire until the
-        # user selects "custom" because hte value-producing input control is
+        # user selects "custom" because the value-producing input control is
         # not rendered until that point.
         uivalue <- input[[param$name]]
-        if (is.null(uivalue)) {
-          # ignore startup NULLs
-        } else if (hasDefaultValue(uivalue)) {
+        if (is.null(uivalue) || hasDefaultValue(uivalue)) {
           values[[param$name]] <<- NULL
         } else {
           values[[param$name]] <<- params_value_from_ui(inputControlFn, param$value, uivalue)

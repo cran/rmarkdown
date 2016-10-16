@@ -11,6 +11,7 @@ ioslides_presentation <- function(logo = NULL,
                                   fig_retina = 2,
                                   fig_caption = TRUE,
                                   dev = 'png',
+                                  df_print = "default",
                                   smart = TRUE,
                                   self_contained = TRUE,
                                   widescreen = FALSE,
@@ -33,6 +34,15 @@ ioslides_presentation <- function(logo = NULL,
   # widescreen
   if (widescreen)
     args <- c(args, "--variable", "widescreen");
+
+  # pagedtables
+  if (identical(df_print, "paged")) {
+    pagedtable_path <- rmarkdown_system_file("rmd/h/pagedtable-0.0.1")
+    pagedtable_path <- pandoc_path_arg(pagedtable_path)
+
+    args <- c(args,
+              "--variable", paste("pagedtablejs=", pagedtable_path, sep=""))
+  }
 
   # transition
   if (is.numeric(transition))
@@ -227,6 +237,7 @@ ioslides_presentation <- function(logo = NULL,
                             args = args),
     keep_md = keep_md,
     clean_supporting = self_contained,
+    df_print = df_print,
     pre_processor = pre_processor,
     post_processor = post_processor,
     base_format = html_document_base(smart = smart, lib_dir = lib_dir,

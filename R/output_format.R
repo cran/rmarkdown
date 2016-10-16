@@ -12,6 +12,14 @@
 #'   \code{FALSE}.
 #' @param clean_supporting Cleanup any supporting files after conversion see
 #'   \code{\link{render_supporting_files}}
+#' @param df_print Method to be used for printing data frames. Valid values
+#'   include "default", "kable", and "tibble". The "default" method uses
+#'   \code{print.data.frame}. The "kable" method uses the
+#'   \code{\link[knitr:kable]{knitr::kable}} function. The "tibble" method uses
+#'   the \pkg{tibble} package to print a summary of the data frame. In addition
+#'   to the named methods you can also pass an arbitrary function to be used
+#'   for printing data frames. You can disable the df_print behavior entirely
+#'   by setting the option \code{rmarkdown.df_print} to \code{FALSE}.
 #' @param pre_knit An optional function that runs before kniting which
 #'   receives the \code{input} (input filename passed to \code{render}) and
 #'   \code{...} (for future expansion) arguments.
@@ -55,6 +63,7 @@ output_format <- function(knitr,
                           pandoc,
                           keep_md = FALSE,
                           clean_supporting = TRUE,
+                          df_print = NULL,
                           pre_knit = NULL,
                           post_knit = NULL,
                           pre_processor = NULL,
@@ -68,6 +77,7 @@ output_format <- function(knitr,
     pandoc = pandoc,
     keep_md = keep_md,
     clean_supporting = clean_supporting && !keep_md,
+    df_print = resolve_df_print(df_print),
     pre_knit = pre_knit,
     post_knit = post_knit,
     pre_processor = pre_processor,
@@ -130,6 +140,8 @@ merge_output_formats <- function(base, overlay)  {
       merge_scalar(base$keep_md, overlay$keep_md),
     clean_supporting =
       merge_scalar(base$clean_supporting, overlay$clean_supporting),
+    df_print =
+      merge_scalar(base$df_print, overlay$df_print),
     pre_knit =
       merge_function_outputs(base$pre_knit, overlay$pre_knit, c),
     post_knit =
@@ -363,7 +375,7 @@ default_output_format <- function(input, encoding = getOption("encoding")) {
 
   # parse the YAML and front matter and get the explicitly set options
   input_lines <- read_lines_utf8(input, encoding)
-  format <- output_format_from_yaml_front_matter(input_lines)
+  format <- output_format_from_yaml_front_matter(input_lines, encoding = encoding)
 
   # look up the formals of the output function to get the full option list and
   # merge against the explicitly set list
@@ -414,7 +426,8 @@ resolve_output_format <- function(input,
   # resolve the output format by looking at the yaml
   output_format <- output_format_from_yaml_front_matter(input_lines,
                                                         output_options,
-                                                        output_format)
+                                                        output_format,
+                                                        encoding = encoding)
 
   # return it
   create_output_format(output_format$name, output_format$options)
@@ -451,7 +464,8 @@ all_output_formats <- function(input, encoding = getOption("encoding")) {
 # find an output format then we just return html_document
 output_format_from_yaml_front_matter <- function(input_lines,
                                                  output_options = NULL,
-                                                 output_format_name = NULL) {
+                                                 output_format_name = NULL,
+                                                 encoding = getOption("encoding")) {
 
   # ensure input is the correct data type
   if (!is_null_or_string(output_format_name)) {
@@ -465,7 +479,7 @@ output_format_from_yaml_front_matter <- function(input_lines,
   output_format_options <- list()
 
   # parse _site.yml output format if we have it
-  config <- site_config(".")
+  config <- site_config(".", encoding = encoding)
   if (!is.null(config) && !is.null(config[["output"]])) {
     site_output_format_yaml <- config[["output"]]
   } else {
@@ -640,6 +654,21 @@ enumerate_output_formats <- function(input, envir, encoding) {
   } else {
     NULL
   }
+}
+
+#' Parse the YAML front matter from a file
+#'
+#' @inheritParams default_output_format
+#'
+#' @keywords internal
+#' @export
+yaml_front_matter <- function(input, encoding = getOption("encoding")) {
+
+   # read the input file
+  input_lines <- read_lines_utf8(input, encoding)
+
+  # parse the yaml front matter
+  parse_yaml_front_matter(input_lines)
 }
 
 parse_yaml_front_matter <- function(input_lines) {

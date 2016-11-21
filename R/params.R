@@ -1,12 +1,9 @@
 
 knit_params_get <- function(input_lines, params) {
-  # check for recent enough knitr
-  if (utils::packageVersion("knitr") < "1.10") {
-    stop("knitr >= 1.10 required to use rmarkdown params")
-  }
 
   # read the default parameters and extract them into a named list
-  knit_params <- mark_utf8(knitr::knit_params(input_lines))
+  knit_params <- knitr::knit_params(input_lines)
+  if (packageVersion('yaml') < '2.1.14') knit_params <- mark_utf8(knit_params)
   default_params <- list()
   for (param in knit_params) {
     default_params[[param$name]] <- param$value
@@ -16,11 +13,9 @@ knit_params_get <- function(input_lines, params) {
   if (!is.null(params)) {
 
     if (identical(params, "ask")) {
-      if (!interactive()) {
-        stop("render parameter configuration only allowed in an interactive environment")
-      }
-
-      params <- knit_params_ask(input_lines = input_lines)
+      params <- knit_params_ask(
+        input_lines = input_lines, shiny_args = list(launch.browser = TRUE)
+      )
       if (is.null(params)) {
         stop("render parameter configuration canceled")
       }
@@ -208,9 +203,6 @@ knit_params_ask <- function(file = NULL,
                             shiny_args = NULL,
                             save_caption = "Save",
                             encoding = getOption("encoding")) {
-  if (utils::packageVersion("knitr") < "1.10.18") {
-    stop("knitr >= 1.10.18 required to use rmarkdown::knit_params_ask")
-  }
 
   if (is.null(input_lines)) {
     if (is.null(file)) {
@@ -219,7 +211,8 @@ knit_params_ask <- function(file = NULL,
     input_lines <- read_lines_utf8(file, encoding)
   }
 
-  knit_params <- mark_utf8(knitr::knit_params(input_lines))
+  knit_params <- knitr::knit_params(input_lines)
+  if (packageVersion('yaml') < '2.1.14') knit_params <- mark_utf8(knit_params)
 
   ## Input validation on params (checks shared with render)
   if (!is.null(params)) {

@@ -26,6 +26,7 @@ ioslides_presentation <- function(logo = NULL,
                                   lib_dir = NULL,
                                   md_extensions = NULL,
                                   pandoc_args = NULL,
+                                  extra_dependencies = NULL,
                                   ...) {
 
   # base pandoc options for all output
@@ -37,11 +38,9 @@ ioslides_presentation <- function(logo = NULL,
 
   # pagedtables
   if (identical(df_print, "paged")) {
-    pagedtable_path <- rmarkdown_system_file("rmd/h/pagedtable-0.0.1")
-    pagedtable_path <- pandoc_path_arg(pagedtable_path)
+    extra_dependencies <- append(extra_dependencies,
+                                 list(html_dependency_pagedtable()))
 
-    args <- c(args,
-              "--variable", paste("pagedtablejs=", pagedtable_path, sep=""))
   }
 
   # transition
@@ -71,6 +70,10 @@ ioslides_presentation <- function(logo = NULL,
     args <- c(args,
               "--template",
               pandoc_path_arg(rmarkdown_system_file("rmd/ioslides/default.html")))
+
+  # html dependency for ioslides
+  extra_dependencies <- append(extra_dependencies,
+                               list(html_dependency_ioslides()))
 
   # analytics
   if(!is.null(analytics))
@@ -108,15 +111,6 @@ ioslides_presentation <- function(logo = NULL,
       }
       args <- c(args, "--variable", paste("logo=", logo_path, sep = ""))
     }
-
-    # ioslides
-    ioslides_path <- rmarkdown_system_file("rmd/ioslides/ioslides-13.5.1")
-    if (!self_contained)
-      ioslides_path <- normalized_relative_to(output_dir,
-        render_supporting_files(ioslides_path, lib_dir))
-    else
-      ioslides_path <- pandoc_path_arg(ioslides_path)
-    args <- c(args, "--variable", paste("ioslides-url=", ioslides_path, sep=""))
 
     # return additional args
     args
@@ -244,6 +238,29 @@ ioslides_presentation <- function(logo = NULL,
                                      self_contained = self_contained,
                                      mathjax = mathjax,
                                      pandoc_args = pandoc_args,
+                                     extra_dependencies = extra_dependencies,
                                      bootstrap_compatible = TRUE, ...))
+}
+
+
+html_dependency_ioslides <- function() {
+  htmlDependency(
+    name = "ioslides",
+    version = "13.5.1",
+    src = rmarkdown_system_file("rmd/ioslides/ioslides-13.5.1"),
+    script = c(
+      "js/modernizr.custom.45394.js",
+      "js/prettify/prettify.js",
+      "js/prettify/lang-r.js",
+      "js/prettify/lang-yaml.js",
+      "js/hammer.js",
+      "js/slide-controller.js",
+      "js/slide-deck.js"
+    ),
+    stylesheet = c(
+      "fonts/fonts.css",
+      "theme/css/default.css",
+      "theme/css/phone.css")
+    )
 }
 

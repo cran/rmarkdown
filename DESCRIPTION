@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 1.1
+Version: 1.2
 Authors@R: c(
   person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
   person("Joe", "Cheng", role = "aut", email = "joe@rstudio.com"),
@@ -55,15 +55,15 @@ Authors@R: c(
 Description: Convert R Markdown documents into a variety of formats.
 Depends: R (>= 3.0)
 Imports: tools, utils, grDevices, knitr (>= 1.14), yaml (>= 2.1.5),
-        htmltools (>= 0.2.4), caTools, evaluate (>= 0.8), base64enc,
-        jsonlite, tibble
-Suggests: shiny (>= 0.11), tufte, testthat, digest
+        htmltools (>= 0.3.5), caTools, evaluate (>= 0.8), base64enc,
+        jsonlite, rprojroot, methods
+Suggests: shiny (>= 0.11), tufte, testthat, digest, tibble
 SystemRequirements: pandoc (>= 1.12.3) - http://pandoc.org
 URL: http://rmarkdown.rstudio.com
 License: GPL-3
 RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2016-10-16 15:33:24 UTC; jjallaire
+Packaged: 2016-11-21 11:09:55 UTC; jjallaire
 Author: JJ Allaire [aut, cre],
   Joe Cheng [aut],
   Yihui Xie [aut],
@@ -97,4 +97,4 @@ Author: JJ Allaire [aut, cre],
   Drifty [cph] (Ionicons)
 Maintainer: JJ Allaire <jj@rstudio.com>
 Repository: CRAN
-Date/Publication: 2016-10-16 19:23:18
+Date/Publication: 2016-11-21 16:51:00

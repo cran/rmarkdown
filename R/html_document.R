@@ -268,6 +268,38 @@ html_document <- function(toc = FALSE,
   else if (!is.null(template))
     args <- c(args, "--template", pandoc_path_arg(template))
 
+  # validate code_folding
+  code_folding <- match.arg(code_folding)
+
+  # navigation dependencies
+  if (!is.null(theme)) {
+    code_menu <- !identical(code_folding, "none") || code_download
+    source_embed <- code_download
+    extra_dependencies <- append(extra_dependencies,
+      list(
+        html_dependency_jquery(),
+        html_dependency_navigation(code_menu = code_menu,
+                                   source_embed = source_embed)
+      )
+    )
+  }
+
+  # highlight
+  args <- c(args, pandoc_html_highlight_args(template, highlight))
+
+  # add highlight.js html_dependency if required
+  if (identical(template, "default") && is_highlightjs(highlight)) {
+    extra_dependencies <- append(extra_dependencies, list(
+      htmlDependency(
+        "highlightjs",
+        version = "1.1",
+        src = rmarkdown_system_file("rmd/h/highlightjs-1.1"),
+        script = "highlight.js",
+        stylesheet = paste0(highlight, ".css")
+      )
+    ))
+  }
+
   # numbered sections
   if (number_sections)
     args <- c(args, "--number-sections")
@@ -275,9 +307,6 @@ html_document <- function(toc = FALSE,
   # additional css
   for (css_file in css)
     args <- c(args, "--css", pandoc_path_arg(css_file))
-
-  # validate code_folding
-  code_folding <- match.arg(code_folding)
 
   # manage list of exit_actions (backing out changes to knitr options)
   exit_actions <- list()
@@ -299,15 +328,10 @@ html_document <- function(toc = FALSE,
     }
   }
 
-  # pagedtable global options
+  # pagedtable
   if (identical(df_print, "paged")) {
-    options("dplyr.tibble.print" = function(x, n, width, ...) {
-      isSQL <- "tbl_sql" %in% class(x)
-      n <- if (isSQL) getOption("sql.max.print", 1000) else getOption("max.print", 1000)
-
-      df <- as.data.frame(utils::head(x, n))
-      print(df)
-    })
+    extra_dependencies <- append(extra_dependencies,
+                                 list(html_dependency_pagedtable()))
   }
 
   # pre-processor for arguments that may depend on the name of the
@@ -340,7 +364,7 @@ html_document <- function(toc = FALSE,
         # include the navbar html
         includes <- list(before_body = navbar)
         args <- c(args, includes_to_pandoc_args(includes,
-                                  filter = if (identical(runtime, "shiny"))
+                                  filter = if (is_shiny_classic(runtime))
                                     function(x) normalize_path(x, mustWork = FALSE)
                                   else
                                     identity))
@@ -353,7 +377,7 @@ html_document <- function(toc = FALSE,
         # navbar icon dependencies
         iconDeps <- navbar_icon_dependencies(navbar)
         if (length(iconDeps) > 0)
-          knit_meta_add(list(iconDeps))
+          knitr::knit_meta_add(list(iconDeps))
       }
     }
 
@@ -371,29 +395,6 @@ html_document <- function(toc = FALSE,
 
     # extra args
     args <- c()
-
-    # highlight
-    args <- c(args, pandoc_html_highlight_args(highlight,
-                                               template,
-                                               self_contained,
-                                               lib_dir,
-                                               output_dir))
-
-    # pagedtable
-    args <- c(args, pandoc_html_pagedtable_args(df_print,
-                                               template,
-                                               self_contained,
-                                               lib_dir,
-                                               output_dir))
-
-    # bootstrap navigation (requires theme)
-    if (!is.null(theme)) {
-
-      # js for for code folding and tabsets
-      args <- c(args, pandoc_html_navigation_args(self_contained,
-                                                  lib_dir,
-                                                  output_dir))
-    }
 
     # track whether we have a code menu
     code_menu <- FALSE
@@ -427,7 +428,7 @@ html_document <- function(toc = FALSE,
     # making a Shiny document so we can resolve them even if rendering
     # elsewhere.
     args <- c(args, includes_to_pandoc_args(includes,
-                      filter = if (identical(runtime, "shiny"))
+                      filter = if (is_shiny_classic(runtime))
                         function(x) normalize_path(x, mustWork = FALSE)
                       else
                         identity))
@@ -558,6 +559,7 @@ navbar_html_from_yaml <- function(navbar_yaml) {
 #' Create a navbar HTML file from a navbar definition
 #'
 #' @param navbar Navbar definition
+#' @param links List of navbar links
 #' @return Path to temporary file with navbar definition
 #'
 #' @keywords internal
@@ -586,6 +588,9 @@ navbar_html <- function(navbar) {
 }
 
 
+#' @keywords internal
+#' @name navbar_html
+#' @export
 navbar_links_html <- function(links) {
   as.character(navbar_links_tags(links))
 }

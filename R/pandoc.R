@@ -291,11 +291,13 @@ pandoc_toc_args <- function(toc, toc_depth = 3) {
 #' references)
 #'
 #' @param path Path to transform
+#' @param backslash Whether to replace forward slashes in \code{path} with
+#'   backslashes on Windows
 #'
 #' @return Transformed path that can be passed to pandoc on the command line
 #'
 #' @export
-pandoc_path_arg <- function(path) {
+pandoc_path_arg <- function(path, backslash = TRUE) {
 
   path <- path.expand(path)
 
@@ -306,7 +308,7 @@ pandoc_path_arg <- function(path) {
     i <- grep(' ', path)
     if (length(i))
       path[i] <- utils::shortPathName(path[i])
-    path <- gsub('/', '\\\\', path)
+    if (backslash) path <- gsub('/', '\\\\', path)
   }
 
   path
@@ -477,52 +479,7 @@ unix_mathjax_path <- function() {
 }
 
 
-pandoc_html_navigation_args <- function(self_contained,
-                                        files_dir,
-                                        output_dir) {
-  args <- c()
-  navigation_path <- rmarkdown_system_file("rmd/h/navigation-1.1")
-  if (self_contained) {
-    navigation_path <- pandoc_path_arg(navigation_path)
-  }
-  else {
-    navigation_path <- normalized_relative_to(output_dir,
-                                              render_supporting_files(
-                                               navigation_path, files_dir))
-  }
-  args <- c(args,
-            "--variable", paste("navigationjs=", navigation_path, sep=""))
-}
-
-pandoc_html_pagedtable_args <- function(df_print,
-                                        template,
-                                        self_contained,
-                                        files_dir,
-                                        output_dir) {
-  args <- c()
-
-  if (identical(df_print, "paged")) {
-    pagedtable_path <- rmarkdown_system_file("rmd/h/pagedtable-0.0.1")
-    if (self_contained)
-      pagedtable_path <- pandoc_path_arg(pagedtable_path)
-    else
-    {
-      pagedtable_path <- normalized_relative_to(output_dir,
-                                                render_supporting_files(pagedtable_path, files_dir))
-    }
-
-    args <- c(args,
-              "--variable", paste("pagedtablejs=", pagedtable_path, sep=""))
-  }
-
-  args
-}
-
-pandoc_html_highlight_args <- function(highlight,
-                                       template,
-                                       self_contained,
-                                       files_dir,
-                                       output_dir) {
+pandoc_html_highlight_args <- function(template, highlight) {
 
   args <- c()
 
@@ -536,23 +493,9 @@ pandoc_html_highlight_args <- function(highlight,
   }
   else {
     highlight <- match.arg(highlight, html_highlighters())
-    if (highlight %in% c("default", "textmate")) {
-      highlight_path <- rmarkdown_system_file("rmd/h/highlight")
-      if (self_contained)
-        highlight_path <- pandoc_path_arg(highlight_path)
-      else
-      {
-        highlight_path <- normalized_relative_to(output_dir,
-          render_supporting_files(highlight_path, files_dir))
-      }
+    if (is_highlightjs(highlight)) {
       args <- c(args, "--no-highlight")
-      args <- c(args,
-                "--variable", paste("highlightjs=", highlight_path, sep=""))
-      if (identical(highlight, "textmate")) {
-        args <- c(args,
-                  "--variable",
-                  paste("highlightjs-theme=", highlight, sep=""))
-      }
+      args <- c(args, "--variable", "highlightjs=1")
     }
     else {
       args <- c(args, "--highlight-style", highlight)
@@ -562,6 +505,9 @@ pandoc_html_highlight_args <- function(highlight,
   args
 }
 
+is_highlightjs <- function(highlight) {
+  !is.null(highlight) && (highlight %in% c("default", "textmate"))
+}
 
 # Scan for a copy of pandoc and set the internal cache if it's found.
 find_pandoc <- function() {
@@ -696,6 +642,18 @@ quoted <- function(args) {
   args[shell_chars] <- shQuote(args[shell_chars])
   args
 }
+
+find_pandoc_theme_variable <- function(args) {
+  range <- length(args) - 1
+  for (i in 1:range) {
+    if (args[[i]] == "--variable" && grepl("^theme:", args[[i+1]])) {
+      return(substring(args[[i+1]], nchar("theme:") + 1))
+    }
+  }
+  # none found, return NULL
+  NULL
+}
+
 
 # Environment used to cache the current pandoc directory and version
 .pandoc <- new.env()

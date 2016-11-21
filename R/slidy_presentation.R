@@ -58,6 +58,7 @@ slidy_presentation <- function(incremental = FALSE,
                                lib_dir = NULL,
                                md_extensions = NULL,
                                pandoc_args = NULL,
+                               extra_dependencies = NULL,
                                ...) {
 
   # base pandoc options for all reveal.js output
@@ -70,6 +71,10 @@ slidy_presentation <- function(incremental = FALSE,
                 "rmd/slidy/default.html")))
   else if (!is.null(template))
     args <- c(args, "--template", pandoc_path_arg(template))
+
+  # html dependency for slidy
+  extra_dependencies <- append(extra_dependencies,
+                               list(html_dependency_slidy()))
 
   # incremental
   if (incremental)
@@ -93,11 +98,8 @@ slidy_presentation <- function(incremental = FALSE,
 
   # pagedtables
   if (identical(df_print, "paged")) {
-    pagedtable_path <- rmarkdown_system_file("rmd/h/pagedtable-0.0.1")
-    pagedtable_path <- pandoc_path_arg(pagedtable_path)
-
-    args <- c(args,
-              "--variable", paste("pagedtablejs=", pagedtable_path, sep=""))
+    extra_dependencies <- append(extra_dependencies,
+                                 list(html_dependency_pagedtable()))
   }
 
   # additional css
@@ -115,16 +117,6 @@ slidy_presentation <- function(incremental = FALSE,
 
     # extra args
     args <- c()
-
-    # slidy
-    slidy_path <- rmarkdown_system_file("rmd/slidy/Slidy2")
-    slidy_path <- if (self_contained) {
-      pandoc_path_arg(slidy_path)
-    } else {
-      normalized_relative_to(
-        output_dir, render_supporting_files(slidy_path, lib_dir))
-    }
-    args <- c(args, "--variable", paste("slidy-url=", slidy_path, sep=""))
 
     # highlight
     args <- c(args, pandoc_highlight_args(highlight, default = "pygments"))
@@ -147,5 +139,19 @@ slidy_presentation <- function(incremental = FALSE,
                                      self_contained = self_contained,
                                      mathjax = mathjax,
                                      bootstrap_compatible = TRUE,
-                                     pandoc_args = pandoc_args, ...))
+                                     pandoc_args = pandoc_args,
+                                     extra_dependencies = extra_dependencies,
+                                     ...))
 }
+
+
+html_dependency_slidy <- function() {
+  htmlDependency(
+    name = "slidy",
+    version = "2",
+    src = rmarkdown_system_file("rmd/slidy/Slidy2"),
+    script = "scripts/slidy.js",
+    stylesheet = "styles/slidy.css"
+  )
+}
+

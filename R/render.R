@@ -17,7 +17,8 @@ render <- function(input,
                    output_dir = NULL,
                    output_options = NULL,
                    intermediates_dir = NULL,
-                   runtime = c("auto", "static", "shiny"),
+                   knit_root_dir = NULL,
+                   runtime =  c("auto", "static", "shiny", "shiny_prerendered"),
                    clean = TRUE,
                    params = NULL,
                    knit_meta = NULL,
@@ -51,6 +52,7 @@ render <- function(input,
                        output_dir = output_dir,
                        output_options = output_options,
                        intermediates_dir = intermediates_dir,
+                       knit_root_dir = knit_root_dir,
                        runtime = runtime,
                        clean = clean,
                        params = params,
@@ -68,9 +70,11 @@ render <- function(input,
     return(invisible(outputs))
   }
 
-  # check for required version of pandoc
-  required_pandoc <- "1.12.3"
-  pandoc_available(required_pandoc, error = TRUE)
+  # check for required version of pandoc if we are running pandoc
+  if (run_pandoc) {
+    required_pandoc <- "1.12.3"
+    pandoc_available(required_pandoc, error = TRUE)
+  }
 
   # setup a cleanup function for intermediate files
   intermediates <- c()
@@ -96,6 +100,9 @@ render <- function(input,
       dir.create(output_dir, recursive = TRUE)
     output_dir <- normalize_path(output_dir)
   }
+
+  # check whether this document requires a knit
+  requires_knit <- tolower(tools::file_ext(input)) %in% c("r", "rmd", "rmarkdown")
 
   # remember the name of the original input document (we overwrite 'input' once
   # we've knitted)
@@ -129,6 +136,9 @@ render <- function(input,
         intermediates_dir <- NULL
     }
   }
+
+  # force evaluation of knitr root dir before we change directory context
+  force(knit_root_dir)
 
   # execute within the input file's directory
   oldwd <- setwd(dirname(tools::file_path_as_absolute(input)))
@@ -179,6 +189,33 @@ render <- function(input,
 
   # read the yaml front matter
   yaml_front_matter <- parse_yaml_front_matter(input_lines)
+
+  # if this is shiny_prerendered then modify the output format to
+  # be single-page and to output dependencies to the shiny.dep file
+  shiny_prerendered_dependencies <- list()
+  if (requires_knit && is_shiny_prerendered(yaml_front_matter$runtime)) {
+
+    # first validate that the user hasn't passed an already created output_format
+    if (is_output_format(output_format)) {
+      stop("You cannot pass a fully constructed output_format to render when ",
+           "using runtime: shiny_prerendered")
+    }
+
+    # require shiny for the knit
+    if (requireNamespace("shiny")) {
+      if (!"package:shiny" %in% search())
+        attachNamespace("shiny")
+    }
+    else
+      stop("The shiny package is required for 'shiny_prerendered' documents")
+
+    # force various output options
+    output_options$self_contained <- FALSE
+    output_options$dependency_resolver <- function(deps) {
+      shiny_prerendered_dependencies <<- deps
+      list()
+    }
+  }
 
   # if we haven't been passed a fully formed output format then
   # resolve it by looking at the yaml
@@ -239,7 +276,7 @@ render <- function(input,
 
   # set df_print
   context <- render_context()
-  context$df_print <- output_format$df_print
+  context$df_print <- resolve_df_print(output_format$df_print)
 
   # call any pre_knit handler
   if (!is.null(output_format$pre_knit)) {
@@ -260,7 +297,7 @@ render <- function(input,
   }
 
   # knit if necessary
-  if (tolower(tools::file_ext(input)) %in% c("r", "rmd", "rmarkdown")) {
+  if (requires_knit) {
 
     # restore options and hooks after knit
     optk <- knitr::opts_knit$get()
@@ -288,18 +325,17 @@ render <- function(input,
       rmarkdown.pandoc.from = output_format$pandoc$from,
       rmarkdown.pandoc.to = pandoc_to,
       rmarkdown.keep_md = output_format$keep_md,
-      rmarkdown.version = 2
+      rmarkdown.df_print = output_format$df_print,
+      rmarkdown.version = 2,
+      rmarkdown.runtime = runtime
     )
 
-    # trim whitespace from around source code
-    if (utils::packageVersion("knitr") < "1.5.23") {
-      local({
-        hook_source = knitr::knit_hooks$get('source')
-        knitr::knit_hooks$set(source = function(x, options) {
-          hook_source(strip_white(x), options)
-        })
-      })
-    }
+    # read root directory from argument (has precedence) or front matter
+    root_dir <- knit_root_dir
+    if (is.null(root_dir))
+      root_dir <- yaml_front_matter$knit_root_dir
+    if (!is.null(root_dir))
+      knitr::opts_knit$set(root.dir = root_dir)
 
     # use filename based figure and cache directories
     figures_dir <- paste(files_dir, "/figure-", pandoc_to, "/", sep = "")
@@ -323,10 +359,20 @@ render <- function(input,
     # setting the runtime (static/shiny) type
     knitr::opts_knit$set(rmarkdown.runtime = runtime)
 
+    # install evaluate hook for shiny_prerendred
+    if (is_shiny_prerendered(runtime)) {
+
+      # remove uncached .RData (will be recreated from context="data" chunks)
+      shiny_prerendered_remove_uncached_data(original_input)
+
+      # set the cache option hook and evaluate hook
+      knitr::opts_hooks$set(label = shiny_prerendered_option_hook(original_input,encoding))
+      knitr::knit_hooks$set(evaluate = shiny_prerendered_evaluate_hook(original_input))
+    }
+
     # install global chunk handling for runtime: shiny (evaluate the 'global'
     # chunk only once, and in the global environment)
-    if (identical(runtime, "shiny") &&
-        !is.null(shiny::getDefaultReactiveDomain())) {
+    if (is_shiny_classic(runtime) && !is.null(shiny::getDefaultReactiveDomain())) {
 
       # install evaluate hook to ensure that the 'global' chunk for this source
       # file is evaluated only once and is run outside of a user reactive domain
@@ -412,6 +458,16 @@ render <- function(input,
     }, add = TRUE)
     env$metadata <- yaml_front_matter
 
+    # call onKnit hooks (normalize to list)
+    sapply(as.list(getHook("rmarkdown.onKnit")), function(hook) {
+      tryCatch(hook(input = original_input), error = function(e) NULL)
+    })
+    on.exit({
+      sapply(as.list(getHook("rmarkdown.onKnitCompleted")), function(hook) {
+        tryCatch(hook(input = original_input), error = function(e) NULL)
+      })
+    }, add = TRUE)
+
     perf_timer_start("knitr")
 
     # perform the knit
@@ -431,6 +487,9 @@ render <- function(input,
     for (rmd_warning in rmd_warnings) {
       message("Warning: ", rmd_warning)
     }
+
+    # pull out shiny_prerendered_contexts and append them as script tags
+    shiny_prerendered_append_contexts(runtime, input, encoding)
 
     # collect remaining knit_meta
     knit_meta <- knit_meta_reset()
@@ -485,6 +544,14 @@ render <- function(input,
       output_format$pandoc$args <- c(output_format$pandoc$args, extra_args)
     }
 
+    # write shiny_prerendered_dependencies if we have them
+    if (is_shiny_prerendered(runtime)) {
+      shiny_prerendered_append_dependencies(utf8_input,
+                                            shiny_prerendered_dependencies,
+                                            files_dir,
+                                            output_dir)
+    }
+
     perf_timer_stop("pre-processor")
 
     need_bibtex <- grepl('[.](pdf|tex)$', output_file) &&
@@ -495,8 +562,16 @@ render <- function(input,
     if (!is.null(bibliography <- yaml_front_matter$bibliography)) {
       # remove the .bib extension since it does not work with MikTeX's BibTeX
       if (need_bibtex && is_windows()) bibliography <- sub('[.]bib$', '', bibliography)
+      output_format$pandoc$args <- c(
+        output_format$pandoc$args,
+        rbind("--bibliography", pandoc_path_arg(bibliography, FALSE))
+      )
+    }
+
+    # add an id-prefix if this is runtime: shiny
+    if (is_shiny(runtime) && (!"--id-prefix" %in% output_format$pandoc$args)) {
       output_format$pandoc$args <- c(output_format$pandoc$args,
-                                     rbind("--bibliography", pandoc_path_arg(bibliography)))
+                                     rbind("--id-prefix", "section-"))
     }
 
     perf_timer_start("pandoc")
@@ -677,10 +752,7 @@ render_supporting_files <- function(from, files_dir, rename_to = NULL) {
 # reset knitr meta output (returns any meta output generated since the last
 # call to knit_meta_reset), optionally scoped to a specific output class
 knit_meta_reset <- function(class = NULL) {
-  if (utils::packageVersion("knitr") >= "1.5.26")
-    knitr::knit_meta(class, clean = TRUE)
-  else
-    NULL
+  knitr::knit_meta(class, clean = TRUE)
 }
 
 md_header_from_front_matter <- function(front_matter) {
@@ -744,10 +816,21 @@ resolve_df_print <- function(df_print) {
   if (!is.function(df_print)) {
     if (df_print == "kable")
       df_print <- knitr::kable
-    else if (df_print == "tibble")
+    else if (df_print == "tibble") {
+      if (!requireNamespace("tibble", quietly = TRUE))
+        stop("Printing 'tibble' without 'tibble' package available")
+
       df_print <- function(x) print(tibble::as_tibble(x))
+    }
     else if (df_print == "paged")
-      df_print <- function(x) knitr::asis_output(paged_table_html(x))
+      df_print <- function(x) {
+        if (!identical(knitr::opts_current$get("paged.print"), FALSE)) {
+          knitr::asis_output(paged_table_html(x))
+        }
+        else {
+          print(x)
+        }
+      }
     else if (df_print == "default")
       df_print <- print
     else

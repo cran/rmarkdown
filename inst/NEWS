@@ -1,3 +1,44 @@
+rmarkdown 1.2
+--------------------------------------------------------------------------------
+
+* Add support for df_print to handle additional dplyr classes: grouped_df,
+  rowwise_df and tbl_sql.
+
+* Add new `runtime: shiny_prerendered` mode for interactive documents.
+
+* Prepend "section-" to ids in runtime: shiny[_prerendered] to eliminate
+  potential conflicts with shiny output ids
+
+* Use html_dependencies for highlight.js, pagedtables, slidy, ioslides,
+  & navigation (improved dependency behavior for runtime: shiny[_prerendered])
+
+* Serialize runtime: shiny[_prerendered] dependencies to JSON rather than .rds
+
+* ioslides: check for null before concatenating attr["class"] (#836)
+
+* Add rmarkdown.onKnit/onKnitCompleted package hooks
+
+* Non-ASCII keys in yaml file should be marked to UTF8 as well, when read
+  into R as the name of a list (#841)
+
+* Remove key-column special-case left alignment in pagedtables (#829)
+
+* Replace backslashes in floating TOC headings (#849)
+
+* Suggests rather than Imports for tibble (R 3.0 compatibility)
+
+* Add `paged_table` function for printing paged tables within HTML documents
+
+* Support `{.active}` attribute for setting initially active tab (#789)
+
+* Add `knit_root_dir` argument to `render()` and YAML header, a convenience
+  for setting knitr's root.dir option
+
+* Improve alignment of text in sub-topics for floating TOC
+
+* Bibliography file paths in YAML containing forward slashes could not be
+  rendered (#875)
+
 rmarkdown 1.1
 --------------------------------------------------------------------------------
 

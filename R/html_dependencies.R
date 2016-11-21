@@ -60,6 +60,21 @@ html_dependency_tocify <- function() {
                  stylesheet = "jquery.tocify.css")
 }
 
+html_dependency_navigation <- function(code_menu, source_embed) {
+
+  # dynamically build script list
+  script <- c("tabsets.js")
+  if (code_menu)
+    script <- c(script, "codefolding.js")
+  if (source_embed)
+    script <- c(script, "FileSaver.min.js", "sourceembed.js")
+
+  htmlDependency(name = "navigation",
+                 version = "1.1",
+                 src = rmarkdown_system_file("rmd/h/navigation-1.1"),
+                 script = script)
+}
+
 
 # create an html_dependency for font awesome
 #' @rdname html-dependencies
@@ -115,23 +130,6 @@ html_dependencies_fonts <- function(font_awesome, ionicons) {
   if (ionicons)
     deps <- append(deps, list(html_dependency_ionicons()))
   deps
-}
-
-# local implementation of knit_meta_add until we can depend on a later
-# version of knitr
-knit_meta_add = function(meta, label = '') {
-  # if (packageVersion("knitr") >= "1.12.20") {
-  #   knitr::knit_meta_add(meta, label)
-  # } else {
-  knitrNamespace <- asNamespace("knitr")
-  knitEnv <- get(".knitEnv", envir = knitrNamespace)
-  if (length(meta)) {
-    meta_id = attr(knitEnv$meta, 'knit_meta_id')
-    knitEnv$meta <- c(knitEnv$meta, meta)
-    attr(knitEnv$meta, "knit_meta_id") = c(meta_id, rep(label, length(meta)))
-  }
-  knitEnv$meta
-  # }
 }
 
 
@@ -216,8 +214,11 @@ validate_html_dependency <- function(list) {
     stop("version for html_dependency not provided", call. = FALSE)
   if (is.null(list$src$file))
     stop("path for html_dependency not provided", call. = FALSE)
-  if (!file.exists(list$src$file))
-    stop("path for html_dependency not found: ", list$src$file, call. = FALSE)
+  file <- list$src$file
+  if (!is.null(list$package))
+    file <- system.file(file, package = list$package)
+  if (!file.exists(file))
+    stop("path for html_dependency not found: ", file, call. = FALSE)
 
   list
 }
@@ -250,9 +251,29 @@ has_html_dependencies <- function(knit_meta) {
 html_dependency_pagedtable <- function() {
   htmlDependency(
     "pagedtable",
-    "0.0.1",
-    src = rmarkdown_system_file("rmd/h/pagedtable-0.0.1"),
+    version = "1.1",
+    src = rmarkdown_system_file("rmd/h/pagedtable-1.1"),
     script = "js/pagedtable.js",
     stylesheet = "css/pagedtable.css"
   )
 }
+
+# create an html_dependency for rsiframe
+html_dependency_rsiframe <- function() {
+
+  # add session port to meta if we have it (note that RStudio will
+  # only provide this in desktop mode)
+  meta <- NULL
+  session_port <- Sys.getenv("RSTUDIO_SESSION_PORT")
+  if (nzchar(session_port))
+    meta <- list(rstudio_origin = paste0("127.0.0.1:", session_port))
+
+  htmlDependency(
+    "rstudio-iframe",
+    version = "1.1",
+    src = rmarkdown_system_file("rmd/h/rsiframe-1.1"),
+    script = "rsiframe.js",
+    meta = meta
+  )
+}
+

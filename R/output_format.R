@@ -13,10 +13,12 @@
 #' @param clean_supporting Cleanup any supporting files after conversion see
 #'   \code{\link{render_supporting_files}}
 #' @param df_print Method to be used for printing data frames. Valid values
-#'   include "default", "kable", and "tibble". The "default" method uses
+#'   include "default", "kable", "tibble", and "paged". The "default" method uses
 #'   \code{print.data.frame}. The "kable" method uses the
 #'   \code{\link[knitr:kable]{knitr::kable}} function. The "tibble" method uses
-#'   the \pkg{tibble} package to print a summary of the data frame. In addition
+#'   the \pkg{tibble} package to print a summary of the data frame. The "paged"
+#'   method creates a paginated HTML table (note that this method is only valid
+#'   for formats that produce HTML). In addition
 #'   to the named methods you can also pass an arbitrary function to be used
 #'   for printing data frames. You can disable the df_print behavior entirely
 #'   by setting the option \code{rmarkdown.df_print} to \code{FALSE}.
@@ -77,7 +79,7 @@ output_format <- function(knitr,
     pandoc = pandoc,
     keep_md = keep_md,
     clean_supporting = clean_supporting && !keep_md,
-    df_print = resolve_df_print(df_print),
+    df_print = df_print,
     pre_knit = pre_knit,
     post_knit = post_knit,
     pre_processor = pre_processor,
@@ -226,11 +228,8 @@ knitr_options_pdf <- function(fig_width, fig_height, fig_crop, dev = 'pdf') {
                      fig.height = fig_height)
 
   # set the dingbats option for the pdf device if requried
-  if (dev == 'pdf') {
-    if (utils::packageVersion("knitr") >= "1.5.31") {
-      opts_chunk$dev.args <- list(pdf = list(useDingbats = FALSE))
-    } else grDevices::pdf.options(useDingbats = FALSE)
-  }
+  if (dev == 'pdf')
+    opts_chunk$dev.args <- list(pdf = list(useDingbats = FALSE))
 
   knit_hooks <- NULL
 

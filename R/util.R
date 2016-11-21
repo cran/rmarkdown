@@ -60,15 +60,21 @@ read_lines_utf8 <- function(file, encoding) {
   # read the file
   lines <- readLines(file, warn = FALSE)
 
+  # convert to utf8
+  to_utf8(lines, encoding)
+}
+
+
+to_utf8 <- function(x, encoding) {
   # normalize encoding to iconv compatible form
   if (identical(encoding, "native.enc"))
     encoding <- ""
 
   # convert to utf8
   if (!identical(encoding, "UTF-8"))
-    iconv(lines, from = encoding, to = "UTF-8")
+    iconv(x, from = encoding, to = "UTF-8")
   else
-    mark_utf8(lines)
+    mark_utf8(x)
 }
 
 # mark the encoding of character vectors as UTF-8
@@ -81,13 +87,21 @@ mark_utf8 <- function(x) {
   attrs <- attributes(x)
   res <- lapply(x, mark_utf8)
   attributes(res) <- attrs
+  names(res) <- mark_utf8(names(res))
   res
 }
 
-# TODO: remove this when fixed upstream https://github.com/viking/r-yaml/issues/6
+# the yaml UTF-8 bug has been fixed https://github.com/viking/r-yaml/issues/6
+# but yaml >= 2.1.14 Win/Mac binaries are not available for R < 3.2.0, so we
+# still need the mark_utf8 trick
+#' @importFrom utils packageVersion
 yaml_load_utf8 <- function(string, ...) {
   string <- paste(string, collapse = '\n')
-  mark_utf8(yaml::yaml.load(enc2utf8(string), ...))
+  if (packageVersion('yaml') >= '2.1.14') {
+    yaml::yaml.load(string, ...)
+  } else {
+    mark_utf8(yaml::yaml.load(enc2utf8(string), ...))
+  }
 }
 
 yaml_load_file_utf8 <- function(input, ...) {
@@ -575,22 +589,3 @@ shell_exec <- function(cmd, intern = FALSE, wait = TRUE, ...) {
     system(cmd, intern = intern, wait = wait, ...)
 }
 
-pagedtable_resource <- function(version = "0.0.1", resource) {
-  resourcePath <- system.file(
-    paste("rmd/h/pagedtable-", version, resource, sep = ""),
-    package = "rmarkdown")
-
-  resourceFile <- file(resourcePath)
-  contents <- readLines(resourceFile)
-  close(resourceFile)
-
-  paste(contents, collapse = "\n")
-}
-
-pagedtable_script <- function(version = "0.0.1") {
-  pagedtable_resource(version, "/js/pagedtable.js")
-}
-
-pagedtable_style <- function(version = "0.0.1") {
-  pagedtable_resource(version, "/css/pagedtable.css")
-}

@@ -4,13 +4,17 @@
 \alias{html_fragment}
 \title{Convert to an HTML fragment.}
 \usage{
-html_fragment(number_sections = FALSE, fig_width = 7, fig_height = 5,
-  fig_retina = 2, fig_caption = TRUE, dev = "png", df_print = "default",
-  smart = TRUE, mathjax = TRUE, keep_md = FALSE, md_extensions = NULL,
-  pandoc_args = NULL, ...)
+html_fragment(number_sections = FALSE, section_divs = TRUE, fig_width = 7,
+  fig_height = 5, fig_retina = 2, fig_caption = TRUE, dev = "png",
+  df_print = "default", smart = TRUE, mathjax = TRUE, keep_md = FALSE,
+  md_extensions = NULL, pandoc_args = NULL, ...)
 }
 \arguments{
 \item{number_sections}{\code{TRUE} to number section headings}
+
+\item{section_divs}{Wrap sections in <div> tags (or <section> tags in HTML5),
+and attach identifiers to the enclosing <div> (or <section>) rather than the
+header itself.}
 
 \item{fig_width}{Default width (in inches) for figures}
 
@@ -69,4 +73,3 @@ See the \href{http://rmarkdown.rstudio.com/html_document_format.html}{online
 documentation} for additional details on using the \code{html_fragment}
 format.
 }
-

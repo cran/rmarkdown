@@ -248,6 +248,8 @@ has_html_dependencies <- function(knit_meta) {
 }
 
 # create an html_dependency for pagedtable
+#' @rdname html-dependencies
+#' @export
 html_dependency_pagedtable <- function() {
   htmlDependency(
     "pagedtable",
@@ -255,6 +257,21 @@ html_dependency_pagedtable <- function() {
     src = rmarkdown_system_file("rmd/h/pagedtable-1.1"),
     script = "js/pagedtable.js",
     stylesheet = "css/pagedtable.css"
+  )
+}
+
+
+
+#' @param highlight Highligher to use
+#' @rdname html-dependencies
+#' @export
+html_dependency_highlightjs <- function(highlight) {
+  htmlDependency(
+    "highlightjs",
+    version = "1.1",
+    src = rmarkdown_system_file("rmd/h/highlightjs-1.1"),
+    script = "highlight.js",
+    stylesheet = paste0(highlight, ".css")
   )
 }
 

@@ -1,3 +1,34 @@
+rmarkdown 1.4
+--------------------------------------------------------------------------------
+
+* `data.table` expressions involving `:=` are no longer automatically
+  printed within R Markdown documents. (#829)
+
+* Fix #910: the extra_dependencies argument of pdf_document() does not work when
+  no code chunks contain LaTeX dependencies.
+
+* The extra_dependencies of pdf_document() can also take a character vector of
+  LaTeX package names, or a named list of LaTeX package options (with names
+  being package names), which makes it much easier to express LaTeX dependencies
+  via YAML.
+
+* Automatically ignore packrat directory for render_site
+
+* Fix #943: escape end tags in shiny_prerendered code contexts
+
+* Add support for sticky tabs in html_document via tabset-sticky class
+
+* Process Rmd files with lowercase extension (.rmd) in render_site
+
+* Fix stack space consumption issues with large JS payloads in chunks
+
+* Add `section_divs` argument to html_document and html_fragment to control
+  generation of section tags/divs.
+
+* Remove data-context="(data|server|server-start)" chunks from HTML served
+  to client in shiny_prerendered
+
+
 rmarkdown 1.3
 --------------------------------------------------------------------------------
 
@@ -6,6 +37,8 @@ rmarkdown 1.3
 * Fix rendering of pagedtables within html_notebook format.
 
 * Ensure that html_prerendered UI is never cached.
+
+* Add `citeproc` argument to YAML header; controls whether pandoc-citeproc is used (#831)
 
 
 rmarkdown 1.2

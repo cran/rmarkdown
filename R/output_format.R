@@ -43,7 +43,7 @@
 #'   any intermediate files required to render the \code{input_file}.
 #' @param post_processor An optional post-processor function that receives the
 #'   \code{metadata}, \code{input_file}, \code{output_file}, \code{clean},
-#'   and \code{verbose} parmaeters, and can return an alternative
+#'   and \code{verbose} parameters, and can return an alternative
 #'   \code{output_file}.
 #' @param on_exit A function to call when \code{rmarkdown::render()} finishes
 #'   execution (as registered with a \code{\link{on.exit}} handler).
@@ -292,6 +292,8 @@ pandoc_options <- function(to,
 #' Compose a pandoc markdown input definition for R Markdown that can be
 #' passed as the \code{from} argument of \link{pandoc_options}.
 #'
+#'
+#' @param implicit_figures Automatically make figures from images (defaults to \code{TRUE}).
 #' @param extensions Markdown extensions to be added or removed from the
 #' default definition of R Markdown.
 #'
@@ -770,7 +772,12 @@ is_pandoc_to_html <- function(options) {
 }
 
 citeproc_required <- function(yaml_front_matter, input_lines = NULL) {
-  !is.null(yaml_front_matter$bibliography) ||
-  !is.null(yaml_front_matter$references) ||
-  length(grep("^references\\:\\s*$", input_lines)) > 0
+  (
+    is.null(yaml_front_matter$citeproc) ||
+      yaml_front_matter$citeproc
+  ) && (
+    !is.null(yaml_front_matter$bibliography) ||
+      !is.null(yaml_front_matter$references) ||
+      length(grep("^references\\:\\s*$", input_lines)) > 0
+  )
 }

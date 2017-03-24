@@ -5,14 +5,14 @@
 \title{Convert to an HTML document}
 \usage{
 html_document(toc = FALSE, toc_depth = 3, toc_float = FALSE,
-  number_sections = FALSE, fig_width = 7, fig_height = 5,
-  fig_retina = 2, fig_caption = TRUE, dev = "png", df_print = "default",
-  code_folding = c("none", "show", "hide"), code_download = FALSE,
-  smart = TRUE, self_contained = TRUE, theme = "default",
-  highlight = "default", mathjax = "default", template = "default",
-  extra_dependencies = NULL, css = NULL, includes = NULL,
-  keep_md = FALSE, lib_dir = NULL, md_extensions = NULL,
-  pandoc_args = NULL, ...)
+  number_sections = FALSE, section_divs = TRUE, fig_width = 7,
+  fig_height = 5, fig_retina = 2, fig_caption = TRUE, dev = "png",
+  df_print = "default", code_folding = c("none", "show", "hide"),
+  code_download = FALSE, smart = TRUE, self_contained = TRUE,
+  theme = "default", highlight = "default", mathjax = "default",
+  template = "default", extra_dependencies = NULL, css = NULL,
+  includes = NULL, keep_md = FALSE, lib_dir = NULL,
+  md_extensions = NULL, pandoc_args = NULL, ...)
 }
 \arguments{
 \item{toc}{\code{TRUE} to include a table of contents in the output}
@@ -25,6 +25,10 @@ options that control the behavior of the floating table of contents. See the
 \emph{Floating Table of Contents} section below for details.}
 
 \item{number_sections}{\code{TRUE} to number section headings}
+
+\item{section_divs}{Wrap sections in <div> tags (or <section> tags in HTML5),
+and attach identifiers to the enclosing <div> (or <section>) rather than the
+header itself.}
 
 \item{fig_width}{Default width (in inches) for figures}
 
@@ -227,6 +231,7 @@ and Citations} article in the online documentation.
  Due to the above restrictions, you might consider using the \code{includes}
  parameter as an alternative to providing a fully custom template.
 }
+
 \examples{
 \dontrun{
 
@@ -238,4 +243,3 @@ render("input.Rmd", html_document(toc = TRUE))
 }
 
 }
-

@@ -163,7 +163,7 @@ default_site <- function(input, encoding = getOption("encoding"), ...) {
   # recursively because rmarkdown in general handles applying common
   # options/elements across subdirectories poorly)
   input_files <- function() {
-    list.files(input, pattern = "^[^_].*\\.R?md$")
+    list.files(input, pattern = "^[^_].*\\.[Rr]?md$")
   }
 
   # define render function (use ... to gracefully handle future args)
@@ -350,14 +350,14 @@ copyable_site_resources <- function(input,
   # excludes:
   #   - known source/data extensions
   #   - anything that starts w/ '.' or '_'
-  #   - rsconnect directory
+  #   - rsconnect and packrat directories
   #   - user excludes
   extensions <- c("R", "r", "S", "s",
                   "Rmd", "rmd", "md", "Rmarkdown", "rmarkdown",
                   "Rproj", "rproj",
                   "RData", "rdata", "rds")
   extensions_regex <- utils::glob2rx(paste0("*.", extensions))
-  excludes <- c("^rsconnect$", "^\\..*$", "^_.*$", "^.*_cache$",
+  excludes <- c("^rsconnect$", "^packrat$", "^\\..*$", "^_.*$", "^.*_cache$",
                 extensions_regex,
                 utils::glob2rx(config$exclude))
   # add ouput_dir to excludes if it's not '.'

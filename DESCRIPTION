@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 1.4
+Version: 1.5
 Authors@R: c(
   person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
   person("Joe", "Cheng", role = "aut", email = "joe@rstudio.com"),
@@ -66,7 +66,7 @@ URL: http://rmarkdown.rstudio.com
 License: GPL-3
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-03-23 23:29:12 UTC; jjallaire
+Packaged: 2017-04-25 14:24:59 UTC; jjallaire
 Author: JJ Allaire [aut, cre],
   Joe Cheng [aut],
   Yihui Xie [aut],
@@ -102,4 +102,4 @@ Author: JJ Allaire [aut, cre],
   Aidan Lister [ctb, cph] (jQuery StickyTabs)
 Maintainer: JJ Allaire <jj@rstudio.com>
 Repository: CRAN
-Date/Publication: 2017-03-24 06:25:43 UTC
+Date/Publication: 2017-04-26 05:57:08 UTC

@@ -1,3 +1,14 @@
+rmarkdown 1.5
+--------------------------------------------------------------------------------
+
+* Fixed an issue where code within Shiny pre-rendered documents was not
+  rendered correctly.
+
+* Add `includes` parameter to `html_fragment` format.
+
+* Use RStudio redirection URL to replace deprecated MathJax CDN
+
+
 rmarkdown 1.4
 --------------------------------------------------------------------------------
 

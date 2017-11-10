@@ -120,15 +120,26 @@ file_name_without_shell_chars <- function(file) {
     name
 }
 
+tmpfile_pattern <- "rmarkdown-str"
+
 # return a string as a tempfile
 as_tmpfile <- function(str) {
   if (length(str) > 0) {
-    str_tmpfile <- tempfile("rmarkdown-str", fileext = ".html")
+    str_tmpfile <- tempfile(tmpfile_pattern, fileext = ".html")
     writeLines(str, str_tmpfile, useBytes =  TRUE)
     str_tmpfile
   } else {
     NULL
   }
+}
+
+# temp files created by as_tmpfile() cannot be immediately removed because they
+# are needed later by the pandoc conversion; we have to clean up the temp files
+# that have the pattern specified in `tmpfile_pattern` when render() exits
+clean_tmpfiles <- function() {
+  unlink(list.files(
+    tempdir(), sprintf("^%s[0-9a-f]+[.]html$", tmpfile_pattern), full.names = TRUE
+  ))
 }
 
 dir_exists <- function(x) {
@@ -252,6 +263,11 @@ base_dir <- function(x) {
   base
 }
 
+move_dir <- function(from, to) {
+  dir.create(dirname(to), showWarnings = FALSE)
+  file.rename(from, to)
+}
+
 # Check if two paths are the same after being normalized
 same_path <- function(path1, path2, ...) {
   if (length(path1) * length(path2) != 1)
@@ -356,7 +372,9 @@ latexmk_emu <- function(file, engine, biblatex = FALSE) {
   # generate index
   idx <- sub('[.]tex$', '.idx', file)
   if (file.exists(idx)) {
-    system2_quiet(find_latex_engine('makeindex'), shQuote(idx))
+    system2_quiet(find_latex_engine('makeindex'), shQuote(idx), error = {
+      stop("Failed to build the index via makeindex", call. = FALSE)
+    })
   }
   # generate bibliography
   if (biblatex) {
@@ -368,10 +386,21 @@ latexmk_emu <- function(file, engine, biblatex = FALSE) {
   }
   aux <- sub('[.]tex$', aux_ext, file)
   if (file.exists(aux)) {
-    system2_quiet(find_latex_engine(bib_engine), shQuote(aux))
+    if (biblatex || require_bibtex(aux))
+      system2_quiet(find_latex_engine(bib_engine), shQuote(aux), error = {
+        stop("Failed to build the bibliography via ", bib_engine, call. = FALSE)
+      })
   }
   run_engine()
   run_engine()
+}
+
+require_bibtex <- function(aux) {
+  x <- readLines(aux)
+  r = length(grep('^\\\\citation\\{', x)) && length(grep('^\\\\bibdata\\{', x)) &&
+    length(grep('^\\\\bibstyle\\{', x))
+  if (r) file.copy(aux, '~/Downloads/test.txt')
+  r
 }
 
 system2_quiet <- function(..., error = NULL) {
@@ -597,3 +626,19 @@ shell_exec <- function(cmd, intern = FALSE, wait = TRUE, ...) {
     system(cmd, intern = intern, wait = wait, ...)
 }
 
+# Adjust the graphical device in chunk options: if the device from the output
+# format is png but knitr's global chunk option is not png, respect knitr's
+# option, because (1) users may knitr::opts_chunk$set(dev) (which usually means
+# they know what they are doing) before rmarkdown::render(), and we probably
+# should not override the user's choice; (2) the png device does not work on
+# certain platforms (e.g. headless servers without X11), in which case knitr
+# will set the device to svg instead of png by default in knitr:::set_html_dev,
+# and rmarkdown should also respect this setting, otherwise we will run into
+# issues like https://github.com/rstudio/rmarkdown/issues/1100
+adjust_dev <- function(opts) {
+  dev <- knitr::opts_chunk$get('dev')
+  if (identical(opts$dev, 'png') && length(dev) == 1 && dev != 'png') {
+    opts$dev <- dev
+  }
+  opts
+}

@@ -1,6 +1,6 @@
-#' Convert to a PDF document
+#' Convert to a PDF/LaTeX document
 #'
-#' Format for converting from R Markdown to a PDF document.
+#' Formats for converting from R Markdown to a PDF or LaTeX document.
 #'
 #' @inheritParams html_document
 #'
@@ -180,8 +180,7 @@ pdf_document <- function(toc = FALSE,
     if (length(extra_dependencies) || has_latex_dependencies(knit_meta)) {
       extra_dependencies <- latex_dependencies(extra_dependencies)
       all_dependencies <- append(extra_dependencies, flatten_latex_dependencies(knit_meta))
-      filename <- tempfile()
-      latex_dependencies_as_text_file(all_dependencies, filename)
+      filename <- as_tmpfile(latex_dependencies_as_string(all_dependencies))
       if ("header-includes" %in% names(metadata)) {
         cat(c("", metadata[["header-includes"]]), sep = "\n", file = filename, append = TRUE)
       }
@@ -206,20 +205,8 @@ pdf_document <- function(toc = FALSE,
 
   intermediates_generator <- function(original_input, encoding,
                                       intermediates_dir) {
-    # copy all intermediates (pandoc will need to bundle them in the PDF)
-    intermediates <- copy_render_intermediates(original_input, encoding,
-                                               intermediates_dir, FALSE)
-
-    # we need figures from the supporting files dir to be available during
-    # render as well; if we have a files directory, copy its contents
-    if (!is.null(saved_files_dir) && dir_exists(saved_files_dir)) {
-      file.copy(saved_files_dir, intermediates_dir, recursive = TRUE)
-      intermediates <- c(intermediates, list.files(
-        path = file.path(intermediates_dir, basename(saved_files_dir)),
-        all.files = TRUE, recursive = TRUE, full.names = TRUE))
-    }
-
-    intermediates
+    return(pdf_intermediates_generator(saved_files_dir, original_input,
+                                        encoding, intermediates_dir))
   }
 
   # return format
@@ -235,4 +222,35 @@ pdf_document <- function(toc = FALSE,
     pre_processor = pre_processor,
     intermediates_generator = intermediates_generator
   )
+}
+
+pdf_intermediates_generator <- function(saved_files_dir, original_input,
+                                        encoding, intermediates_dir) {
+  # copy all intermediates (pandoc will need to bundle them in the PDF)
+  intermediates <- copy_render_intermediates(original_input, encoding,
+                                             intermediates_dir, FALSE)
+
+  # we need figures from the supporting files dir to be available during
+  # render as well; if we have a files directory, copy its contents
+  if (!is.null(saved_files_dir) && dir_exists(saved_files_dir)) {
+    file.copy(saved_files_dir, intermediates_dir, recursive = TRUE)
+    intermediates <- c(intermediates, list.files(
+      path = file.path(intermediates_dir, basename(saved_files_dir)),
+      all.files = TRUE, recursive = TRUE, full.names = TRUE))
+  }
+
+  intermediates
+}
+
+#' @param ... Arguments passed to \code{pdf_document()}.
+#' @rdname pdf_document
+#' @export
+latex_document <- function(...) {
+  merge_lists(pdf_document(...), list(pandoc = list(ext = ".tex", keep_tex = TRUE)))
+}
+
+#' @rdname pdf_document
+#' @export
+latex_fragment <- function(...) {
+  latex_document(..., template = rmarkdown_system_file("rmd/fragment/default.tex"))
 }

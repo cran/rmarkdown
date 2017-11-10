@@ -1,18 +1,21 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 1.6
+Version: 1.7
 Authors@R: c(
-  person("JJ", "Allaire", role = c("aut", "cre"), email = "jj@rstudio.com"),
-  person("Joe", "Cheng", role = "aut", email = "joe@rstudio.com"),
-  person("Yihui", "Xie", role = "aut", email = "yihui@rstudio.com"),
+  person("JJ", "Allaire", role = "aut", email = "jj@rstudio.com"),
+    person("Yihui", "Xie", role = c("aut", "cre"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
   person("Jonathan", "McPherson", role = "aut", email = "jonathan@rstudio.com"),
-  person("Winston", "Chang", role = "aut", email = "winston@rstudio.com"),
-  person("Jeff", "Allen", role = "aut", email = "jeff@rstudio.com"),
-  person("Hadley", "Wickham", role = "aut", email = "hadley@rstudio.com"),
+  person("Javier", "Luraschi", role = "aut", email = "javier@rstudio.com"),
+  person("Kevin", "Ushey", role = "aut", email = "kevin@rstudio.com"),
   person("Aron", "Atkins", role = "aut", email = "aron@rstudio.com"),
-  person("Rob", "Hyndman", role = "aut", email = "Rob.Hyndman@monash.edu"),
-  person("Ruben", "Arslan", role = "aut", email = "ruben.arslan@uni-goettingen.de"),
+  person("Hadley", "Wickham", role = "aut", email = "hadley@rstudio.com"),
+  person("Joe", "Cheng", role = "aut", email = "joe@rstudio.com"),
+  person("Winston", "Chang", role = "aut", email = "winston@rstudio.com"),
+  person("Jeff", "Allen", role = "ctb", email = "jeff@rstudio.com"),
+  person("Roy", "Storey", role = "ctb"),
+  person("Rob", "Hyndman", role = "ctb", email = "Rob.Hyndman@monash.edu"),
+  person("Ruben", "Arslan", role = "ctb", email = "ruben.arslan@uni-goettingen.de"),
   person(family = "RStudio, Inc.", role = "cph"),
   person(family = "jQuery Foundation", role = "cph",
          comment = "jQuery library"),
@@ -36,8 +39,6 @@ Authors@R: c(
          comment = "highlight.js library"),
   person("Greg", "Franko", role = c("ctb", "cph"),
          comment = "tocify library"),
-  person("Eli", "Grey", role = c("ctb", "cph"),
-         comment = "FileSaver library"),
   person("John", "MacFarlane", role = c("ctb", "cph"),
          comment = "Pandoc templates"),
   person(family = "Google, Inc.", role = c("ctb", "cph"),
@@ -55,6 +56,7 @@ Authors@R: c(
   person("Aidan", "Lister", role = c("ctb", "cph"), 
          comment = "jQuery StickyTabs")
   )
+Maintainer: Yihui Xie <xie@yihui.name>
 Description: Convert R Markdown documents into a variety of formats.
 Depends: R (>= 3.0)
 Imports: tools, utils, knitr (>= 1.14), yaml (>= 2.1.5), htmltools (>=
@@ -66,17 +68,20 @@ URL: http://rmarkdown.rstudio.com
 License: GPL-3
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-06-15 12:12:24 UTC; jjallaire
-Author: JJ Allaire [aut, cre],
-  Joe Cheng [aut],
-  Yihui Xie [aut],
+Packaged: 2017-11-09 21:30:11 UTC; yihui
+Author: JJ Allaire [aut],
+  Yihui Xie [aut, cre] (0000-0003-0645-5666),
   Jonathan McPherson [aut],
-  Winston Chang [aut],
-  Jeff Allen [aut],
-  Hadley Wickham [aut],
+  Javier Luraschi [aut],
+  Kevin Ushey [aut],
   Aron Atkins [aut],
-  Rob Hyndman [aut],
-  Ruben Arslan [aut],
+  Hadley Wickham [aut],
+  Joe Cheng [aut],
+  Winston Chang [aut],
+  Jeff Allen [ctb],
+  Roy Storey [ctb],
+  Rob Hyndman [ctb],
+  Ruben Arslan [ctb],
   RStudio, Inc. [cph],
   jQuery Foundation [cph] (jQuery library),
   jQuery contributors [ctb, cph] (jQuery library; authors listed in
@@ -91,7 +96,6 @@ Author: JJ Allaire [aut, cre],
   Scott Jehl [ctb, cph] (Respond.js library),
   Ivan Sagalaev [ctb, cph] (highlight.js library),
   Greg Franko [ctb, cph] (tocify library),
-  Eli Grey [ctb, cph] (FileSaver library),
   John MacFarlane [ctb, cph] (Pandoc templates),
   Google, Inc. [ctb, cph] (ioslides library),
   Dave Raggett [ctb] (slidy library),
@@ -100,6 +104,5 @@ Author: JJ Allaire [aut, cre],
   Ben Sperry [ctb] (Ionicons),
   Drifty [cph] (Ionicons),
   Aidan Lister [ctb, cph] (jQuery StickyTabs)
-Maintainer: JJ Allaire <jj@rstudio.com>
 Repository: CRAN
-Date/Publication: 2017-06-15 18:16:52 UTC
+Date/Publication: 2017-11-10 11:43:07 UTC

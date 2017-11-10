@@ -33,8 +33,9 @@ html_document_base <- function(smart = TRUE,
 
   args <- c()
 
+  pandoc2.0 <- pandoc_version() >= "2.0"
   # smart quotes, etc.
-  if (smart)
+  if (smart && !pandoc2.0)
     args <- c(args, "--smart")
 
   # no email obfuscation
@@ -132,9 +133,12 @@ html_document_base <- function(smart = TRUE,
     if (length(preserved_chunks) > 0) {
       # Pandoc adds an empty <p></p> around the IDs of preserved chunks, and we
       # need to remove these empty tags, otherwise we may have invalid HTML like
-      # <p><div>...</div></p>
+      # <p><div>...</div></p>. For the reason of the second gsub(), see
+      # https://github.com/rstudio/rmarkdown/issues/133.
       for (i in names(preserved_chunks)) {
         output_str <- gsub(paste0("<p>", i, "</p>"), i, output_str,
+                           fixed = TRUE, useBytes = TRUE)
+        output_str <- gsub(paste0(' id="section-', i, '" '), ' ', output_str,
                            fixed = TRUE, useBytes = TRUE)
       }
       output_str <- restorePreserveChunks(output_str, preserved_chunks)
@@ -151,6 +155,8 @@ html_document_base <- function(smart = TRUE,
       # directory and replace them with relative ones
       image_relative <- function(img_src, src) {
         in_file <- utils::URLdecode(src)
+        # do not process paths that are already relative
+        if (grepl('^[.][.]', in_file)) return(img_src)
         if (length(in_file) && file.exists(in_file)) {
           img_src <- sub(
             src, utils::URLencode(normalized_relative_to(output_dir, in_file)),

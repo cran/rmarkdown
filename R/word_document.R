@@ -45,6 +45,7 @@ word_document <- function(toc = FALSE,
                           fig_height = 4,
                           fig_caption = TRUE,
                           df_print = "default",
+                          smart = TRUE,
                           highlight = "default",
                           reference_docx = "default",
                           keep_md = FALSE,
@@ -62,6 +63,13 @@ word_document <- function(toc = FALSE,
   # base pandoc options for all docx output
   args <- c()
 
+  # smart quotes, etc.
+  if (smart && !pandoc_available("2.0")) {
+    args <- c(args, "--smart")
+  } else {
+    md_extensions <- smart_extension(smart, md_extensions)
+  }
+
   # table of contents
   if (pandoc_available("1.14"))
     args <- c(args, pandoc_toc_args(toc, toc_depth))
@@ -75,7 +83,7 @@ word_document <- function(toc = FALSE,
 
   # reference docx
   if (!is.null(reference_docx) && !identical(reference_docx, "default")) {
-    args <- c(args, "--reference-docx", pandoc_path_arg(reference_docx))
+    args <- c(args, reference_doc_arg("docx"), pandoc_path_arg(reference_docx))
   }
 
   # pandoc args
@@ -92,5 +100,9 @@ word_document <- function(toc = FALSE,
   )
 }
 
-
+reference_doc_arg <- function(type) {
+  paste0("--reference-", if (pandoc_available("2.0")) "doc" else {
+    match.arg(type, c("docx", "odt"))
+  })
+}
 

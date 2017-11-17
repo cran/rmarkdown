@@ -1,3 +1,16 @@
+rmarkdown 1.8
+--------------------------------------------------------------------------------
+
+## BUG FIXES
+
+* `render_site()` does not work with `_site.yml` that does not have the `output` setting (#1189).
+
+* The variables `input` and `output` do not work in Shiny R Markdown documents (#1193).
+
+* `ioslides_presentation` fails to embed images (#1197).
+
+* With Pandoc 2.x, `github_document()` generates the wrong filename extension `.gfm-ascii_identifiers` instead of `.md`, and line height of code blocks in the HTML preview is too big (#1200).
+
 rmarkdown 1.7
 --------------------------------------------------------------------------------
 

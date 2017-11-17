@@ -98,7 +98,7 @@ output_format <- function(knitr,
 }
 
 # merges two scalar values; picks the overlay if non-NULL and then the base
-merge_scalar <- function (base, overlay) {
+merge_scalar <- function(base, overlay) {
   if (is.null(base) && is.null(overlay))
     NULL
   else if (is.null(overlay))
@@ -109,9 +109,9 @@ merge_scalar <- function (base, overlay) {
 
 # merges two functions: if both are non-NULL, produces a new function that
 # invokes each and then uses the supplied operation to combine their outputs
-merge_function_outputs <- function (base, overlay, op) {
+merge_function_outputs <- function(base, overlay, op) {
   if (!is.null(base) && !is.null(overlay)) {
-    function (...) {
+    function(...) {
       op(base(...), overlay(...))
     }
   } else {
@@ -121,7 +121,7 @@ merge_function_outputs <- function (base, overlay, op) {
 
 # merges two post-processors; if both are non-NULL, produces a new function that
 # calls the overlay post-processor and then the base post-processor.
-merge_post_processors <- function (base, overlay) {
+merge_post_processors <- function(base, overlay) {
   if (!is.null(base) && !is.null(overlay)) {
     function(metadata, input_file, output_file, ...) {
       output_file <- overlay(metadata, input_file, output_file, ...)
@@ -344,7 +344,7 @@ rmarkdown_format <- function(extensions = NULL) {
 
 # Add the +smart extension for Pandoc >= 2.0
 smart_extension <- function(smart, extension) {
-  c(extension, if (smart && pandoc_available("2.0")) "+smart")
+  c(extension, if (smart && pandoc2.0()) "+smart")
 }
 
 #' Determine the default output format for an R Markdown document
@@ -422,9 +422,6 @@ resolve_output_format <- function(input,
   # read the input file
   input_lines <- read_lines_utf8(input, encoding)
 
-  # read the yaml front matter
-  yaml_front_matter <- parse_yaml_front_matter(input_lines)
-
   # validate that the output format is either NULL or a character vector
   if (!is.null(output_format) && !is.character(output_format))
     stop("output_format must be a character vector")
@@ -473,107 +470,95 @@ output_format_from_yaml_front_matter <- function(input_lines,
                                                  output_format_name = NULL,
                                                  encoding = getOption("encoding")) {
 
+  format_name <- output_format_name
   # ensure input is the correct data type
-  if (!is_null_or_string(output_format_name)) {
+  if (!is_null_or_string(format_name)) {
     stop("Unrecognized output format specified", call. = FALSE)
   }
 
   # parse the yaml
-  yaml_front_matter <- parse_yaml_front_matter(input_lines)
+  yaml_input <- parse_yaml_front_matter(input_lines)
 
   # default to no options
-  output_format_options <- list()
+  format_options <- list()
 
   # parse _site.yml output format if we have it
   config <- site_config(".", encoding = encoding)
-  if (!is.null(config) && !is.null(config[["output"]])) {
-    site_output_format_yaml <- config[["output"]]
-  } else {
-    site_output_format_yaml <- list()
-  }
+  yaml_site <- config[["output"]]
 
   # parse common _output.yml if we have it
-  if (file.exists("_output.yml"))
-    common_output_format_yaml <- yaml_load_file_utf8("_output.yml")
-  else if (file.exists("_output.yaml"))
-    common_output_format_yaml <- yaml_load_file_utf8("_output.yaml")
-  else
-    common_output_format_yaml <- list()
+  yaml_common <- if (file.exists("_output.yml")) {
+    yaml_load_file_utf8("_output.yml")
+  } else if (file.exists("_output.yaml")) {
+    yaml_load_file_utf8("_output.yaml")
+  }
 
   # merge _site.yml and _output.yml
-  common_output_format_yaml <- merge_output_options(site_output_format_yaml,
-                                                    common_output_format_yaml)
+  yaml_common <- merge_output_options(yaml_site, yaml_common)
 
   # parse output format from front-matter if we have it
-  if (length(common_output_format_yaml) > 0 ||
-      length(yaml_front_matter[["output"]]) > 0) {
+  if (length(yaml_common) || length(yaml_input[["output"]])) {
 
     # alias the output format yaml
-    output_format_yaml <- yaml_front_matter[["output"]]
+    yaml_output <- yaml_input[["output"]]
 
     # merge against common _output.yml
-    output_format_yaml <- merge_output_options(common_output_format_yaml,
-                                               output_format_yaml)
+    yaml_output <- merge_output_options(yaml_common, yaml_output)
 
     # if a named format was provided then try to find it
-    if (!is.null(output_format_name)) {
+    if (!is.null(format_name)) {
 
       # if this is a named element of the list then use that
-      if (output_format_name %in% names(output_format_yaml)) {
+      if (format_name %in% names(yaml_output)) {
 
-        output_format_options <- output_format_yaml[[output_format_name]]
+        format_options <- yaml_output[[format_name]]
 
       # otherwise this could be a heterogeneous list of characters and
       # lists so scan for an embedded list
       } else {
-        for (format in output_format_yaml) {
-          if (is.list(format) && !is.null(format[[output_format_name]]))
-            output_format_options <- format[[output_format_name]]
+        for (format in yaml_output) {
+          if (is.list(format) && !is.null(format[[format_name]]))
+            format_options <- format[[format_name]]
         }
       }
 
       # if the options are just "default" then that's the same as empty list
-      if (identical(output_format_options, "default"))
-        output_format_options <- list()
+      if (identical(format_options, "default")) format_options <- list()
 
     # no named format passed so take the first element
     } else {
-      if (is.list(output_format_yaml[[1]])) {
+      if (is.list(yaml_output[[1]])) {
         # check for named list
-        if (nzchar(names(output_format_yaml)[[1]])) {
-          output_format_name <- names(output_format_yaml)[[1]]
-          output_format_options <- output_format_yaml[[1]]
+        if (nzchar(format_name <- names(yaml_output)[[1]])) {
+          format_options <- yaml_output[[1]]
         # nested named list
         } else {
-          output_format_name <- names(output_format_yaml[[1]])[[1]]
-          output_format_options <- output_format_yaml[[1]][[output_format_name]]
+          format_name <- names(yaml_output[[1]])[[1]]
+          format_options <- yaml_output[[1]][[format_name]]
         }
-      } else if (is.list(output_format_yaml) &&
-                   (is.null(output_format_yaml[[1]]) ||
-                      identical(output_format_yaml[[1]], "default"))) {
-        output_format_name <- names(output_format_yaml)[[1]]
+      } else if (is.list(yaml_output) &&
+                   (is.null(yaml_output[[1]]) ||
+                      identical(yaml_output[[1]], "default"))) {
+        format_name <- names(yaml_output)[[1]]
 
       } else {
-        output_format_name <- output_format_yaml[[1]]
+        format_name <- yaml_output[[1]]
       }
     }
 
   # no output formats defined in the file, just take the passed format
   # by name (or default to html_document if no named format was specified)
   } else {
-    if (is.null(output_format_name))
-      output_format_name <- "html_document"
+    if (is.null(format_name)) format_name <- "html_document"
   }
 
   # merge any output_options passed in the call to render
   if (!is.null(output_options)) {
-    output_format_options <- merge_output_options(output_format_options,
-                                                  output_options)
+    format_options <- merge_output_options(format_options, output_options)
   }
 
   # return the format name and options
-  list(name = output_format_name,
-       options = output_format_options)
+  list(name = format_name, options = format_options)
 }
 
 create_output_format <- function(name, options) {
@@ -683,8 +668,8 @@ parse_yaml_front_matter <- function(input_lines) {
   if (!is.null(partitions$front_matter)) {
     front_matter <- partitions$front_matter
     if (length(front_matter) > 2) {
-      front_matter <- front_matter[2:(length(front_matter)-1)]
-      front_matter <- paste(front_matter, collapse="\n")
+      front_matter <- front_matter[2:(length(front_matter) - 1)]
+      front_matter <- paste(front_matter, collapse = "\n")
       validate_front_matter(front_matter)
       parsed_yaml <- yaml_load_utf8(front_matter)
       if (is.list(parsed_yaml))
@@ -717,7 +702,7 @@ partition_yaml_front_matter <- function(input_lines) {
       if (delimiters[1] == 1)
         TRUE
       else
-        is_blank(input_lines[1:delimiters[1]-1])
+        is_blank(input_lines[1:delimiters[1] - 1])
     } else {
       FALSE
     }
@@ -733,7 +718,7 @@ partition_yaml_front_matter <- function(input_lines) {
 
     if (delimiters[1] > 1)
       input_body <- c(input_body,
-                      input_lines[1:delimiters[1]-1])
+                      input_lines[1:delimiters[1] - 1])
 
     if (delimiters[2] < length(input_lines))
       input_body <- c(input_body,
@@ -751,25 +736,17 @@ partition_yaml_front_matter <- function(input_lines) {
 merge_output_options <- function(base_options, overlay_options) {
 
   # if either one of these is a character vector then normalize to a named list
-  normalize_list <- function(target_list) {
-    if (is.null(target_list))
+  normalize_list <- function(target) {
+    if (is.null(target)) {
       list()
-    else if (is.character(target_list)) {
-      new_list <- list()
-      for (name in target_list)
-        new_list[[name]] <- list()
-      new_list
+    } else if (is.character(target)) {
+      setNames(lapply(target, function(x) list()), target)
     } else {
-      # remove symbols (...) from list
-      target_list <- target_list[names(target_list) != "..."]
-      target_list
+      target[names(target) != "..."]  # remove symbols (...) from list
     }
   }
 
-  base_options <- normalize_list(base_options)
-  overlay_options <- normalize_list(overlay_options)
-
-  merge_lists(base_options, overlay_options)
+  merge_lists(normalize_list(base_options), normalize_list(overlay_options))
 }
 
 is_pandoc_to_html <- function(options) {

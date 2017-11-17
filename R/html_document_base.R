@@ -33,9 +33,8 @@ html_document_base <- function(smart = TRUE,
 
   args <- c()
 
-  pandoc2.0 <- pandoc_version() >= "2.0"
   # smart quotes, etc.
-  if (smart && !pandoc2.0)
+  if (smart && !pandoc2.0())
     args <- c(args, "--smart")
 
   # no email obfuscation
@@ -61,8 +60,8 @@ html_document_base <- function(smart = TRUE,
   post_knit <- function(metadata, input_file, runtime, ...) {}
 
   # pre_processor
-  pre_processor <- function (metadata, input_file, runtime, knit_meta,
-                             files_dir, output_dir) {
+  pre_processor <- function(metadata, input_file, runtime, knit_meta,
+                            files_dir, output_dir) {
 
     args <- c()
 
@@ -78,7 +77,7 @@ html_document_base <- function(smart = TRUE,
       theme <- match.arg(theme, themes())
       if (identical(theme, "default"))
         theme <- "bootstrap"
-      args <- c(args, "--variable", paste("theme:", theme, sep=""))
+      args <- c(args, "--variable", paste0("theme:", theme))
     }
 
     # resolve and inject extras, including dependencies specified by the format
@@ -148,7 +147,7 @@ html_document_base <- function(smart = TRUE,
       # The copy_resources flag copies all the resources referenced in the
       # document to its supporting files directory, and rewrites the document to
       # use the copies from that directory.
-      output_str <- copy_html_resources(paste(output_str, collapse="\n"),
+      output_str <- copy_html_resources(paste(output_str, collapse = "\n"),
                                               lib_dir, output_dir)
     } else if (!self_contained) {
       # if we're not self-contained, find absolute references to the output

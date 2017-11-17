@@ -25,13 +25,13 @@ You can also specify a plain markdown file in which case knitting will be bypass
 Additional options can be specified along with the output format:
 
 \preformatted{render("input.Rmd", html_document(toc = TRUE))
-render("input.Rmd", pdf_document(latex.engine = "lualatex"))
+render("input.Rmd", pdf_document(latex_engine = "lualatex"))
 render("input.Rmd", beamer_presentation(incremental = TRUE))
 }
 
 You can also include arbitrary pandoc command line arguments along with the other options:
 
-\preformatted{render("input.Rmd", pdf_document(toc = TRUE, "--listings"))
+\preformatted{render("input.Rmd", pdf_document(toc = TRUE, pandoc_args = "--listings"))
 }
 
 }

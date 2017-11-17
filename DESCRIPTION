@@ -1,10 +1,10 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 1.7
+Version: 1.8
 Authors@R: c(
   person("JJ", "Allaire", role = "aut", email = "jj@rstudio.com"),
-    person("Yihui", "Xie", role = c("aut", "cre"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
+  person("Yihui", "Xie", role = c("aut", "cre"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
   person("Jonathan", "McPherson", role = "aut", email = "jonathan@rstudio.com"),
   person("Javier", "Luraschi", role = "aut", email = "javier@rstudio.com"),
   person("Kevin", "Ushey", role = "aut", email = "kevin@rstudio.com"),
@@ -60,15 +60,15 @@ Maintainer: Yihui Xie <xie@yihui.name>
 Description: Convert R Markdown documents into a variety of formats.
 Depends: R (>= 3.0)
 Imports: tools, utils, knitr (>= 1.14), yaml (>= 2.1.5), htmltools (>=
-        0.3.5), caTools, evaluate (>= 0.8), base64enc, jsonlite,
-        rprojroot, methods, stringr (>= 1.2.0)
+        0.3.5), evaluate (>= 0.8), base64enc, jsonlite, rprojroot,
+        mime, methods, stringr (>= 1.2.0)
 Suggests: shiny (>= 0.11), tufte, testthat, digest, tibble
 SystemRequirements: pandoc (>= 1.12.3) - http://pandoc.org
 URL: http://rmarkdown.rstudio.com
 License: GPL-3
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-11-09 21:30:11 UTC; yihui
+Packaged: 2017-11-17 04:07:06 UTC; yihui
 Author: JJ Allaire [aut],
   Yihui Xie [aut, cre] (0000-0003-0645-5666),
   Jonathan McPherson [aut],
@@ -105,4 +105,4 @@ Author: JJ Allaire [aut],
   Drifty [cph] (Ionicons),
   Aidan Lister [ctb, cph] (jQuery StickyTabs)
 Repository: CRAN
-Date/Publication: 2017-11-10 11:43:07 UTC
+Date/Publication: 2017-11-17 08:35:18 UTC

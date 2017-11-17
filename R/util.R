@@ -1,5 +1,7 @@
+#' @import stats
+
 createUniqueId <- function(bytes) {
-  paste(as.hexmode(sample(256, bytes)-1), collapse="")
+  paste(as.hexmode(sample(256, bytes) - 1), collapse = "")
 }
 
 is_windows <- function() {
@@ -199,7 +201,7 @@ highlighters <- function() {
     "haddock")
 }
 
-merge_lists <- function (base_list, overlay_list, recursive = TRUE) {
+merge_lists <- function(base_list, overlay_list, recursive = TRUE) {
   if (length(base_list) == 0)
     overlay_list
   else if (length(overlay_list) == 0)
@@ -221,7 +223,7 @@ merge_lists <- function (base_list, overlay_list, recursive = TRUE) {
   }
 }
 
-strip_white <- function (x)
+strip_white <- function(x)
 {
   if (!length(x))
     return(x)
@@ -238,14 +240,14 @@ strip_white <- function (x)
   x
 }
 
-is_blank <- function (x)
+is_blank <- function(x)
 {
   if (length(x))
     all(grepl("^\\s*$", x))
   else TRUE
 }
 
-trim_trailing_ws <- function (x) {
+trim_trailing_ws <- function(x) {
   sub("\\s+$", "", x)
 }
 
@@ -289,7 +291,7 @@ find_program <- function(program) {
       # and escapes in the path itself
       sanitized_path <- gsub("\\", "\\\\", Sys.getenv("PATH"), fixed = TRUE)
       sanitized_path <- gsub("\"", "\\\"", sanitized_path, fixed = TRUE)
-      system(paste("PATH=\"", sanitized_path, "\" /usr/bin/which ", program, sep=""),
+      system(paste0("PATH=\"", sanitized_path, "\" /usr/bin/which ", program),
              intern = TRUE)
     })
     if (length(res) == 0)
@@ -397,10 +399,19 @@ latexmk_emu <- function(file, engine, biblatex = FALSE) {
 
 require_bibtex <- function(aux) {
   x <- readLines(aux)
-  r = length(grep('^\\\\citation\\{', x)) && length(grep('^\\\\bibdata\\{', x)) &&
+  r <- length(grep('^\\\\citation\\{', x)) && length(grep('^\\\\bibdata\\{', x)) &&
     length(grep('^\\\\bibstyle\\{', x))
-  if (r) file.copy(aux, '~/Downloads/test.txt')
+  if (r && is_windows()) tweak_aux(aux, x)
   r
+}
+
+# remove the .bib extension in \bibdata{} in the .aux file, because bibtex on
+# Windows requires no .bib extension (sigh)
+tweak_aux <- function(aux, x = readLines(aux)) {
+  r <- '^\\\\bibdata\\{.+\\}\\s*$'
+  if (length(i <- grep(r, x)) == 0) return()
+  x[i] = gsub('[.]bib([,}])', '\\1', x[i])
+  writeLines(x, aux)
 }
 
 system2_quiet <- function(..., error = NULL) {

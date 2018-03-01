@@ -32,7 +32,14 @@ render <- function(input,
   init_render_context()
   on.exit(clear_render_context(), add = TRUE)
 
-  on.exit(clean_tmpfiles(), add = TRUE)
+  # render() may call itself, e.g., in discover_rmd_resources(); in this case,
+  # we should not clean up temp files in the nested render() call, but wait
+  # until the top-level render() exits to clean up temp files
+  .globals$level <- .globals$level + 1L  # increment level in a nested render()
+  on.exit({
+    .globals$level <- .globals$level - 1L
+    if (.globals$level == 0) clean_tmpfiles()
+  }, add = TRUE)
 
   # check for "all" output formats
   if (identical(output_format, "all")) {
@@ -192,6 +199,11 @@ render <- function(input,
   # read the yaml front matter
   yaml_front_matter <- parse_yaml_front_matter(input_lines)
 
+  # metadata to be attached to the returned value of render() as an attribute
+  old_output_metadata <- output_metadata$get()
+  on.exit(output_metadata$restore(old_output_metadata), add = TRUE)
+  output_metadata$restore(as.list(yaml_front_matter[['rmd_output_metadata']]))
+
   # if this is shiny_prerendered then modify the output format to
   # be single-page and to output dependencies to the shiny.dep file
   shiny_prerendered_dependencies <- list()
@@ -350,6 +362,7 @@ render <- function(input,
 
     # use filename based figure and cache directories
     base_pandoc_to <- gsub('[-+].*', '', pandoc_to)
+    if (base_pandoc_to == 'html4') base_pandoc_to <- 'html'
     figures_dir <- paste(files_dir, "/figure-", base_pandoc_to, "/", sep = "")
     knitr::opts_chunk$set(fig.path = figures_dir)
     cache_dir <- knitr_cache_dir(input, base_pandoc_to)
@@ -639,25 +652,23 @@ render <- function(input,
       status
     }
     texfile <- file_with_ext(output_file, "tex")
-    # compile Rmd to tex when we need to generate bibliography with natbib/biblatex
-    if (need_bibtex) {
-      convert(texfile)
-      # manually compile tex if PDF output is expected
-      if (grepl('[.]pdf$', output_file)) {
+    # determine whether we need to run citeproc (based on whether we have
+    # references in the input)
+    run_citeproc <- citeproc_required(yaml_front_matter, input_lines)
+    # if the output format is LaTeX, first convert .md to .tex, and then convert
+    # .tex to .pdf via latexmk() if PDF output is requested (in rmarkdown <=
+    # v1.8, we used to call Pandoc to convert .md to .tex and .pdf separately)
+    if (output_format$pandoc$keep_tex || knitr::is_latex_output()) {
+      # do not use pandoc-citeproc if needs to build bibliography
+      convert(texfile, run_citeproc && !need_bibtex)
+      # unless the output file has the extension .tex, we assume it is PDF
+      if (!grepl('[.]tex$', output_file)) {
         latexmk(texfile, output_format$pandoc$latex_engine, '--biblatex' %in% output_format$pandoc$args)
         file.rename(file_with_ext(texfile, "pdf"), output_file)
+        # clean up the tex file if necessary
+        if (!output_format$pandoc$keep_tex) on.exit(unlink(texfile), add = TRUE)
       }
-      # clean up the tex file if necessary
-      if ((texfile != output_file) && !output_format$pandoc$keep_tex)
-        on.exit(unlink(texfile), add = TRUE)
     } else {
-      # determine whether we need to run citeproc (based on whether we
-      # have references in the input)
-      run_citeproc <- citeproc_required(yaml_front_matter, input_lines)
-      # generate .tex if we want to keep the tex source
-      if (texfile != output_file && output_format$pandoc$keep_tex)
-        convert(texfile, run_citeproc)
-      # run the main conversion if the output file is not .tex
       convert(output_file, run_citeproc)
     }
 
@@ -699,7 +710,11 @@ render <- function(input,
 
   if (run_pandoc) {
     # return the full path to the output file
-    invisible(tools::file_path_as_absolute(output_file))
+    output_file <- tools::file_path_as_absolute(output_file)
+    # attach the metadata specified as rmd_output_metadata in YAML
+    if (length(output_meta <- output_metadata$get()))
+      attr(output_file, 'rmd_output_metadata') <- output_meta
+    invisible(output_file)
   } else {
     # did not run pandoc; returns the markdown output with attributes of the
     # knitr meta data and intermediate files
@@ -843,5 +858,20 @@ resolve_df_print <- function(df_print) {
 # package level globals
 .globals <- new.env(parent = emptyenv())
 .globals$evaluated_global_chunks <- character()
+.globals$level <- 0L
 
 
+#' The output metadata object
+#'
+#' This object provides a mechanism for users to attach metadata as an attribute
+#' (named \code{rmd_output_metadata}) of the returned value of
+#' \code{\link{render}()}. The initial value of the metadata comes from in the
+#' \code{rmd_output_metadata} field of the YAML frontmatter of an R Markdown
+#' document. The metadata can be queried via the
+#' \code{output_metadata$get()} method, and modified via the
+#' \code{output_metadata$set()} method.
+#' @format NULL
+#' @usage NULL
+#' @keywords NULL
+#' @export
+output_metadata = knitr:::new_defaults()

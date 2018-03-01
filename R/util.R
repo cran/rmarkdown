@@ -19,7 +19,7 @@ pandoc_output_file <- function(input, pandoc_options) {
     ext <- pandoc_options$ext
   else if (to %in% c("latex", "beamer"))
     ext <- ".pdf"
-  else if (to %in% c("html", "html5", "s5", "slidy",
+  else if (to %in% c("html", "html4", "html5", "s5", "slidy",
                      "slideous", "dzslides", "revealjs"))
     ext <- ".html"
   else if (grepl("^markdown", to)) {
@@ -314,6 +314,10 @@ escape_regex_metas <- function(in_str) {
 
 # call latexmk to compile tex to PDF; if not available, use a simple emulation
 latexmk <- function(file, engine, biblatex = FALSE) {
+  if (requireNamespace('tinytex', quietly = TRUE)) {
+    return(tinytex::latexmk(file, engine, if (biblatex) 'biber' else 'bibtex'))
+  }
+  message('You are recommended to install the tinytex package to build PDF.', call. = FALSE)
   if (!grepl('[.]tex$', file))
     stop("The input file '", file, "' does not appear to be a LaTeX document")
   engine <- find_latex_engine(engine)

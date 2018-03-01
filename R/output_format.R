@@ -227,7 +227,7 @@ knitr_options_pdf <- function(fig_width, fig_height, fig_crop, dev = 'pdf') {
                      fig.width = fig_width,
                      fig.height = fig_height)
 
-  # set the dingbats option for the pdf device if requried
+  # set the dingbats option for the pdf device if required
   if (dev == 'pdf')
     opts_chunk$dev.args <- list(pdf = list(useDingbats = FALSE))
 
@@ -260,7 +260,7 @@ knitr_options_pdf <- function(fig_width, fig_height, fig_crop, dev = 'pdf') {
 #'   'latex' and 'beamer' target formats)
 #' @param ext File extension (e.g. ".tex") for output file (if \code{NULL}
 #'   chooses default based on \code{to}). This is typically used to force
-#'   the final output of a latex or beamer converstion to be \code{.tex}
+#'   the final output of a latex or beamer conversion to be \code{.tex}
 #'   rather than \code{.pdf}.
 #'
 #' @return An list that can be passed as the \code{pandoc} argument of the
@@ -750,7 +750,7 @@ merge_output_options <- function(base_options, overlay_options) {
 }
 
 is_pandoc_to_html <- function(options) {
-  identical(options$to, "html") || identical(options$to, "html5")
+  options$to %in% c("html", "html4", "html5")
 }
 
 citeproc_required <- function(yaml_front_matter, input_lines = NULL) {

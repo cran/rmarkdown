@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 1.8
+Version: 1.9
 Authors@R: c(
   person("JJ", "Allaire", role = "aut", email = "jj@rstudio.com"),
   person("Yihui", "Xie", role = c("aut", "cre"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
@@ -62,15 +62,16 @@ Depends: R (>= 3.0)
 Imports: tools, utils, knitr (>= 1.14), yaml (>= 2.1.5), htmltools (>=
         0.3.5), evaluate (>= 0.8), base64enc, jsonlite, rprojroot,
         mime, methods, stringr (>= 1.2.0)
-Suggests: shiny (>= 0.11), tufte, testthat, digest, tibble
+Suggests: tinytex, shiny (>= 0.11), tufte, testthat, digest, tibble
 SystemRequirements: pandoc (>= 1.12.3) - http://pandoc.org
-URL: http://rmarkdown.rstudio.com
+URL: http://rmarkdown.rstudio.com, https://github.com/rstudio/rmarkdown
+BugReports: https://github.com/rstudio/rmarkdown/issues
 License: GPL-3
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-11-17 04:07:06 UTC; yihui
+Packaged: 2018-02-20 04:31:33 UTC; yihui
 Author: JJ Allaire [aut],
-  Yihui Xie [aut, cre] (0000-0003-0645-5666),
+  Yihui Xie [aut, cre] (<https://orcid.org/0000-0003-0645-5666>),
   Jonathan McPherson [aut],
   Javier Luraschi [aut],
   Kevin Ushey [aut],
@@ -105,4 +106,4 @@ Author: JJ Allaire [aut],
   Drifty [cph] (Ionicons),
   Aidan Lister [ctb, cph] (jQuery StickyTabs)
 Repository: CRAN
-Date/Publication: 2017-11-17 08:35:18 UTC
+Date/Publication: 2018-03-01 17:59:03 UTC

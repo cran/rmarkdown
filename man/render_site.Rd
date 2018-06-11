@@ -4,6 +4,7 @@
 \alias{render_site}
 \alias{site_config}
 \alias{site_generator}
+\alias{default_site_generator}
 \title{Render multiple documents as a website}
 \usage{
 render_site(input = ".", output_format = "all", envir = parent.frame(),
@@ -12,8 +13,12 @@ render_site(input = ".", output_format = "all", envir = parent.frame(),
 clean_site(input = ".", preview = FALSE, quiet = FALSE,
   encoding = getOption("encoding"))
 
+site_config(input = ".", encoding = getOption("encoding"))
+
 site_generator(input = ".", output_format = NULL,
   encoding = getOption("encoding"))
+
+default_site_generator(input, encoding = getOption("encoding"), ...)
 }
 \arguments{
 \item{input}{Website directory (or the name of a file within the directory)}
@@ -35,6 +40,8 @@ environment).}
 \value{
 \code{render_site} returns the name of the site output file (relative to the input directory).
 \code{clean_site} returns the names of the generated files removed during cleaning.
+\code{site_config} returns the contents of _site.yml as an R list
+\code{default_site_generator} returns the default site generator for R Markdown websites
 }
 \description{
 Render all of the R Markdown documents within a directory as a website.
@@ -93,7 +100,7 @@ output:
 
 The \code{name} field provides a suggested URL path for your website when it is published (by default this is just the name of the directory containing the site). The \code{output_dir} indicates which directory to copy site content into ("_site" is the default if none is specified). Note that this can be "." to keep all content within the root website directory alongside the source code.
 
-The \code{include} and \code{exclude} fields enable you to override the default behavior visa-vi what files are copied into the "_site" directory (wildcards can be used as in the above example).
+The \code{include} and \code{exclude} fields enable you to override the default behavior vis-a-vis what files are copied into the "_site" directory (wildcards can be used as in the above example).
 
 The \code{navbar} field can be used to define a navigation bar for websites based on the \code{\link{html_document}} format.
 

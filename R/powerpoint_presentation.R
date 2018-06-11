@@ -4,13 +4,14 @@
 #' v2.0.5 or above is required.
 #' @inheritParams pdf_document
 #' @inheritParams html_document
+#' @inheritParams beamer_presentation
 #' @param reference_doc Path to a PowerPoint template.
 #' @export
 #' @return R Markdown output format to pass to \code{\link{render}}
 powerpoint_presentation <- function(
-  toc = FALSE, fig_width = 5, fig_height = 4, fig_caption = TRUE,
+  toc = FALSE, toc_depth = 2, fig_width = 5, fig_height = 4, fig_caption = TRUE,
   df_print = 'default', smart = TRUE, keep_md = FALSE, md_extensions = NULL,
-  reference_doc = 'default', pandoc_args = NULL
+  slide_level = NULL, reference_doc = 'default', pandoc_args = NULL
 ) {
 
   # PowerPoint has been supported since Pandoc 2.0.5
@@ -28,12 +29,16 @@ powerpoint_presentation <- function(
   if (smart) md_extensions <- c(md_extensions, '+smart')
 
   # table of contents
-  if (toc) args <- c(args, '--toc')
+  args <- c(args, pandoc_toc_args(toc, toc_depth))
 
   # ppt template
   if (!is.null(reference_doc) && !identical(reference_doc, 'default')) {
     args <- c(args, '--reference-doc', pandoc_path_arg(reference_doc))
   }
+
+  # slide level
+  if (!is.null(slide_level))
+    args <- c(args, '--slide-level', as.character(slide_level))
 
   # TODO: syntax highlighting
 

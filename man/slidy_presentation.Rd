@@ -60,7 +60,7 @@ ellipses.}
 dependencies, using data: URIs to incorporate the contents of linked
 scripts, stylesheets, images, and videos. Note that even for self contained
 documents MathJax is still loaded externally (this is necessary because of
-it's size).}
+its size).}
 
 \item{highlight}{Syntax highlighting style. Supported styles include
 "default", "tango", "pygments", "kate", "monochrome", "espresso",
@@ -112,17 +112,15 @@ R Markdown output format to pass to \code{\link{render}}
 Format for converting from R Markdown to a slidy presentation.
 }
 \details{
-See the
-\href{http://rmarkdown.rstudio.com/slidy_presentation_format.html}{online
+See the \href{https://rmarkdown.rstudio.com/slidy_presentation_format.html}{online
 documentation} for additional details on using the \code{slidy_presentation}
 format.
 
 For more information on markdown syntax for presentations see the
-\href{http://pandoc.org/README.html}{pandoc online documentation}.
+\href{https://pandoc.org/README.html}{pandoc online documentation}.
 }
 \examples{
 \dontrun{
-
 library(rmarkdown)
 
 # simple invocation
@@ -131,5 +129,4 @@ render("pres.Rmd", slidy_presentation())
 # specify an option for incremental rendering
 render("pres.Rmd", slidy_presentation(incremental = TRUE))
 }
-
 }

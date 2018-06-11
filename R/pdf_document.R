@@ -2,37 +2,7 @@
 #'
 #' Formats for converting from R Markdown to a PDF or LaTeX document.
 #'
-#' @inheritParams html_document
-#'
-#' @param fig_crop \code{TRUE} to automatically apply the \code{pdfcrop} utility
-#'   (if available) to pdf figures
-#' @param dev Graphics device to use for figure output (defaults to pdf)
-#' @param highlight Syntax highlighting style. Supported styles include
-#'   "default", "tango", "pygments", "kate", "monochrome", "espresso",
-#'   "zenburn", and "haddock". Pass \code{NULL} to prevent syntax highlighting.
-#' @param keep_tex Keep the intermediate tex file used in the conversion to PDF
-#' @param latex_engine LaTeX engine for producing PDF output. Options are
-#'   "pdflatex", "lualatex", and "xelatex".
-#' @param citation_package The LaTeX package to process citations, \code{natbib}
-#'   or \code{biblatex}. Use \code{none} if neither package is to be used.
-#' @param template Pandoc template to use for rendering. Pass "default" to use
-#'   the rmarkdown package default template; pass \code{NULL} to use pandoc's
-#'   built-in template; pass a path to use a custom template that you've
-#'   created.  See the documentation on
-#'   \href{http://pandoc.org/README.html}{pandoc online documentation}
-#'   for details on creating custom templates.
-#' @param extra_dependencies A LaTeX dependency \code{latex_dependency()}, a
-#'   list of LaTeX dependencies, a character vector of LaTeX package names (e.g.
-#'   \code{c("framed", "hyperref")}), or a named list of LaTeX package options
-#'   with the names being package names (e.g. \code{list(hypreref =
-#'   c("unicode=true", "breaklinks=true"), lmodern = NULL)}). It can be used to
-#'   add custom LaTeX packages to the .tex header.
-#'
-#' @return R Markdown output format to pass to \code{\link{render}}
-#'
-#' @details
-#'
-#' See the \href{http://rmarkdown.rstudio.com/pdf_document_format.html}{online
+#' See the \href{https://rmarkdown.rstudio.com/pdf_document_format.html}{online
 #' documentation} for additional details on using the \code{pdf_document} format.
 #'
 #' Creating PDF output from R Markdown requires that LaTeX be installed.
@@ -43,7 +13,7 @@
 #'
 #' R Markdown documents also support citations. You can find more information on
 #' the markdown syntax for citations in the
-#' \href{http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html}{Bibliographies
+#' \href{https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html}{Bibliographies
 #' and Citations} article in the online documentation.
 #'
 #' Many aspects of the LaTeX template used to create PDF documents can be
@@ -69,10 +39,33 @@
 #'    \item{\code{linkcolor, urlcolor, citecolor}}{Color for internal, external, and citation links (red, green, magenta, cyan, blue, black)}
 #'    \item{\code{linestretch}}{Options for line spacing (e.g. 1, 1.5, 3)}
 #' }
-#'
+#' @inheritParams html_document
+#' @param fig_crop \code{TRUE} to automatically apply the \code{pdfcrop} utility
+#'   (if available) to pdf figures
+#' @param dev Graphics device to use for figure output (defaults to pdf)
+#' @param highlight Syntax highlighting style. Supported styles include
+#'   "default", "tango", "pygments", "kate", "monochrome", "espresso",
+#'   "zenburn", and "haddock". Pass \code{NULL} to prevent syntax highlighting.
+#' @param keep_tex Keep the intermediate tex file used in the conversion to PDF
+#' @param latex_engine LaTeX engine for producing PDF output. Options are
+#'   "pdflatex", "lualatex", and "xelatex".
+#' @param citation_package The LaTeX package to process citations, \code{natbib}
+#'   or \code{biblatex}. Use \code{none} if neither package is to be used.
+#' @param template Pandoc template to use for rendering. Pass "default" to use
+#'   the rmarkdown package default template; pass \code{NULL} to use pandoc's
+#'   built-in template; pass a path to use a custom template that you've
+#'   created.  See the documentation on
+#'   \href{http://pandoc.org/README.html}{pandoc online documentation}
+#'   for details on creating custom templates.
+#' @param extra_dependencies A LaTeX dependency \code{latex_dependency()}, a
+#'   list of LaTeX dependencies, a character vector of LaTeX package names (e.g.
+#'   \code{c("framed", "hyperref")}), or a named list of LaTeX package options
+#'   with the names being package names (e.g. \code{list(hypreref =
+#'   c("unicode=true", "breaklinks=true"), lmodern = NULL)}). It can be used to
+#'   add custom LaTeX packages to the .tex header.
+#' @return R Markdown output format to pass to \code{\link{render}}
 #' @examples
 #' \dontrun{
-#'
 #' library(rmarkdown)
 #'
 #' # simple invocation
@@ -84,7 +77,6 @@
 #' # add a table of contents and pass an option to pandoc
 #' render("input.Rmd", pdf_document(toc = TRUE, "--listings"))
 #' }
-#'
 #' @export
 pdf_document <- function(toc = FALSE,
                          toc_depth = 2,
@@ -133,6 +125,8 @@ pdf_document <- function(toc = FALSE,
 
   } else if (!is.null(template)) {
     args <- c(args, "--template", pandoc_path_arg(template))
+  } else {
+    args <- c(args, "--self-contained")
   }
 
   # numbered sections
@@ -170,12 +164,19 @@ pdf_document <- function(toc = FALSE,
 
     args <- c()
 
-    # set the margin to 1 inch if no other geometry options specified
-    has_geometry <- function(text) {
-      length(grep("^geometry:.*$", text)) > 0
+    has_yaml_parameter <- function(text, parameter) {
+      length(grep(paste0("^", parameter, "\\s*:.*$"), text)) > 0
     }
-    if (!has_geometry(readLines(input_file, warn = FALSE)))
+
+    input_test <- readLines(input_file, warn = FALSE)
+
+    # set the margin to 1 inch if no other geometry options specified
+    if (!has_yaml_parameter(input_test, "geometry"))
       args <- c(args, "--variable", "geometry:margin=1in")
+
+    # use titling package to change title format to be more compact by default
+    if (!has_yaml_parameter(input_test, "compact-title"))
+      args <- c(args, "--variable", "compact-title:yes")
 
     if (length(extra_dependencies) || has_latex_dependencies(knit_meta)) {
       extra_dependencies <- latex_dependencies(extra_dependencies)
@@ -226,6 +227,7 @@ pdf_document <- function(toc = FALSE,
 
 pdf_intermediates_generator <- function(saved_files_dir, original_input,
                                         encoding, intermediates_dir) {
+
   # copy all intermediates (pandoc will need to bundle them in the PDF)
   intermediates <- copy_render_intermediates(original_input, encoding,
                                              intermediates_dir, FALSE)
@@ -246,7 +248,7 @@ pdf_intermediates_generator <- function(saved_files_dir, original_input,
 #' @rdname pdf_document
 #' @export
 latex_document <- function(...) {
-  merge_lists(pdf_document(...), list(pandoc = list(ext = ".tex", keep_tex = TRUE)))
+  merge_lists(pdf_document(..., keep_tex = TRUE), list(pandoc = list(ext = ".tex")))
 }
 
 #' @rdname pdf_document

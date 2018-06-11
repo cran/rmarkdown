@@ -72,7 +72,7 @@ clean_site <- function(input = ".", preview = FALSE, quiet = FALSE,
   else {
     if (!quiet) {
       cat("Removing files: \n")
-      cat(paste(paste0(" ", files), collapse = "\n"))
+      cat(paste0(" ", files), sep = "\n")
     }
     unlink(file.path(input, files), recursive = TRUE)
   }
@@ -119,8 +119,10 @@ site_generator <- function(input = ".",
   }
 }
 
-# helper function to get the site configuration as an R list
-site_config <- function(input, encoding = getOption("encoding")) {
+
+#' @noRd
+#' @export
+site_config <- function(input = ".", encoding = getOption("encoding")) {
 
   # normalize input
   input <- input_as_dir(input)
@@ -150,6 +152,12 @@ site_config <- function(input, encoding = getOption("encoding")) {
   }
 }
 
+#' @noRd
+#' @export
+default_site_generator <- function(input, encoding = getOption("encoding"), ...) {
+  default_site(input, encoding, ...)
+}
+
 # default site implementation (can be overridden by custom site generators)
 default_site <- function(input, encoding = getOption("encoding"), ...) {
 
@@ -173,10 +181,6 @@ default_site <- function(input, encoding = getOption("encoding"), ...) {
                      quiet,
                      encoding, ...) {
 
-    site_yml  <- file.path(input, '_site.yml')
-    site_yml2 <- patch_html_document_options(config, encoding, site_yml)
-    on.exit(file.copy(site_yml2, site_yml, overwrite = TRUE), add = TRUE)
-
     # track outputs
     outputs <- c()
 
@@ -196,6 +200,8 @@ default_site <- function(input, encoding = getOption("encoding"), ...) {
       output <- suppressMessages(
         rmarkdown::render(x,
                           output_format = output_format,
+                          output_options = list(lib_dir = "site_libs",
+                                                self_contained = FALSE),
                           envir = envir,
                           quiet = quiet,
                           encoding = encoding)
@@ -329,7 +335,6 @@ copy_site_resources <- function(input, encoding = getOption("encoding")) {
     # get the list of files
     files <- copyable_site_resources(input = input,
                                      config = config,
-                                     recursive = FALSE,
                                      encoding = encoding)
 
     # perform the copy
@@ -340,14 +345,30 @@ copy_site_resources <- function(input, encoding = getOption("encoding")) {
   }
 }
 
-# utility function to list the files that should be copied
-copyable_site_resources <- function(input,
-                                    config = site_config(input, encoding),
-                                    recursive = FALSE,
-                                    encoding = getOption("encoding")) {
+
+
+#' Determine website resource files for a directory
+#'
+#' Determine which files within a given directory should be copied in
+#' order to serve a website from the directory. Attempts to automatically
+#' exclude source, data, hidden, and other files not required to serve
+#' website content.
+#'
+#' @inheritParams default_output_format
+#'
+#' @param site_dir Site directory to analyze
+#' @param include Additional files to include (glob wildcards supported)
+#' @param exclude Files to exclude  (glob wildcards supported)
+#' @param recursive `TRUE` to return a full recursive file listing; `FALSE` to
+#'   just provide top-level files and directories.
+#'
+#' @return Character vector of files and directories to copy
+#'
+#' @export
+site_resources <- function(site_dir, include = NULL, exclude = NULL, recursive = FALSE) {
 
   # get the original file list (we'll need it to apply includes)
-  all_files <- list.files(input, all.files = TRUE)
+  all_files <- list.files(site_dir, all.files = TRUE)
 
   # excludes:
   #   - known source/data extensions
@@ -361,16 +382,13 @@ copyable_site_resources <- function(input,
   extensions_regex <- utils::glob2rx(paste0("*.", extensions))
   excludes <- c("^rsconnect$", "^packrat$", "^\\..*$", "^_.*$", "^.*_cache$",
                 extensions_regex,
-                utils::glob2rx(config$exclude))
-  # add ouput_dir to excludes if it's not '.'
-  if (config$output_dir != '.')
-    excludes <- c(excludes, config$output_dir)
+                utils::glob2rx(exclude))
   files <- all_files
   for (exclude in excludes)
     files <- files[!grepl(exclude, files)]
 
   # allow back in anything specified as an explicit "include"
-  includes <- utils::glob2rx(config$include)
+  includes <- utils::glob2rx(include)
   for (include in includes) {
     include_files <- all_files[grepl(include, all_files)]
     files <- unique(c(files, include_files))
@@ -380,7 +398,7 @@ copyable_site_resources <- function(input,
   if (recursive) {
     recursive_files <- c()
     for (file in files) {
-      file_path <- file.path(input, file)
+      file_path <- file.path(site_dir, file)
       if (dir_exists(file_path)) {
         dir_files <- file.path(list.files(file_path,
                                           full.names = FALSE,
@@ -396,6 +414,24 @@ copyable_site_resources <- function(input,
     files
   }
 }
+
+
+# utility function to list the files that should be copied
+copyable_site_resources <- function(input,
+                                    config = site_config(input, encoding),
+                                    encoding = getOption("encoding")) {
+
+  include <- config$include
+
+  exclude <- config$exclude
+  if (config$output_dir != ".")
+    exclude <- c(exclude, config$output_dir)
+
+  site_resources(input, include, exclude)
+}
+
+
+
 
 # utility function to ensure that 'input' is a valid directory
 # (converts from file to parent directory as necessary)
@@ -418,25 +454,4 @@ input_as_dir <- function(input) {
 # get the path to the site config file
 site_config_file <- function(input) {
   file.path(input, "_site.yml")
-}
-
-# make sure the html_document format has options `lib_dir` and `self_contained`
-patch_html_document_options <- function(config, encoding, site_yml) {
-  out <- as.list(config[['output']])
-  # when output is not a list, e.g., output: html_document
-  for (i in seq_along(out)) {
-    if (is.character(out[[i]])) out[[i]] = setNames(list('default'), out[[i]])
-  }
-  opts <- out[['html_document']]
-  if (identical(opts, 'default')) opts <- list()
-  opts <- merge_lists(as.list(opts), list(
-    lib_dir = "site_libs", self_contained = FALSE
-  ))
-  config$output <- list(html_document = opts)
-  tmp <- tempfile()
-  file.copy(site_yml, tmp, overwrite = TRUE)
-  con <- file(site_yml, open = 'w', encoding = encoding)
-  on.exit(close(con), add = TRUE)
-  writeLines(yaml::as.yaml(config), con)
-  tmp
 }

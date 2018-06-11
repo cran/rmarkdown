@@ -1,3 +1,31 @@
+rmarkdown 1.10 (unreleased)
+--------------------------------------------------------------------------------
+
+* Added a new argument `slide_level` to `powerpoint_presentation()` (#1270).
+
+* The **tinytex** package has become a required dependency (to build R Markdown to PDF).
+
+* Added `compact-title` variable to the LaTeX default templates to control use of LaTeX `titling` package; defaults to `true` (#1284).
+
+* `pdf_document(template = NULL)` does not work (#1295).
+
+* Restore ability to use any HTML format with R Markdown Websites (#1328).
+
+* Add `options` argument to `paged_table()` to enable explicit passing of display options.
+
+* Add `pandoc_citeproc_convert()` function for conversion of bibliography files (e.g. BibTeX files).
+
+* Update to Font Awesome version 5.0.13 (#1340).
+
+* Add `site_resources()` function for computing resource files required for a website.
+
+* Export `default_site_generator()` function
+
+* The `latex_document()` format should not clean up the figure directory (thanks, @emiltb, rstudio/bookdown#582).
+
+* Enable post processors that change the output file to specify that the base post processor should still be applied to the original output file.
+
+
 rmarkdown 1.9
 --------------------------------------------------------------------------------
 

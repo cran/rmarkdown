@@ -9,11 +9,6 @@
 #' R Markdown documents can have optional metadata that is used to generate a
 #' document header that includes the title, author, and date. For more details
 #' see the documentation on R Markdown \link[=rmd_metadata]{metadata}.
-#'
-#' R Markdown documents also support citations. You can find more information on
-#' the markdown syntax for citations in the
-#' \href{http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html}{Bibliographies
-#' and Citations} article in the online documentation.
 #' @inheritParams html_document
 #' @param variant Markdown variant to produce (defaults to "markdown_strict").
 #'   Other valid values are "markdown_github", "markdown_mmd",
@@ -63,20 +58,16 @@ md_document <- function(variant = "markdown_strict",
   args <- c(args, pandoc_args)
 
   # add post_processor for yaml preservation
-  if (preserve_yaml && variant != 'markdown') {
-    post_processor <- function(metadata, input_file, output_file, clean, verbose) {
-      input_lines <- readLines(input_file, warn = FALSE)
+  post_processor <- if (preserve_yaml && variant != 'markdown') {
+    function(metadata, input_file, output_file, clean, verbose) {
+      input_lines <- read_utf8(input_file)
       partitioned <- partition_yaml_front_matter(input_lines)
       if (!is.null(partitioned$front_matter)) {
-        output_lines <- c(partitioned$front_matter,
-                          "",
-                          readLines(output_file, warn = FALSE))
-        writeLines(output_lines, output_file, useBytes = TRUE)
+        output_lines <- c(partitioned$front_matter, "", read_utf8(output_file))
+        write_utf8(output_lines, output_file)
       }
       output_file
     }
-  } else {
-    post_processor <- NULL
   }
 
   # return format

@@ -126,24 +126,17 @@ ioslides_presentation <- function(logo = NULL,
     # add any custom pandoc args
     args <- c(args, pandoc_args)
 
-    # attempt to create the output writer alongside input file
     lua_writer <- file.path(dirname(input_file), "ioslides_presentation.lua")
-    tryCatch({
-      suppressWarnings(writeLines("", lua_writer, useBytes = TRUE))
-    },
-    error = function(...) {
-      # The input directory may not be writable (on e.g. Shiny Server), so write
-      # to the output directory in this case. We don't always do this since
-      # supplying a fully qualified path to the writer can trigger a bug on some
-      # Linux configurations.
-      lua_writer <<- file.path(dirname(output_file),
-                               "ioslides_presentation.lua")
-    })
+    # The input directory may not be writable (on e.g. Shiny Server), so write
+    # to the output directory in this case. We don't always do this since
+    # supplying a fully qualified path to the writer can trigger a bug on some
+    # Linux configurations.
+    if (!file.create(lua_writer, showWarnings = FALSE))
+      lua_writer <- file.path(dirname(output_file), basename(lua_writer))
     on.exit(unlink(lua_writer), add = TRUE)
 
     # determine whether we need to run citeproc
-    input_lines <- readLines(input_file, warn = FALSE)
-    run_citeproc <- citeproc_required(metadata, input_lines)
+    run_citeproc <- citeproc_required(metadata, read_utf8(input_file))
 
     # write settings to file
     settings <- c()
@@ -159,7 +152,7 @@ ioslides_presentation <- function(logo = NULL,
 
     # Set level of slide header (used by ioslides_presentation.lua)
     settings <- c(settings, sprintf("local slide_level = %s", slide_level))
-    writeLines(settings, lua_writer, useBytes = TRUE)
+    write_utf8(settings, lua_writer)
 
     # For consistency add as pandoc argument
     args <- c(args, "--slide-level", as.character(slide_level))
@@ -198,7 +191,7 @@ ioslides_presentation <- function(logo = NULL,
                    verbose = verbose)
 
     # read the slides
-    slides_lines <- readLines(output_tmpfile, warn = FALSE, encoding = "UTF-8")
+    slides_lines <- read_utf8(output_tmpfile)
 
     # base64 encode if needed
     if (self_contained) {
@@ -206,7 +199,7 @@ ioslides_presentation <- function(logo = NULL,
     }
 
     # read the output file
-    output_lines <- readLines(output_file, warn = FALSE, encoding = "UTF-8")
+    output_lines <- read_utf8(output_file)
 
     # substitute slides for the sentinel line
     sentinel_line <- grep("^RENDERED_SLIDES$", output_lines)
@@ -214,7 +207,7 @@ ioslides_presentation <- function(logo = NULL,
       preface_lines <- c(output_lines[1:sentinel_line[1] - 1])
       suffix_lines <- c(output_lines[-(1:sentinel_line[1])])
       output_lines <- c(preface_lines, slides_lines, suffix_lines)
-      writeLines(output_lines, output_file, useBytes = TRUE)
+      write_utf8(output_lines, output_file)
     } else {
       stop("Slides placeholder not found in slides HTML", call. = FALSE)
     }

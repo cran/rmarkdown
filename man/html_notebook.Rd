@@ -26,7 +26,7 @@ options that control the behavior of the floating table of contents. See the
 
 \item{fig_width}{Default width (in inches) for figures}
 
-\item{fig_height}{Default width (in inches) for figures}
+\item{fig_height}{Default height (in inches) for figures}
 
 \item{fig_retina}{Scaling to perform for retina displays (defaults to 2, which
 currently works for all widely used retina displays). Set to \code{NULL} to
@@ -48,9 +48,9 @@ quotes to curly quotes, --- to em-dashes, -- to en-dashes, and ... to
 ellipses.}
 
 \item{theme}{Visual theme ("default", "cerulean", "journal", "flatly",
-"readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone",
-"simplex", or "yeti"). Pass \code{NULL} for no theme (in this case you can
-use the \code{css} parameter to add your own styles).}
+"darkly", "readable", "spacelab", "united", "cosmo", "lumen", "paper",
+"sandstone", "simplex", or "yeti"). Pass \code{NULL} for no theme (in this
+case you can use the \code{css} parameter to add your own styles).}
 
 \item{highlight}{Syntax highlighting style. Supported styles include
 "default", "tango", "pygments", "kate", "monochrome", "espresso", "zenburn",

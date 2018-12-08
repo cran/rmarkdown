@@ -3,8 +3,8 @@
 \name{html-dependencies}
 \alias{html-dependencies}
 \alias{html_dependency_jquery}
-\alias{html_dependency_bootstrap}
 \alias{html_dependency_jqueryui}
+\alias{html_dependency_bootstrap}
 \alias{html_dependency_tocify}
 \alias{html_dependency_font_awesome}
 \alias{html_dependency_ionicons}
@@ -14,9 +14,9 @@
 \usage{
 html_dependency_jquery()
 
-html_dependency_bootstrap(theme)
-
 html_dependency_jqueryui()
+
+html_dependency_bootstrap(theme)
 
 html_dependency_tocify()
 
@@ -30,9 +30,9 @@ html_dependency_highlightjs(highlight)
 }
 \arguments{
 \item{theme}{Visual theme ("default", "cerulean", "journal", "flatly",
-"readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone",
-"simplex", or "yeti"). Pass \code{NULL} for no theme (in this case you can
-use the \code{css} parameter to add your own styles).}
+"darkly", "readable", "spacelab", "united", "cosmo", "lumen", "paper",
+"sandstone", "simplex", or "yeti"). Pass \code{NULL} for no theme (in this
+case you can use the \code{css} parameter to add your own styles).}
 
 \item{highlight}{Highlighter to use}
 }

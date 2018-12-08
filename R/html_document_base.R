@@ -109,7 +109,7 @@ html_document_base <- function(smart = TRUE,
     preserved_chunks <<- extract_preserve_chunks(input_file)
 
     # Avoid pagetitle warning from pandoc2.0 when title is missing
-    if (pandoc2.0() && is.null(metadata$title))
+    if (pandoc2.0() && is.null(metadata$title) && is.null(metadata$pagetitle))
       args <- c(args, "--metadata", paste0("pagetitle=", input_file))
 
     args
@@ -130,7 +130,7 @@ html_document_base <- function(smart = TRUE,
       return(output_file)
 
     # read the output file
-    output_str <- readLines(output_file, warn = FALSE, encoding = "UTF-8")
+    output_str <- read_utf8(output_file)
 
     # if we preserved chunks, restore them
     if (length(preserved_chunks) > 0) {
@@ -141,8 +141,8 @@ html_document_base <- function(smart = TRUE,
       for (i in names(preserved_chunks)) {
         output_str <- gsub(paste0("<p>", i, "</p>"), i, output_str,
                            fixed = TRUE, useBytes = TRUE)
-        output_str <- gsub(paste0(' id="section-', i, '" '), ' ', output_str,
-                           fixed = TRUE, useBytes = TRUE)
+        output_str <- gsub(paste0(' id="[^"]*?', i, '[^"]*?" '), ' ', output_str,
+                           useBytes = TRUE)
       }
       output_str <- restorePreserveChunks(output_str, preserved_chunks)
     }
@@ -151,8 +151,7 @@ html_document_base <- function(smart = TRUE,
       # The copy_resources flag copies all the resources referenced in the
       # document to its supporting files directory, and rewrites the document to
       # use the copies from that directory.
-      output_str <- copy_html_resources(paste(output_str, collapse = "\n"),
-                                              lib_dir, output_dir)
+      output_str <- copy_html_resources(one_string(output_str), lib_dir, output_dir)
     } else if (!self_contained) {
       # if we're not self-contained, find absolute references to the output
       # directory and replace them with relative ones
@@ -170,7 +169,7 @@ html_document_base <- function(smart = TRUE,
       output_str <- process_images(output_str, image_relative)
     }
 
-    writeLines(output_str, output_file, useBytes = TRUE)
+    write_utf8(output_str, output_file)
     output_file
   }
 
@@ -190,10 +189,9 @@ html_document_base <- function(smart = TRUE,
 extract_preserve_chunks <- function(input_file, extract = extractPreserveChunks) {
   # The input file is converted to UTF-8 from its native encoding prior
   # to calling the preprocessor (see ::render)
-  input_str <- readLines(input_file, warn = FALSE, encoding = "UTF-8")
+  input_str <- read_utf8(input_file)
   preserve <- extract(input_str)
-  if (!identical(preserve$value, input_str))
-    writeLines(enc2utf8(preserve$value), input_file, useBytes = TRUE)
+  if (!identical(preserve$value, input_str)) write_utf8(preserve$value, input_file)
   preserve$chunks
 }
 

@@ -4,10 +4,11 @@
 \alias{html_fragment}
 \title{Convert to an HTML fragment.}
 \usage{
-html_fragment(number_sections = FALSE, section_divs = TRUE, fig_width = 7,
-  fig_height = 5, fig_retina = 2, fig_caption = TRUE, dev = "png",
-  df_print = "default", smart = TRUE, mathjax = TRUE, includes = NULL,
-  keep_md = FALSE, md_extensions = NULL, pandoc_args = NULL, ...)
+html_fragment(number_sections = FALSE, section_divs = TRUE,
+  fig_width = 7, fig_height = 5, fig_retina = 2,
+  fig_caption = TRUE, dev = "png", df_print = "default",
+  smart = TRUE, mathjax = TRUE, includes = NULL, keep_md = FALSE,
+  md_extensions = NULL, pandoc_args = NULL, ...)
 }
 \arguments{
 \item{number_sections}{\code{TRUE} to number section headings}
@@ -18,7 +19,7 @@ header itself.}
 
 \item{fig_width}{Default width (in inches) for figures}
 
-\item{fig_height}{Default width (in inches) for figures}
+\item{fig_height}{Default height (in inches) for figures}
 
 \item{fig_retina}{Scaling to perform for retina displays (defaults to 2, which
 currently works for all widely used retina displays). Set to \code{NULL} to

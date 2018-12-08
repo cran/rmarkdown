@@ -6,8 +6,8 @@
 \usage{
 md_document(variant = "markdown_strict", preserve_yaml = FALSE,
   toc = FALSE, toc_depth = 3, fig_width = 7, fig_height = 5,
-  fig_retina = NULL, dev = "png", df_print = "default", includes = NULL,
-  md_extensions = NULL, pandoc_args = NULL)
+  fig_retina = NULL, dev = "png", df_print = "default",
+  includes = NULL, md_extensions = NULL, pandoc_args = NULL)
 }
 \arguments{
 \item{variant}{Markdown variant to produce (defaults to "markdown_strict").
@@ -25,7 +25,7 @@ for details.}
 
 \item{fig_width}{Default width (in inches) for figures}
 
-\item{fig_height}{Default width (in inches) for figures}
+\item{fig_height}{Default height (in inches) for figures}
 
 \item{fig_retina}{Scaling to perform for retina displays. Defaults to
 \code{NULL} which performs no scaling. A setting of 2 will work for all
@@ -69,11 +69,6 @@ documentation} for additional details on using the \code{md_document} format.
 R Markdown documents can have optional metadata that is used to generate a
 document header that includes the title, author, and date. For more details
 see the documentation on R Markdown \link[=rmd_metadata]{metadata}.
-
-R Markdown documents also support citations. You can find more information on
-the markdown syntax for citations in the
-\href{http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html}{Bibliographies
-and Citations} article in the online documentation.
 }
 \examples{
 \dontrun{

@@ -232,7 +232,7 @@ pandoc_version <- function() {
 #' pandoc_include_args(before_body = "header.htm")
 #' pandoc_include_args(before_body = "header.tex")
 #'
-#' pancoc_highlight_args("kate")
+#' pandoc_highlight_args("kate")
 #'
 #' pandoc_latex_engine_args("pdflatex")
 #'
@@ -403,7 +403,7 @@ pandoc_self_contained_html <- function(input, output) {
   # create a simple body-only template
   template <- tempfile(fileext = ".html")
   on.exit(unlink(template), add = TRUE)
-  writeLines("$body$", template)
+  write_utf8("$body$", template)
 
   # convert from markdown to html to get base64 encoding
   # (note there is no markdown in the source document but
@@ -547,55 +547,49 @@ is_highlightjs <- function(highlight) {
 }
 
 # Scan for a copy of pandoc and set the internal cache if it's found.
-find_pandoc <- function() {
+find_pandoc <- function(cache = TRUE) {
 
-  if (is.null(.pandoc$dir)) {
+  if (!is.null(.pandoc$dir) && cache) return(invisible(as.list(.pandoc)))
 
-    # define potential sources
-    sys_pandoc <- find_program("pandoc")
-    sources <- c(Sys.getenv("RSTUDIO_PANDOC"),
-                 ifelse(nzchar(sys_pandoc), dirname(sys_pandoc), ""))
-    if (!is_windows())
-      sources <- c(sources, path.expand("~/opt/pandoc"))
+  # define potential sources
+  sys_pandoc <- find_program("pandoc")
+  sources <- c(Sys.getenv("RSTUDIO_PANDOC"), if (nzchar(sys_pandoc)) dirname(sys_pandoc))
+  if (!is_windows()) sources <- c(sources, path.expand("~/opt/pandoc"))
 
-    # determine the versions of the sources
-    versions <- lapply(sources, function(src) {
-      if (dir_exists(src))
-        get_pandoc_version(src)
-      else
-        numeric_version("0")
-    })
+  # determine the versions of the sources
+  versions <- lapply(sources, function(src) {
+    if (dir_exists(src)) get_pandoc_version(src) else numeric_version("0")
+  })
 
-    # find the maximum version
-    found_src <- NULL
-    found_ver <- numeric_version("0")
-    for (i in 1:length(sources)) {
-      ver <- versions[[i]]
-      if (ver > found_ver) {
-        found_ver <- ver
-        found_src <- sources[[i]]
-      }
-    }
-
-    # did we find a version?
-    if (!is.null(found_src)) {
-      .pandoc$dir <- found_src
-      .pandoc$version <- found_ver
+  # find the maximum version
+  found_src <- NULL
+  found_ver <- numeric_version("0")
+  for (i in seq_along(sources)) {
+    ver <- versions[[i]]
+    if (ver > found_ver) {
+      found_ver <- ver
+      found_src <- sources[[i]]
     }
   }
+
+  # did we find a version?
+  if (!is.null(found_src)) {
+    .pandoc$dir <- found_src
+    .pandoc$version <- found_ver
+  }
+
+  invisible(as.list(.pandoc))
 }
 
 # Get an S3 numeric_version for the pandoc utility at the specified path
 get_pandoc_version <- function(pandoc_dir) {
-
-  pandoc_path <- file.path(pandoc_dir, "pandoc")
-  if (is_windows()) pandoc_path <- paste0(pandoc_path, ".exe")
-  if (!utils::file_test("-x", pandoc_path)) return(numeric_version("0"))
-  with_pandoc_safe_environment({
-    version_info <- system(paste(shQuote(pandoc_path), "--version"),
-                           intern = TRUE)
-  })
-  version <- strsplit(version_info, "\n")[[1]][1]
+  path <- file.path(pandoc_dir, "pandoc")
+  if (is_windows()) path <- paste0(path, ".exe")
+  if (!utils::file_test("-x", path)) return(numeric_version("0"))
+  info <- with_pandoc_safe_environment(
+    system(paste(shQuote(path), "--version"), intern = TRUE)
+  )
+  version <- strsplit(info, "\n")[[1]][1]
   version <- strsplit(version, " ")[[1]][2]
   numeric_version(version)
 }
@@ -716,3 +710,16 @@ find_pandoc_theme_variable <- function(args) {
 pandoc2.0 <- function() {
   pandoc_available("2.0")
 }
+
+#' Get the path of the pandoc executable
+#'
+#' Returns the path of the pandoc executable used by functions in the the
+#' \pkg{rmarkdown} package. This is the most recent version of pandoc found in
+#' either the system path or shipped with RStudio.
+#'
+#' See the
+#' \href{http://pandoc.org/MANUAL.html}{pandoc manual}
+#' for pandoc commands.
+#'
+#' @export
+pandoc_exec <- pandoc

@@ -19,9 +19,8 @@ shiny_prerendered_app <- function(input_rmd, encoding, render_args) {
   # retreived later via the shiny_prerendered_server_start_code function. The
   # purpose of this is for appliations which want to run user in other
   # processes while still duplicating the setup context (e.g. tutorials).
-  server_start_code <- paste(c(server_start_context,
-                               shiny_prerendered_extract_context(html_lines, "data")),
-                             collapse = "\n")
+  server_start_code <- one_string(c(server_start_context,
+                               shiny_prerendered_extract_context(html_lines, "data")))
 
   onStart <- function() {
 
@@ -47,7 +46,7 @@ shiny_prerendered_app <- function(input_rmd, encoding, render_args) {
   # remove server code before serving
   server_contexts <-  c("server-start", "data", "server")
   html_lines <- shiny_prerendered_remove_contexts(html_lines, server_contexts)
-  html <- HTML(paste(html_lines, collapse = "\n"))
+  html <- HTML(one_string(html_lines))
   html <- htmltools::attachDependencies(html, deps)
 
   # create shiny app
@@ -75,49 +74,13 @@ shiny_prerendered_html <- function(input_rmd, encoding, render_args) {
 
   # determine whether we need to render the Rmd in advance
   prerender_option <- tolower(Sys.getenv("RMARKDOWN_RUN_PRERENDER", "1"))
-
-  if (file.access(output_dir, 2) != 0) {
-    if (!file.exists(rendered_html))
-      stop("Unable to write prerendered HTML file to ", rendered_html)
-
-    prerender <- FALSE
-  }
-  else if (identical(prerender_option, "0")) {
-    prerender <- FALSE
-  }
-  else if (identical(prerender_option, "1")) {
-
-    # determine the last modified time of the output file
-    if (file.exists(rendered_html))
-      output_last_modified <- as.integer(file.info(rendered_html)$mtime)
-    else
-      output_last_modified <- 0L
-
-    # short circuit for Rmd modified. if it hasn't been modified since the
-    # html was generated look at external resources
-    input_last_modified <- as.integer(file.info(input_rmd)$mtime)
-    if (input_last_modified > output_last_modified) {
-      prerender <- TRUE
-    }
-    else {
-      # find external resources referenced by the file
-      external_resources <- find_external_resources(input_rmd, encoding)
-
-      # get paths to external resources
-      input_files <- c(input_rmd,
-                       file.path(output_dir, external_resources$path))
-
-      # what's the maximum last_modified time of an input file
-      input_last_modified <- max(as.integer(file.info(input_files)$mtime),
-                                 na.rm = TRUE)
-
-      # render if an input file was modified after the output file
-      prerender <- input_last_modified > output_last_modified
-    }
-  }
-  else {
-    stop("Invalid value '", prerender_option, "' for RMARKDOWN_RUN_PRERENDER")
-  }
+  prerender <- shiny_prerendered_prerender(
+    input_rmd,
+    rendered_html,
+    output_dir,
+    encoding,
+    prerender_option
+  )
 
   # prerender if necessary
   if (prerender) {
@@ -148,7 +111,7 @@ shiny_prerendered_html <- function(input_rmd, encoding, render_args) {
   add_resource_path(file.path(output_dir,"www"))
 
   # extract dependencies from html
-  html_lines <- readLines(rendered_html, encoding = "UTF-8", warn = FALSE)
+  html_lines <- read_utf8(rendered_html)
   dependencies_json <- shiny_prerendered_extract_context(html_lines, "dependencies")
   dependencies <- jsonlite::unserializeJSON(dependencies_json)
 
@@ -171,18 +134,114 @@ shiny_prerendered_html <- function(input_rmd, encoding, render_args) {
   shinyHTML_with_deps(rendered_html, dependencies)
 }
 
+shiny_prerendered_prerender <- function(
+  input_rmd,
+  rendered_html,
+  output_dir,
+  encoding,
+  prerender_option
+) {
+  if (file.access(output_dir, 2) != 0) {
+    if (!file.exists(rendered_html))
+      stop("Unable to write prerendered HTML file to ", rendered_html)
+    return(FALSE)
+  }
+
+  if (identical(prerender_option, "0")) {
+    return(FALSE)
+  }
+  if (!identical(prerender_option, "1")) {
+    stop("Invalid value '", prerender_option, "' for RMARKDOWN_RUN_PRERENDER")
+  }
+
+  # determine the last modified time of the output file
+  if (file.exists(rendered_html)) {
+    output_last_modified <- as.integer(file.info(rendered_html)$mtime)
+  } else {
+    output_last_modified <- 0L
+  }
+
+  # short circuit for Rmd modified. if it hasn't been modified since the
+  # html was generated look at external resources
+  input_last_modified <- as.integer(file.info(input_rmd)$mtime)
+  if (input_last_modified > output_last_modified) {
+    return(TRUE)
+  }
+
+  # find external resources referenced by the file
+  external_resources <- find_external_resources(input_rmd, encoding)
+
+  # get paths to external resources
+  input_files <- c(input_rmd, file.path(output_dir, external_resources$path))
+
+  # what's the maximum last_modified time of an input file
+  input_last_modified <- max(as.integer(file.info(input_files)$mtime), na.rm = TRUE)
+
+  # render if an input file was modified after the output file
+  if (input_last_modified > output_last_modified) {
+    return(TRUE)
+  }
+
+  html_lines <- read_utf8(rendered_html)
+
+  # check that all html dependencies exist
+  dependencies_json <- shiny_prerendered_extract_context(html_lines, "dependencies")
+  dependencies <- jsonlite::unserializeJSON(dependencies_json)
+
+  pkgsSeen <- list()
+  for (dep in dependencies) {
+    if (is.null(dep$package)) {
+      # if the file doesn't exist at all, render again
+      if (!file.exists(dep$src$file)) {
+        # might create a missing file compile-time error,
+        #   but that's better than a missing file prerendered error
+        return(TRUE)
+      }
+    } else {
+      depPkg <- dep$package
+      depVer <- dep$pkgVersion
+      if (is.null(pkgsSeen[[depPkg]])) {
+        # has not seen pkg
+
+        # depVer could be NULL, producing a logical(0)
+        #   means old prerender version, render again
+        if (!isTRUE(get_package_version_string(depPkg) == depVer)) {
+          # was not rendered with the same R package. must render again
+          return (TRUE)
+        }
+        pkgsSeen[[depPkg]] <- depVer
+      }
+    }
+  }
+  # all html dependencies are accounted for
+
+  # check for execution package version differences
+  execution_json <- shiny_prerendered_extract_context(html_lines, "execution_dependencies")
+  execution_info <- jsonlite::unserializeJSON(execution_json)
+  execution_pkg_names <- execution_info$packages$package
+  execution_pkg_versions <- execution_info$packages$version
+  for (i in seq_along(execution_pkg_names)) {
+    if (!identical(
+      get_package_version_string(execution_pkg_names[i]),
+      execution_pkg_versions[i]
+    )) {
+      return(TRUE)
+    }
+  }
+  # all execution packages match
+
+  return(FALSE)
+}
+
 
 # Write the dependencies for a shiny_prerendered document.
-#' @import rprojroot
 shiny_prerendered_append_dependencies <- function(input, # always UTF-8
                                                   shiny_prerendered_dependencies,
                                                   files_dir,
                                                   output_dir) {
 
-
-
   # transform dependencies (if we aren't in debug mode)
-  dependencies <- lapply(shiny_prerendered_dependencies, function(dependency) {
+  dependencies <- lapply(shiny_prerendered_dependencies$deps, function(dependency) {
 
     # no transformation in dev mode (so browser dev tools can map directly
     # to the locations of CSS and JS files in their pkg src directory)
@@ -190,19 +249,18 @@ shiny_prerendered_append_dependencies <- function(input, # always UTF-8
       return(dependency)
 
     # see if we can convert absolute paths into package-aliased ones
-    if (is.null(dependency$package) && !is.null(dependency$src$file)) {
+    if (is.null(dependency$package) && is.character(dependency$src$file)) {
 
       # check for a package directory parent
-      package_dir <- tryCatch(
-        find_root(is_r_package, path = dependency$src$file),
-        error = function(e) NULL
-      )
+      package_dir <- package_root(dependency$src$file)
       # if we have one then populate the package field and make the
       # src$file relative to the package
       if (!is.null(package_dir)) {
         package_desc <- read.dcf(file.path(package_dir, "DESCRIPTION"),
                                  all = TRUE)
         dependency$package <- package_desc$Package
+        # named to something that doesn't start with 'package' to deter lazy name matching
+        dependency$pkgVersion <- package_desc$Version
         dependency$src$file <- normalized_relative_to(package_dir,
                                                       dependency$src$file)
       }
@@ -210,8 +268,8 @@ shiny_prerendered_append_dependencies <- function(input, # always UTF-8
 
     # if we couldn't resolve the src to a package then copy the files
     if (is.null(dependency$package) && !is.null(dependency$src$file)) {
-      dependency <- htmltools::copyDependencyToDir(dependency, files_dir)
-      dependency <- htmltools::makeDependencyRelative(dependency, output_dir)
+      dependency <- copyDependencyToDir(dependency, files_dir)
+      dependency <- makeDependencyRelative(dependency, output_dir)
       dependency$src = list(href = unname(dependency$src))
     }
 
@@ -229,6 +287,14 @@ shiny_prerendered_append_dependencies <- function(input, # always UTF-8
   # write deps to connection
   dependencies_json <- jsonlite::serializeJSON(dependencies, pretty = FALSE)
   shiny_prerendered_append_context(con, "dependencies", dependencies_json)
+
+  # write r major version and execution package dependencies
+  execution_json <- jsonlite::serializeJSON(
+    # visibly display what is being stored
+    shiny_prerendered_dependencies["packages"],
+    pretty = FALSE
+  )
+  shiny_prerendered_append_context(con, "execution_dependencies", execution_json)
 }
 
 
@@ -328,7 +394,7 @@ shiny_prerendered_option_hook <- function(input, encoding) {
                                                     options$cache > 0)
       data_file <- to_utf8(data_file, encoding)
       data_dir <- shiny_prerendered_data_dir(input, create = TRUE)
-      index_file <- shiny_prerendred_data_chunks_index(data_dir)
+      index_file <- shiny_prerendered_data_chunks_index(data_dir)
       conn <- file(index_file, open = "ab", encoding = "UTF-8")
       on.exit(close(conn), add = TRUE)
       write(data_file, file = conn, append = TRUE)
@@ -410,7 +476,7 @@ shiny_prerendered_evaluate_hook <- function(input) {
 shiny_prerendered_remove_uncached_data <- function(input) {
   data_dir <- shiny_prerendered_data_dir(input)
   if (dir_exists(data_dir)) {
-    index_file <- shiny_prerendred_data_chunks_index(data_dir)
+    index_file <- shiny_prerendered_data_chunks_index(data_dir)
     if (file.exists(index_file))
       unlink(index_file)
     rdata_files <- list.files(data_dir, pattern = utils::glob2rx("*.RData"))
@@ -513,10 +579,8 @@ shiny_prerendered_append_contexts <- function(runtime, file, encoding) {
             break
           }
         }
-        if (found_singleton)
-          next
-        else
-          singletons[[length(singletons) + 1]] <- context
+        if (found_singleton) next
+        singletons[[length(singletons) + 1]] <- context
       }
 
       # append context
@@ -566,9 +630,9 @@ shiny_prerendered_data_load <- function(input_rmd, server_envir) {
   data_dir <- shiny_prerendered_data_dir(input_rmd)
   if (dir_exists(data_dir)) {
     # read index of data files
-    index_file <- shiny_prerendred_data_chunks_index(data_dir)
+    index_file <- shiny_prerendered_data_chunks_index(data_dir)
     if (file.exists(index_file)) {
-      rdata_files <- readLines(index_file, encoding = "UTF-8")
+      rdata_files <- read_utf8(index_file)
       # load each of the files in the index
       for (rdata_file in rdata_files) {
         rdata_file <- file.path(data_dir,rdata_file)
@@ -580,7 +644,7 @@ shiny_prerendered_data_load <- function(input_rmd, server_envir) {
 }
 
 # File used to store names of chunks which had cache=TRUE during the last render
-shiny_prerendred_data_chunks_index <- function(data_dir) {
+shiny_prerendered_data_chunks_index <- function(data_dir) {
   file.path(data_dir, "data_chunks_index.txt")
 }
 
@@ -589,4 +653,3 @@ shiny_prerendered_data_file_name <- function(label, cache) {
   type <- ifelse(cache, ".cached", "")
   sprintf("%s%s.RData", label, type)
 }
-

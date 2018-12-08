@@ -23,7 +23,7 @@
 #'  \emph{Floating Table of Contents} section below for details.
 #'@param number_sections \code{TRUE} to number section headings
 #'@param fig_width Default width (in inches) for figures
-#'@param fig_height Default width (in inches) for figures
+#'@param fig_height Default height (in inches) for figures
 #'@param fig_retina Scaling to perform for retina displays (defaults to 2, which
 #'  currently works for all widely used retina displays). Set to \code{NULL} to
 #'  prevent retina scaling. Note that this will always be \code{NULL} when
@@ -48,9 +48,9 @@
 #'  documents MathJax is still loaded externally (this is necessary because of
 #'  its size).
 #'@param theme Visual theme ("default", "cerulean", "journal", "flatly",
-#'  "readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone",
-#'  "simplex", or "yeti"). Pass \code{NULL} for no theme (in this case you can
-#'  use the \code{css} parameter to add your own styles).
+#'  "darkly", "readable", "spacelab", "united", "cosmo", "lumen", "paper",
+#'  "sandstone", "simplex", or "yeti"). Pass \code{NULL} for no theme (in this
+#'  case you can use the \code{css} parameter to add your own styles).
 #'@param highlight Syntax highlighting style. Supported styles include
 #'  "default", "tango", "pygments", "kate", "monochrome", "espresso", "zenburn",
 #'  "haddock", and "textmate". Pass \code{NULL} to prevent syntax highlighting.
@@ -404,7 +404,7 @@ html_document <- function(toc = FALSE,
         stop("You must use a theme when specifying the 'code_download' option")
       args <- c(args, pandoc_variable_arg("source_embed", source_file))
       sourceCodeFile <- tempfile(fileext = ".html")
-      writeLines(source_code, sourceCodeFile)
+      write_utf8(source_code, sourceCodeFile)
       args <- c(args, pandoc_include_args(after_body = sourceCodeFile))
       code_menu <- TRUE
     }
@@ -484,6 +484,7 @@ themes <- function() {
     "cerulean",
     "journal",
     "flatly",
+    "darkly",
     "readable",
     "spacelab",
     "united",
@@ -515,6 +516,7 @@ pandoc_body_padding_variable_args <- function(theme) {
                      "cerulean" = 51,
                      "journal" = 61 ,
                      "flatly" = 60,
+                     "darkly" = 60,
                      "readable" = 66,
                      "spacelab" = 52,
                      "united" = 51,
@@ -539,7 +541,7 @@ pandoc_body_padding_variable_args <- function(theme) {
 navbar_html_from_yaml <- function(navbar_yaml) {
 
   # parse the yaml
-  navbar <- yaml_load_file_utf8(navbar_yaml)
+  navbar <- yaml_load_file(navbar_yaml)
 
   # generate the html
   navbar_html(navbar)
@@ -556,26 +558,18 @@ navbar_html_from_yaml <- function(navbar_yaml) {
 navbar_html <- function(navbar) {
 
   # title and type
-  if (is.null(navbar$title))
-    navbar$title <- ""
-  if (is.null(navbar$type))
-    navbar$type <- "default"
+  if (is.null(navbar$title)) navbar$title <- ""
+  if (is.null(navbar$type)) navbar$type <- "default"
 
   # menu entries
   left <- navbar_links_html(navbar$left)
   right <- navbar_links_html(navbar$right)
 
   # build the navigation bar and return it as a temp file
-  template_file <- rmarkdown_system_file("rmd/h/_navbar.html")
-  template <- paste(readLines(template_file), collapse = "\n")
-  navbar_html <- sprintf(template,
-                         navbar$type,
-                         navbar$title,
-                         left,
-                         right)
+  template <- file_string(rmarkdown_system_file("rmd/h/_navbar.html"))
+  navbar_html <- sprintf(template, navbar$type, navbar$title, left, right)
   as_tmpfile(navbar_html)
 }
-
 
 #' @keywords internal
 #' @name navbar_html
@@ -584,31 +578,48 @@ navbar_links_html <- function(links) {
   as.character(navbar_links_tags(links))
 }
 
-navbar_links_tags <- function(links) {
+navbar_links_tags <- function(links, depth = 0L) {
 
   if (!is.null(links)) {
+
     tags <- lapply(links, function(x) {
 
-      # sub-menu
       if (!is.null(x$menu)) {
-        submenuLinks <- navbar_links_tags(x$menu)
-        tags$li(class = "dropdown",
-          tags$a(href = "#", class = "dropdown-toggle", `data-toggle` = "dropdown",
-                 role = "button", `aria-expanded` = "false",
-                   navbar_link_text(x, " ", tags$span(class = "caret"))),
-          tags$ul(class = "dropdown-menu", role = "menu", submenuLinks)
+
+        # sub-menu
+        is_submenu <- depth > 0L
+
+        if (is_submenu) {
+          menu_class <- "dropdown-submenu"
+          link_text <- navbar_link_text(x)
+        } else {
+          menu_class <- "dropdown"
+          link_text <- navbar_link_text(x, " ", tags$span(class = "caret"))
+        }
+
+        submenuLinks <- navbar_links_tags(x$menu, depth = depth + 1L)
+
+        tags$li(class = menu_class,
+                tags$a(
+                  href = "#", class = "dropdown-toggle",
+                  `data-toggle` = "dropdown", role = "button",
+                  `aria-expanded` = "false", link_text),
+                tags$ul(class = "dropdown-menu", role = "menu", submenuLinks)
         )
 
-      # divider
       } else if (!is.null(x$text) && grepl("^\\s*-{3,}\\s*$", x$text)) {
+
+        # divider
         tags$li(class = "divider")
 
-      # header
       } else if (!is.null(x$text) && is.null(x$href)) {
+
+        # header
         tags$li(class = "dropdown-header", x$text)
 
-      # standard menu item
       } else {
+
+        # standard menu item
         textTags <- navbar_link_text(x)
         tags$li(tags$a(href = x$href, textTags))
       }

@@ -4,12 +4,13 @@
 \alias{slidy_presentation}
 \title{Convert to a slidy presentation}
 \usage{
-slidy_presentation(incremental = FALSE, duration = NULL, footer = NULL,
-  font_adjustment = 0, fig_width = 8, fig_height = 6, fig_retina = 2,
-  fig_caption = TRUE, dev = "png", df_print = "default", smart = TRUE,
-  self_contained = TRUE, highlight = "default", mathjax = "default",
-  template = "default", css = NULL, includes = NULL, keep_md = FALSE,
-  lib_dir = NULL, md_extensions = NULL, pandoc_args = NULL,
+slidy_presentation(incremental = FALSE, duration = NULL,
+  footer = NULL, font_adjustment = 0, fig_width = 8,
+  fig_height = 6, fig_retina = 2, fig_caption = TRUE, dev = "png",
+  df_print = "default", smart = TRUE, self_contained = TRUE,
+  highlight = "default", mathjax = "default", template = "default",
+  css = NULL, includes = NULL, keep_md = FALSE, lib_dir = NULL,
+  md_extensions = NULL, pandoc_args = NULL,
   extra_dependencies = NULL, ...)
 }
 \arguments{
@@ -29,7 +30,7 @@ using the 'S' (smaller) and 'B' (bigger) keys.}
 
 \item{fig_width}{Default width (in inches) for figures}
 
-\item{fig_height}{Default width (in inches) for figures}
+\item{fig_height}{Default height (in inches) for figures}
 
 \item{fig_retina}{Scaling to perform for retina displays (defaults to 2, which
 currently works for all widely used retina displays). Set to \code{NULL} to

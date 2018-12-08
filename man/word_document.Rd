@@ -4,10 +4,10 @@
 \alias{word_document}
 \title{Convert to an MS Word document}
 \usage{
-word_document(toc = FALSE, toc_depth = 3, fig_width = 5, fig_height = 4,
-  fig_caption = TRUE, df_print = "default", smart = TRUE,
-  highlight = "default", reference_docx = "default", keep_md = FALSE,
-  md_extensions = NULL, pandoc_args = NULL)
+word_document(toc = FALSE, toc_depth = 3, fig_width = 5,
+  fig_height = 4, fig_caption = TRUE, df_print = "default",
+  smart = TRUE, highlight = "default", reference_docx = "default",
+  keep_md = FALSE, md_extensions = NULL, pandoc_args = NULL)
 }
 \arguments{
 \item{toc}{\code{TRUE} to include a table of contents in the output}
@@ -16,7 +16,7 @@ word_document(toc = FALSE, toc_depth = 3, fig_width = 5, fig_height = 4,
 
 \item{fig_width}{Default width (in inches) for figures}
 
-\item{fig_height}{Default width (in inches) for figures}
+\item{fig_height}{Default height (in inches) for figures}
 
 \item{fig_caption}{\code{TRUE} to render figures with captions}
 

@@ -1,4 +1,6 @@
-#' @import htmltools
+#' @importFrom htmltools htmlDependency copyDependencyToDir
+#'   makeDependencyRelative renderDependencies tagList tags
+#'   restorePreserveChunks extractPreserveChunks HTML
 NULL
 
 #' Provide common HTML dependencies for R Markdown formats
@@ -10,54 +12,90 @@ NULL
 #' @name html-dependencies
 NULL
 
-# Create an HTML dependency for our embedded jquery
+# Create an HTML dependency for jQuery
 #' @rdname html-dependencies
 #' @export
 html_dependency_jquery <- function()  {
-  htmlDependency(name = "jquery",
-                 version = "1.11.3",
-                 src = rmarkdown_system_file("rmd/h/jquery-1.11.3"),
-                 script = "jquery.min.js")
+
+  htmlDependency(
+    name = "jquery",
+    version = "1.11.3",
+    src = rmarkdown_system_file(file = "rmd/h/jquery"),
+    script = "jquery.min.js")
 }
 
-# Create an HTML dependency for our embedded bootstrap
-#' @rdname html-dependencies
-#' @export
-html_dependency_bootstrap <- function(theme) {
-  if (identical(theme, "default")) theme <- "bootstrap"
-  htmlDependency(name = "bootstrap",
-                 version = "3.3.5",
-                 rmarkdown_system_file("rmd/h/bootstrap-3.3.5"),
-                 meta = list(viewport = "width=device-width, initial-scale=1"),
-                 script = c(
-                   "js/bootstrap.min.js",
-                   # These shims are necessary for IE 8 compatibility
-                   "shim/html5shiv.min.js",
-                   "shim/respond.min.js"
-                 ),
-                 stylesheet = paste0("css/", theme, ".min.css"))
-}
-
-# Create an HTML dependency for our embedded jqueryui
+# Create an HTML dependency for jQuery UI
 #' @rdname html-dependencies
 #' @export
 html_dependency_jqueryui <- function() {
-  htmlDependency(name = 'jqueryui',
-                 version = '1.11.4',
-                 src = rmarkdown_system_file("rmd/h/jqueryui-1.11.4"),
-                 script = 'jquery-ui.min.js'
-  )
+
+  htmlDependency(
+    name = "jqueryui",
+    version = "1.11.4",
+    src = rmarkdown_system_file(file = "rmd/h/jqueryui"),
+    script = "jquery-ui.min.js")
+}
+
+# Create an HTML dependency for Bootstrap
+#' @rdname html-dependencies
+#' @export
+html_dependency_bootstrap <- function(theme) {
+
+  if (identical(theme, "default")) {
+    theme <- "bootstrap"
+  }
+
+  htmlDependency(
+    name = "bootstrap",
+    version = "3.3.5",
+    src = rmarkdown_system_file(file = "rmd/h/bootstrap"),
+    meta = list(viewport = "width=device-width, initial-scale=1"),
+    script = c(
+      "js/bootstrap.min.js",
+      # These shims are necessary for IE 8 compatibility
+      "shim/html5shiv.min.js",
+      "shim/respond.min.js"),
+    stylesheet = paste0("css/", theme, ".min.css"))
 }
 
 # Create an HTML dependency for tocify
 #' @rdname html-dependencies
 #' @export
 html_dependency_tocify <- function() {
-  htmlDependency(name = "tocify",
-                 version = "1.9.1",
-                 src = rmarkdown_system_file("rmd/h/tocify-1.9.1"),
-                 script = "jquery.tocify.js",
-                 stylesheet = "jquery.tocify.css")
+
+  htmlDependency(
+    name = "tocify",
+    version = "1.9.1",
+    src = rmarkdown_system_file(file = "rmd/h/tocify"),
+    script = "jquery.tocify.js",
+    stylesheet = "jquery.tocify.css")
+}
+
+# Create an HTML dependency for FontAwesome
+#' @rdname html-dependencies
+#' @export
+html_dependency_font_awesome <- function() {
+
+  htmlDependency(
+    "font-awesome",
+    "5.1.0",
+    src = rmarkdown_system_file("rmd/h/fontawesome"),
+    stylesheet = c(
+      "css/all.css",
+      "css/v4-shims.css")
+  )
+}
+
+# Create an HTML dependency for Ionicons
+#' @rdname html-dependencies
+#' @export
+html_dependency_ionicons <- function() {
+
+  htmlDependency(
+    name = "ionicons",
+    version = "2.0.1",
+    src = rmarkdown_system_file(file = "rmd/h/ionicons"),
+    stylesheet = "css/ionicons.min.css")
 }
 
 html_dependency_navigation <- function(code_menu, source_embed) {
@@ -75,39 +113,11 @@ html_dependency_navigation <- function(code_menu, source_embed) {
                  script = script)
 }
 
-# Create an HTML dependency for Font Awesome
-#' @rdname html-dependencies
-#' @export
-html_dependency_font_awesome <- function() {
-  htmlDependency(
-    "font-awesome",
-    "5.0.13",
-    src = rmarkdown_system_file("rmd/h/fontawesome"),
-    script = c(
-      "js/fontawesome-all.min.js",
-      "js/fa-v4-shims.min.js"),
-    stylesheet = "css/fa-svg-with-js.css"
-  )
-}
-
-
-# Create an HTML dependency for ionicons
-#' @rdname html-dependencies
-#' @export
-html_dependency_ionicons <- function() {
-  htmlDependency(
-    "ionicons",
-    "2.0.1",
-    src = rmarkdown_system_file("rmd/h/ionicons-2.0.1"),
-    stylesheet = "css/ionicons.min.css"
-  )
-}
-
 # analyze navbar html source for icon dependencies
 navbar_icon_dependencies <- function(navbar) {
 
   # read the navbar source
-  source <- readLines(navbar)
+  source <- read_utf8(navbar)
 
   # find icon references
   res <- regexec('<(span|i) +class *= *("|\') *(fa fa|ion ion)-', source)
@@ -123,7 +133,6 @@ navbar_icon_dependencies <- function(navbar) {
   html_dependencies_fonts("fa fa" %in% libs, "ion ion" %in% libs)
 }
 
-
 # utilty function to return a list of font dependencies based
 # whether we are including font_awesome and/or iconicons
 html_dependencies_fonts <- function(font_awesome, ionicons) {
@@ -134,7 +143,6 @@ html_dependencies_fonts <- function(font_awesome, ionicons) {
     deps <- append(deps, list(html_dependency_ionicons()))
   deps
 }
-
 
 # flattens an arbitrarily nested list and returns all of the dependency
 # objects it contains
@@ -273,8 +281,6 @@ html_dependency_pagedtable <- function() {
     stylesheet = "css/pagedtable.css"
   )
 }
-
-
 
 #' @param highlight Highlighter to use
 #' @rdname html-dependencies

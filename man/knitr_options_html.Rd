@@ -4,12 +4,13 @@
 \alias{knitr_options_html}
 \title{Knitr options for an HTML output format}
 \usage{
-knitr_options_html(fig_width, fig_height, fig_retina, keep_md, dev = "png")
+knitr_options_html(fig_width, fig_height, fig_retina, keep_md,
+  dev = "png")
 }
 \arguments{
 \item{fig_width}{Default width (in inches) for figures}
 
-\item{fig_height}{Default width (in inches) for figures}
+\item{fig_height}{Default height (in inches) for figures}
 
 \item{fig_retina}{Scaling to perform for retina displays (defaults to 2, which
 currently works for all widely used retina displays). Set to \code{NULL} to

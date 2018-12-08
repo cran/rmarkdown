@@ -11,8 +11,8 @@ pdf_document(toc = FALSE, toc_depth = 2, number_sections = FALSE,
   fig_caption = TRUE, dev = "pdf", df_print = "default",
   highlight = "default", template = "default", keep_tex = FALSE,
   latex_engine = "pdflatex", citation_package = c("none", "natbib",
-  "biblatex"), includes = NULL, md_extensions = NULL, pandoc_args = NULL,
-  extra_dependencies = NULL)
+  "biblatex"), includes = NULL, md_extensions = NULL,
+  pandoc_args = NULL, extra_dependencies = NULL)
 
 latex_document(...)
 
@@ -27,7 +27,7 @@ latex_fragment(...)
 
 \item{fig_width}{Default width (in inches) for figures}
 
-\item{fig_height}{Default width (in inches) for figures}
+\item{fig_height}{Default height (in inches) for figures}
 
 \item{fig_crop}{\code{TRUE} to automatically apply the \code{pdfcrop} utility
 (if available) to pdf figures}

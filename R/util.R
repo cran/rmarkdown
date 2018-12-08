@@ -12,6 +12,10 @@ is_osx <- function() {
   Sys.info()["sysname"] == "Darwin"
 }
 
+`%||%` <- function(x, y) {
+  if (is.null(x)) y else x
+}
+
 # determine the output file for a pandoc conversion
 pandoc_output_file <- function(input, pandoc_options) {
   to <- pandoc_options$to
@@ -36,8 +40,8 @@ pandoc_output_file <- function(input, pandoc_options) {
 }
 
 
-rmarkdown_system_file <- function(file) {
-  system.file(file, package = "rmarkdown")
+rmarkdown_system_file <- function(...) {
+  system.file(..., package = "rmarkdown")
 }
 
 
@@ -60,58 +64,39 @@ is_null_or_string <- function(text) {
   is.null(text) || (is.character(text) && (length(text) == 1))
 }
 
-read_lines_utf8 <- function(file, encoding) {
-
-  # read the file
-  lines <- readLines(file, warn = FALSE)
-
-  # convert to utf8
-  to_utf8(lines, encoding)
+read_utf8 <- function(file, encoding = 'UTF-8') {
+  if (inherits(file, 'connection')) con <- file else {
+    con <- base::file(file, encoding = encoding); on.exit(close(con), add = TRUE)
+  }
+  enc2utf8(readLines(con, warn = FALSE))
 }
 
+write_utf8 <- function (text, con, ...) {
+  opts <- options(encoding = "native.enc"); on.exit(options(opts), add = TRUE)
+  writeLines(enc2utf8(text), con, ..., useBytes = TRUE)
+}
 
+file_string <- function(path, encoding = 'UTF-8') {
+  one_string(read_utf8(path, encoding))
+}
+
+one_string <- function(x) paste(x, collapse = '\n')
+
+# convert to utf8
 to_utf8 <- function(x, encoding) {
   # normalize encoding to iconv compatible form
-  if (identical(encoding, "native.enc"))
-    encoding <- ""
-
-  # convert to utf8
-  if (!identical(encoding, "UTF-8"))
-    iconv(x, from = encoding, to = "UTF-8")
-  else
-    mark_utf8(x)
-}
-
-# mark the encoding of character vectors as UTF-8
-mark_utf8 <- function(x) {
-  if (is.character(x)) {
-    Encoding(x) <- 'UTF-8'
-    return(x)
+  if (identical(encoding, "native.enc")) encoding <- ""
+  if (identical(encoding, "UTF-8")) Encoding(x) <- "UTF-8" else {
+    x <- iconv(x, from = encoding, to = "UTF-8")
   }
-  if (!is.list(x)) return(x)
-  attrs <- attributes(x)
-  res <- lapply(x, mark_utf8)
-  attributes(res) <- attrs
-  names(res) <- mark_utf8(names(res))
-  res
+  x
 }
 
-# the yaml UTF-8 bug has been fixed https://github.com/viking/r-yaml/issues/6
-# but yaml >= 2.1.14 Win/Mac binaries are not available for R < 3.2.0, so we
-# still need the mark_utf8 trick
-#' @importFrom utils packageVersion
-yaml_load_utf8 <- function(string, ...) {
-  string <- paste(string, collapse = '\n')
-  if (packageVersion('yaml') >= '2.1.14') {
-    yaml::yaml.load(string, ...)
-  } else {
-    mark_utf8(yaml::yaml.load(enc2utf8(string), ...))
-  }
-}
+# in a future version of yaml, it will disable the evaluation of !expr but we
+# still need it (https://github.com/rstudio/rmarkdown/issues/1387)
+yaml_load <- function(...) yaml::yaml.load(..., eval.expr = TRUE)
 
-yaml_load_file_utf8 <- function(input, ...) {
-  yaml_load_utf8(readLines(input, encoding = 'UTF-8'), ...)
-}
+yaml_load_file <- function(input, ...) yaml_load(read_utf8(input), ...)
 
 file_name_without_shell_chars <- function(file) {
   name <- gsub(.shell_chars_regex, '_', basename(file))
@@ -126,13 +111,10 @@ tmpfile_pattern <- "rmarkdown-str"
 
 # return a string as a tempfile
 as_tmpfile <- function(str) {
-  if (length(str) > 0) {
-    str_tmpfile <- tempfile(tmpfile_pattern, fileext = ".html")
-    writeLines(str, str_tmpfile, useBytes =  TRUE)
-    str_tmpfile
-  } else {
-    NULL
-  }
+  if (length(str) == 0) return()
+  f <- tempfile(tmpfile_pattern, fileext = ".html")
+  write_utf8(str, f)
+  f
 }
 
 # temp files created by as_tmpfile() cannot be immediately removed because they
@@ -265,7 +247,9 @@ base_dir <- function(x) {
 
 move_dir <- function(from, to) {
   dir.create(dirname(to), showWarnings = FALSE)
-  file.rename(from, to)
+  suppressWarnings(file.rename(from, to)) || {
+    file.copy(from, dirname(to), recursive = TRUE) && unlink(from, recursive = TRUE)
+  }
 }
 
 # Check if two paths are the same after being normalized
@@ -495,4 +479,41 @@ adjust_dev <- function(opts) {
     opts$dev <- dev
   }
   opts
+}
+
+xfun_session_info <- function() {
+  paste('Pandoc version:', pandoc_version())
+}
+
+# given a path of a file in a potential R package, figure out the package root
+package_root <- function(path) {
+  dir <- dirname(path)
+  if (same_path(dir, file.path(dir, '..'))) return()
+  if (!file.exists(desc <- file.path(dir, 'DESCRIPTION')) ||
+      length(grep('^Package: ', read_utf8(desc))) == 0) return(package_root(dir))
+  dir
+}
+
+
+# retrieve package version without fear of error
+# loading namespace is ok as these packages have been or will be used
+get_package_version_string <- function(package) {
+  tryCatch(
+    as.character(getNamespaceVersion(package)),
+    error = function(e) {
+      NULL
+    }
+  )
+}
+# find all loaded packages.
+# May contain extra packages, but will contain all packages used while knitting
+get_loaded_packages <- function() {
+  packages <- sort(loadedNamespaces())
+  version <- vapply(packages, get_package_version_string, character(1))
+
+  data.frame(
+    packages = packages,
+    version = version,
+    row.names = NULL, stringsAsFactors = FALSE
+  )
 }

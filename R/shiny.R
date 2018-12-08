@@ -25,8 +25,9 @@
 #' order of preference):
 #' \itemize{
 #'   \item{If \code{dir} contains only one \code{Rmd}, that \code{Rmd}.}
-#'   \item{The file \code{index.Rmd}, if it exists in \code{dir}}
-#'   \item{The file \code{index.html}, if it exists in \code{dir}}
+#'   \item{The file \file{index.Rmd}, if it exists in \code{dir}.}
+#'   \item{The first \code{Rmd} that has \code{runtime: shiny} in its YAML metadata.}
+#'   \item{The file \file{index.html} (or \file{index.htm}), if it exists in \code{dir}.}
 #' }
 #'
 #' If you wish to share R code between your documents, place it in a file
@@ -62,12 +63,8 @@
 #' rmarkdown::run("shiny_doc.Rmd", shiny_args = list(port = 8241))
 #' }
 #' @export
-run <- function(file = "index.Rmd",
-                dir = dirname(file),
-                default_file = NULL,
-                auto_reload = TRUE,
-                shiny_args = NULL,
-                render_args = NULL) {
+run <- function(file = "index.Rmd", dir = dirname(file), default_file = NULL,
+                auto_reload = TRUE, shiny_args = NULL, render_args = NULL) {
 
   # select the document to serve at the root URL if not user-specified. We exclude
   # documents which start with a leading underscore (same pattern is used to
@@ -82,14 +79,11 @@ run <- function(file = "index.Rmd",
       index <- which(tolower(allRmds) == "index.rmd")
       if (length(index) > 0) {
         default_file <- allRmds[index[1]]
-      }
-      # look for first one that has runtime: shiny
-      else {
+      } else {
+        # look for first one that has runtime: shiny
         for (rmd in allRmds) {
-          encoding <- getOption("encoding")
-          if (!is.null(render_args) && !is.null(render_args$encoding))
-            encoding <- render_args$encoding
-          runtime <- yaml_front_matter(file.path(dir,rmd), encoding)$runtime
+          encoding <- render_args$encoding %||% getOption("encoding")
+          runtime <- yaml_front_matter(file.path(dir, rmd), encoding)$runtime
           if (is_shiny(runtime)) {
             default_file <- rmd
             break
@@ -101,17 +95,13 @@ run <- function(file = "index.Rmd",
 
   if (is.null(default_file)) {
     # no R Markdown default found; how about an HTML?
-    indexHtml <- list.files(path = dir, pattern = "index.html?",
-                            ignore.case = TRUE)
-    if (length(indexHtml) > 0) {
-      default_file <- indexHtml[1]
-    }
+    indexHtml <- list.files(dir, "index.html?", ignore.case = TRUE)
+    if (length(indexHtml) > 0) default_file <- indexHtml[1]
   }
 
   # form and test locations
   dir <- normalize_path(dir)
-  if (!dir_exists(dir))
-    stop("The directory '", dir, "' does not exist")
+  if (!dir_exists(dir)) stop("The directory '", dir, "' does not exist")
 
   if (!is.null(file)) {
     # compute file path relative to directory (remove common directory prefix
@@ -130,30 +120,20 @@ run <- function(file = "index.Rmd",
   }
 
   # pick up encoding
-  encoding <-
-    if (is.null(render_args$encoding))
-      "UTF-8"
-    else
-      render_args$encoding
+  encoding <- render_args$encoding %||% "UTF-8"
 
   if (is.null(render_args$envir)) render_args$envir <- parent.frame()
 
   # determine the runtime of the target file
-  target_file <- ifelse(!is.null(file), file, default_file)
-  if (!is.null(target_file))
-    runtime <- yaml_front_matter(target_file, encoding)$runtime
-  else
-    runtime <- NULL
+  target_file <- file %||% default_file
+  runtime <- if (!is.null(target_file)) yaml_front_matter(target_file, encoding)$runtime
 
   # run using the requested mode
   if (is_shiny_prerendered(runtime)) {
 
     # get the pre-rendered shiny app
-    app <- shiny_prerendered_app(target_file,
-                                 encoding = encoding,
-                                 render_args = render_args)
-  }
-  else {
+    app <- shiny_prerendered_app(target_file, encoding = encoding, render_args = render_args)
+  } else {
 
     # add rmd_resources handler on start
     onStart <- function() {
@@ -181,10 +161,7 @@ run <- function(file = "index.Rmd",
 
   # launch the app and open a browser to the requested page, if one was
   # specified
-  if (!is.null(shiny_args) && !is.null(shiny_args$launch.browser))
-    launch_browser <- shiny_args$launch.browser
-  else
-    launch_browser <- (!is.null(file)) && interactive()
+  launch_browser <- shiny_args$launch.browser %||% (!is.null(file) && interactive())
   if (isTRUE(launch_browser)) {
     launch_browser <- function(url) {
       url <- paste(url, file_rel, sep = "/")
@@ -197,8 +174,7 @@ run <- function(file = "index.Rmd",
     }
   }
 
-  shiny_args <- merge_lists(list(appDir = app,
-                                 launch.browser = launch_browser),
+  shiny_args <- merge_lists(list(appDir = app, launch.browser = launch_browser),
                             shiny_args)
   do.call(shiny::runApp, shiny_args)
   invisible(NULL)
@@ -382,7 +358,7 @@ rmarkdown_shiny_ui <- function(dir, file) {
 shinyHTML_with_deps <- function(html_file, deps) {
 
   # read the html_file
-  html <- readLines(html_file, encoding = "UTF-8", warn = FALSE)
+  html <- read_utf8(html_file)
 
   # if we are running in RStudio and have local MathJax then serve locally
   # (for static Rmds we do this substitution inside RStudio as we serve the
@@ -401,10 +377,7 @@ shinyHTML_with_deps <- function(html_file, deps) {
   }
 
   # attach dependencies and return HTML
-  htmltools::attachDependencies(
-    htmltools::HTML(paste(html, collapse = "\n")),
-    deps
-  )
+  htmltools::attachDependencies(HTML(one_string(html)), deps)
 }
 
 # given an input file and its encoding, return a list with values indicating
@@ -430,7 +403,7 @@ rmd_cached_output <- function(input, encoding) {
   }
 
   # check to see if the file is a Shiny document
-  front_matter <- parse_yaml_front_matter(read_lines_utf8(input, encoding))
+  front_matter <- parse_yaml_front_matter(read_utf8(input, encoding))
   if (!is_shiny_classic(front_matter$runtime)) {
 
     # If it's not a Shiny document, then its output is cacheable. Hash the file
@@ -568,8 +541,7 @@ render_delayed <- function(expr) {
   shiny::renderUI(quote({
     knitr::opts_current$restore(knitr_cached_chunk_opts)
     knitr::opts_knit$restore(knitr_cached_knit_opts)
-    shiny::HTML(knitr::knit_print(eval(knitr_orig_expr),
-                                  knitr::opts_current$get()))
+    HTML(knitr::knit_print(eval(knitr_orig_expr), knitr::opts_current$get()))
   }),
   env = env_snapshot,
   quoted = TRUE)
@@ -589,18 +561,16 @@ is_shiny_prerendered <- function(runtime) {
 
 write_shiny_deps <- function(files_dir,
                              deps) {
-
-  if (!dir_exists(files_dir))
-    dir.create(files_dir, recursive = TRUE)
+  if (!dir_exists(files_dir)) dir.create(files_dir, recursive = TRUE)
   deps_file <- file.path(files_dir, "dependencies.json")
   deps_json <- jsonlite::serializeJSON(deps, pretty = TRUE)
-  writeLines(deps_json, deps_file, useBytes = TRUE)
+  write_utf8(deps_json, deps_file)
 }
 
 read_shiny_deps <- function(files_dir) {
   deps_path <- file.path(files_dir, "dependencies.json")
   if (file.exists(deps_path)) {
-    deps_json <- readLines(deps_path, encoding = 'UTF-8')
+    deps_json <- read_utf8(deps_path)
     dependencies <- jsonlite::unserializeJSON(deps_json)
 
     # attach rstudio rsiframe script if we are in rstudio

@@ -18,27 +18,20 @@ is_osx <- function() {
 
 # determine the output file for a pandoc conversion
 pandoc_output_file <- function(input, pandoc_options) {
-  to <- pandoc_options$to
-  if (!is.null(pandoc_options$ext))
-    ext <- pandoc_options$ext
-  else if (to %in% c("latex", "beamer"))
-    ext <- ".pdf"
-  else if (to %in% c("html", "html4", "html5", "s5", "slidy",
-                     "slideous", "dzslides", "revealjs"))
-    ext <- ".html"
-  else if (grepl("^markdown", to)) {
-    if (!identical(tolower(tools::file_ext(input)), "md"))
-      ext <- ".md"
-    else {
-      ext <- paste(".", strsplit(to, "[\\+\\-]")[[1]][[1]], sep = "")
-    }
-  }
-  else
-    ext <- paste(".", to, sep = "")
-  output <- paste(tools::file_path_sans_ext(input), ext, sep = "")
+  to <- strsplit(pandoc_options$to, "[+-]")[[1]][[1]]
+  ext <- pandoc_output_ext(pandoc_options$ext, to, input)
+  output <- paste0(tools::file_path_sans_ext(input), ext)
   basename(output)
 }
 
+pandoc_output_ext <- function(ext, to, input) {
+  if (!is.null(ext)) return(ext)
+  if (to %in% c("latex", "beamer")) return(".pdf")
+  if (to %in% c("html", "html4", "html5", "s5", "slidy", "slideous", "dzslides", "revealjs"))
+    return(".html")
+  if (to == "markdown" && tolower(tools::file_ext(input)) != "md") return(".md")
+  paste0(".", to)
+}
 
 rmarkdown_system_file <- function(...) {
   system.file(..., package = "rmarkdown")
@@ -127,7 +120,7 @@ clean_tmpfiles <- function() {
 }
 
 dir_exists <- function(x) {
-  utils::file_test('-d', x)
+  length(x) > 0 && utils::file_test('-d', x)
 }
 
 file_with_ext <- function(file, ext) {
@@ -234,14 +227,11 @@ trim_trailing_ws <- function(x) {
 
 # Find common base directory, throw error if it doesn't exist
 base_dir <- function(x) {
-  abs <- vapply(x, tools::file_path_as_absolute, character(1))
-
-  base <- unique(dirname(abs))
+  base <- unique(dirname(x))
   if (length(base) > 1) {
     stop("Input files not all in same directory, please supply explicit wd",
       call. = FALSE)
   }
-
   base
 }
 
@@ -257,6 +247,18 @@ same_path <- function(path1, path2, ...) {
   if (length(path1) * length(path2) != 1)
     stop('The two paths must be both of length 1')
   normalize_path(path1, ...) == normalize_path(path2, ...)
+}
+
+# normalizePath() doesn't work if the path contains Unicode characters that
+# cannot be represented in the current system locale, even if the file exists
+abs_path <- function(x) {
+  if (!file.exists(x)) stop("The file '", x, "' does not exist.")
+  res <- normalize_path(x, mustWork = FALSE)
+  if (file.exists(res)) return(res)
+  if (!requireNamespace('fs', quietly = TRUE)) warning(
+    'normalizePath() cannot make the path(s) absolute. The fs package is required.'
+  )
+  as.character(fs::path_abs(x))
 }
 
 # Regular expression representing characters likely to be considered special by

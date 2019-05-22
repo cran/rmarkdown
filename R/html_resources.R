@@ -16,12 +16,12 @@
 #' \code{resource_files} key:
 #'
 #'   \preformatted{---
-#'title: My Document
-#'author: My Name
-#'resource_files:
-#'  - data/mydata.csv
-#'  - images/figure.png
-#'---}
+#' title: My Document
+#' author: My Name
+#' resource_files:
+#'   - data/mydata.csv
+#'   - images/figure.png
+#' ---}
 #'
 #' Each item in the \code{resource_files} list can refer to:
 #' \enumerate{
@@ -50,7 +50,7 @@
 #'      from the document}
 #'   }
 #' @export
-find_external_resources <- function(input_file, encoding = getOption("encoding")) {
+find_external_resources <- function(input_file, encoding = "UTF-8") {
 
   # ensure we're working with valid input
   ext <- tolower(tools::file_ext(input_file))

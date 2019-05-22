@@ -12,7 +12,8 @@ pdf_document(toc = FALSE, toc_depth = 2, number_sections = FALSE,
   highlight = "default", template = "default", keep_tex = FALSE,
   latex_engine = "pdflatex", citation_package = c("none", "natbib",
   "biblatex"), includes = NULL, md_extensions = NULL,
-  pandoc_args = NULL, extra_dependencies = NULL)
+  output_extensions = NULL, pandoc_args = NULL,
+  extra_dependencies = NULL)
 
 latex_document(...)
 
@@ -44,7 +45,7 @@ the \pkg{tibble} package to print a summary of the data frame. The "paged"
 method creates a paginated HTML table (note that this method is only valid
 for formats that produce HTML). In addition
 to the named methods you can also pass an arbitrary function to be used
-for printing data frames. You can disable the df_print behavior entirely
+for printing data frames. You can disable the \code{df_print} behavior entirely
 by setting the option \code{rmarkdown.df_print} to \code{FALSE}.}
 
 \item{highlight}{Syntax highlighting style. Supported styles include
@@ -72,6 +73,10 @@ document (typically created using the \code{\link{includes}} function).}
 \item{md_extensions}{Markdown extensions to be added or removed from the
 default definition or R Markdown. See the \code{\link{rmarkdown_format}} for
 additional details.}
+
+\item{output_extensions}{Pandoc extensions to be added or removed from the
+output format, e.g., \code{"-smart"} means the output format will be
+\code{latex-smart}.}
 
 \item{pandoc_args}{Additional command line options to pass to pandoc}
 

@@ -40,8 +40,8 @@
 #'@param code_download Embed the Rmd source code within the document and provide
 #'  a link that can be used by readers to download the code.
 #'@param smart Produce typographically correct output, converting straight
-#'  quotes to curly quotes, --- to em-dashes, -- to en-dashes, and ... to
-#'  ellipses.
+#'  quotes to curly quotes, \code{---} to em-dashes, \code{--} to en-dashes, and
+#'  \code{...} to ellipses.
 #'@param self_contained Produce a standalone HTML file with no external
 #'  dependencies, using data: URIs to incorporate the contents of linked
 #'  scripts, stylesheets, images, and videos. Note that even for self contained
@@ -92,24 +92,24 @@
 #'  \code{right} fields (to define menu items for the left and right of the navbar
 #'  respectively). Menu items include \code{title} and \code{href} fields. For example:
 #'
-#'  \preformatted{ title: "My Website"
-#'  type: default
-#'  left:
-#'    - text: "Home"
-#'      href: index.html
-#'    - text: "Other"
-#'      href: other.html
-#'  right:
-#'    - text: GitHub
-#'      href: https://github.com}
+#'  \preformatted{title: "My Website"
+#' type: default
+#' left:
+#'   - text: "Home"
+#'     href: index.html
+#'   - text: "Other"
+#'     href: other.html
+#' right:
+#'   - text: GitHub
+#'     href: https://github.com}
 #'  The \code{type} field is optional and can take the value "default" or "inverse" (which
 #'  provides a different color scheme for the navigation bar).
 #'
 #'  Alternatively, you can include a "_navbar.html" file which is a full HTML definition
 #'  of a bootstrap navigation bar. For a simple example of including a navigation bar see
-#'  \href{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}.
+#'  \url{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}.
 #'   For additional documentation on creating Bootstrap navigation bars see
-#'  \href{http://getbootstrap.com/components/#navbar}{http://getbootstrap.com/components/#navbar}.
+#'  \url{http://getbootstrap.com/components/#navbar}.
 #'
 #'
 #'@section Floating Table of Contents:
@@ -132,11 +132,11 @@
 #'  the header with the \code{.tabset} attribute to appear within tabs rather
 #'  than as standalone sections. For example:
 #'
-#'  \preformatted{ ## Quarterly Results {.tabset}
+#'  \preformatted{## Quarterly Results {.tabset}
 #'
-#'  ### By Product
+#' ### By Product
 #'
-#'  ### By Region }
+#' ### By Region }
 #'
 #'  You can also specify two additional attributes to control the appearance and
 #'  behavior of the tabs. The \code{.tabset-fade} attributes causes the tabs to
@@ -144,7 +144,7 @@
 #'  the visual appearance of the tabs to be "pill" rather than traditional tabs.
 #'  For example:
 #'
-#'  \preformatted{ ## Quarterly Results {.tabset .tabset-fade .tabset-pills} }
+#'  \preformatted{## Quarterly Results {.tabset .tabset-fade .tabset-pills}}
 #'
 #'@section Templates:
 #'

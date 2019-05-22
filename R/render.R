@@ -1,3 +1,32 @@
+#' R Markdown Metadata
+#'
+#' Rmd files include a metadata section (typically located at the top of the
+#' file) that can specify (among other things) the title, author, and date of
+#' the document. Metadata adheres to the \href{https://yaml.org}{YAML} format
+#' and is delimited by lines containing three dashes (\code{---}). Here is an
+#' example metadata section:
+#' \preformatted{---
+#' title: "Crop Analysis Q3 2013"
+#' author: Martha Smith
+#' date: October 23rd, 2013
+#' ---
+#' }
+#' Note that the \code{title} field is quoted. This is because titles often
+#' contained embedded colons (\code{:}) and colons followed by a space need to
+#' be quoted in YAML.
+#' @details When title, author, and date metadata is provided it's used to
+#'   automatically create a title section within output documents. If you don't
+#'   want this section included in your document then you should remove the
+#'   corresponding metadata fields.
+#'
+#'   When generating PDF and Beamer output there are also a number of other
+#'   metadata fields that can be included to customize the appearance and theme
+#'   of PDF output. For more details see the documentation for
+#'   \code{\link{pdf_document}} and \code{\link{beamer_presentation}}.
+#' @name rmd_metadata
+NULL
+
+
 #' The YAML metadata of the current R Markdown document
 #'
 #' The object \code{metadata} stores the YAML metadata of the current R Markdown
@@ -9,6 +38,62 @@
 #' @examples rmarkdown::metadata
 #' @export
 metadata <- list()
+
+
+#' Compiling R scripts to a notebook
+#'
+#' R Markdown can also compile R scripts to a notebook which includes
+#' commentary, source code, and script output. Notebooks can be compiled to any
+#' output format including HTML, PDF, and MS Word.
+#'
+#' @section Overview:
+#'   To compile a notebook from an R script you simply pass the script to
+#'   \code{\link{render}}. For example:
+#'   \preformatted{
+#' rmarkdown::render("analysis.R")
+#' rmarkdown::render("analysis.R", "pdf_document")
+#' }
+#'   The first call to \code{\link{render}} creates an HTML document, whereas
+#'   the second creates a PDF document.
+#'
+#'   By default the name of the script, username, and current date and time are
+#'   included in the header of the generated notebook. You can override this
+#'   default behavior by including explicit metadata in a specially formatted R
+#'   comment:
+#'   \preformatted{
+#' #' ---
+#' #' title: "Crop Analysis Q3 2013"
+#' #' author: "John Smith"
+#' #' date: "May 3rd, 2014"
+#' #' ---
+#' }
+#' @section Including Markdown:
+#'   Note that the R comment used above to add a title, author, and date
+#'   includes a single-quote as a special prefix character. This is a
+#'   \pkg{roxygen2} style comment, and it's actually possible to include many
+#'   such comments in an R script, all of which will be converted to markdown
+#'   content within the generated notebook. For example:
+#'   \preformatted{#' A script comment that includes **markdown** formatting.}
+#'   Rather than displaying as an R comment in the compiled notebook any
+#'   \pkg{roxygen2} style comment will be treated as markdown and rendered
+#'   accordingly.
+#' @section knitr Spin:
+#'   Including markdown within R comments is possible because \code{\link{render}}
+#'   calls the \code{\link[knitr:spin]{knitr spin}} function to convert the R
+#'   script to an Rmd file. The \code{spin} function also enables you to add
+#'    knitr
+#'   chunk options with another special comment prefix (\code{#+}).
+#'
+#'   Here's an example of a script that uses the various features of \code{spin}:
+#'
+#'   \url{https://github.com/yihui/knitr/blob/master/inst/examples/knitr-spin.R}
+#'
+#'   For more details on \code{knitr::spin} see the following documentation:
+#'
+#'   \url{http://yihui.name/knitr/demo/stitch/}
+#' @name compile_notebook
+NULL
+
 
 #' Render R Markdown
 #'
@@ -81,7 +166,11 @@ metadata <- list()
 #' output filename will be based on filename for the input file. If a filename
 #' is provided, a path to the output file can also be provided. Note that the
 #' \code{output_dir} option allows for specifying the output file path as well,
-#' however, if also specifying the path, the directory must exist.
+#' however, if also specifying the path, the directory must exist. If
+#' \code{output_file} is specified but does not have a file extension, an
+#' extension will be automatically added according to the output format. To
+#' avoid the automatic file extension, put the \code{output_file} value in
+#' \code{\link{I}()}, e.g., \code{I('my-output')}.
 #' @param output_dir The output directory for the rendered \code{output_file}.
 #' This allows for a choice of an alternate directory to which the output file
 #' should be written (the default output directory of that of the input file).
@@ -159,7 +248,7 @@ render <- function(input,
                    envir = parent.frame(),
                    run_pandoc = TRUE,
                    quiet = FALSE,
-                   encoding = getOption("encoding")) {
+                   encoding = "UTF-8") {
 
   perf_timer_start("render")
 
@@ -186,12 +275,12 @@ render <- function(input,
   # then recursively call this function with each format by name
   if (is.character(output_format) && length(output_format) > 1) {
     outputs <- character()
-    for (format in output_format) {
+    for (i in seq_along(output_format)) {
       # the output_file argument is intentionally ignored (we can't give
       # the same name to each rendered output); copy the rest by name
       output <- render(input = input,
-                       output_format = format,
-                       output_file = NULL,
+                       output_format = output_format[i],
+                       output_file = output_file[i],
                        output_dir = output_dir,
                        output_options = output_options,
                        intermediates_dir = intermediates_dir,
@@ -205,10 +294,6 @@ render <- function(input,
                        quiet = quiet,
                        encoding = encoding)
       outputs <- c(outputs, output)
-    }
-    if (length(output_file) > 1) {
-      file.rename(outputs, output_file)
-      outputs <- output_file
     }
     return(invisible(outputs))
   }
@@ -381,8 +466,11 @@ render <- function(input,
   pandoc_to <- output_format$pandoc$to
 
   # generate outpout file based on input filename
-  if (is.null(output_file))
-    output_file <- pandoc_output_file(input, output_format$pandoc)
+  output_auto <- pandoc_output_file(input, output_format$pandoc)
+  if (is.null(output_file) || is.na(output_file)) output_file <- output_auto else {
+    if (!inherits(output_file, "AsIs") && xfun::file_ext(output_file) == "")
+      output_file <- paste(output_file, xfun::file_ext(output_auto), sep = ".")
+  }
 
   # if an output_dir was specified then concatenate it with the output file
   if (!is.null(output_dir)) {
@@ -399,7 +487,6 @@ render <- function(input,
   # use output filename based files dir
   files_dir_slash <- file.path(output_dir, knitr_files_dir(basename(output_file)))
   files_dir <- pandoc_path_arg(files_dir_slash)
-  files_dir_fig <- list.files(files_dir, '^figure-.+')  # existing figure dir(s)
 
   # default to no cache_dir (may be generated by the knit)
   cache_dir <- NULL
@@ -700,11 +787,18 @@ render <- function(input,
   # the knitr cache is active; clean the figure-* dir instead of the whole
   # files_dir if other subdirs are generated by another format and still needed:
   # https://github.com/rstudio/rmarkdown/issues/1472 and also #1503
-  if (output_format$clean_supporting && !dir_exists(cache_dir)) intermediates <- c(
-    intermediates, if (identical(list.files(files_dir, '^figure-.+'), files_dir_fig)) {
-      files_dir
-    } else knitr::opts_chunk$get('fig.path')
-  )
+  if (output_format$clean_supporting && !dir_exists(cache_dir)) {
+    # unlink does not support / at the end of file path
+    fig_path <- gsub("/$", "", knitr::opts_chunk$get('fig.path'))
+    intermediates <- c(
+      intermediates,
+      if (identical(list.files(files_dir, '^figure-.+'), basename(fig_path))) {
+        files_dir
+      } else {
+        fig_path
+      }
+    )
+  }
 
   # read the input text as UTF-8 then write it back out
   input_text <- read_utf8(input, encoding)

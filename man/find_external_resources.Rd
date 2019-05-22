@@ -4,7 +4,7 @@
 \alias{find_external_resources}
 \title{Find External Resource References}
 \usage{
-find_external_resources(input_file, encoding = getOption("encoding"))
+find_external_resources(input_file, encoding = "UTF-8")
 }
 \arguments{
 \item{input_file}{path to the R Markdown document or HTML file to process}
@@ -42,8 +42,8 @@ documents are also returned. To specify resources in YAML, use the
 title: My Document
 author: My Name
 resource_files:
- - data/mydata.csv
- - images/figure.png
+  - data/mydata.csv
+  - images/figure.png
 ---}
 
 Each item in the \code{resource_files} list can refer to:

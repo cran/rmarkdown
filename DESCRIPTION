@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 1.14
+Version: 1.15
 Authors@R: c(
   person("JJ", "Allaire", role = "aut", email = "jj@rstudio.com"),
   person("Yihui", "Xie", role = c("aut", "cre"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
@@ -15,6 +15,7 @@ Authors@R: c(
   person("Richard", "Iannone", role = "aut", email = "rich@rstudio.com", comment = c(ORCID = "0000-0003-3925-190X")),
   #
   # Contributors, ordered alphabetically by first name
+  person("Atsushi", "Yasumoto", role = "ctb", comment = c(ORCID = "0000-0002-8335-495X")),
   person("Barret", "Schloerke", role = "ctb"),
   person("Christophe", "Dervieux", role = "ctb"),
   person("Frederik", "Aust", role = "ctb", email = "frederik.aust@uni-koeln.de", comment = c(ORCID = "0000-0003-4900-788X")),
@@ -82,7 +83,7 @@ RoxygenNote: 6.1.1
 Encoding: UTF-8
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2019-07-12 02:57:15 UTC; yihui
+Packaged: 2019-08-21 00:08:48 UTC; yihui
 Author: JJ Allaire [aut],
   Yihui Xie [aut, cre] (<https://orcid.org/0000-0003-0645-5666>),
   Jonathan McPherson [aut],
@@ -93,6 +94,7 @@ Author: JJ Allaire [aut],
   Joe Cheng [aut],
   Winston Chang [aut],
   Richard Iannone [aut] (<https://orcid.org/0000-0003-3925-190X>),
+  Atsushi Yasumoto [ctb] (<https://orcid.org/0000-0002-8335-495X>),
   Barret Schloerke [ctb],
   Christophe Dervieux [ctb],
   Frederik Aust [ctb] (<https://orcid.org/0000-0003-4900-788X>),
@@ -125,4 +127,4 @@ Author: JJ Allaire [aut],
   Drifty [cph] (Ionicons),
   Aidan Lister [ctb, cph] (jQuery StickyTabs)
 Repository: CRAN
-Date/Publication: 2019-07-12 04:43:08 UTC
+Date/Publication: 2019-08-21 10:50:02 UTC

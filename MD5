@@ -1,6 +1,6 @@
-4b3891b7b717dc23726abf2f434d0b6d *DESCRIPTION
+cec5738ffba18ccf3e42220d0bd8b3ae *DESCRIPTION
 571e4f4477e0471f970f23b5d55f33dd *NAMESPACE
-82111abd47857259bb7b1a39f303d82c *NEWS.md
+aab8fad1ff6a608997ac93bc6e6920c4 *NEWS.md
 6bb81280057296dfe6873ad3950f44fb *R/base64.R
 ce856ad4e5f999a775efcdd4110d72ce *R/beamer_presentation.R
 593939cfa566ec7b4df792f5f521d6dd *R/draft.R
@@ -28,13 +28,13 @@ a72cb4bbfa0f7fb1b197c55e42b98eed *R/knit_print.R
 4978984d85116806f291ecffb32041eb *R/output_format.R
 d99acf6adca7b48dbc4cb66232a50fcd *R/pandoc.R
 f05e80ca438b90fb201652861dba744b *R/params.R
-6de4834fd939cbb16b840f4b06267ce3 *R/pdf_document.R
+fc6f702a9257067c541a55d533cc448a *R/pdf_document.R
 73ba8aefc4b99a7a75bba551fb2729aa *R/performance.R
 288bf206c2107c6ce102d950d63a5d1d *R/powerpoint_presentation.R
 e6bcb9f19758aff25e44be46b3c0cae2 *R/relative_to.R
 f1bf0791e30e45ffedb268ad2722bc13 *R/render.R
 8cbf93cfa5003b0132c4ccccfa9b7aaf *R/render_html.R
-b22cb6d9cba844074f02caed31b6c41d *R/render_site.R
+d838d4a766463ecbd1b4b86f4b92d0a9 *R/render_site.R
 de4986cdf6829726c2e1f1f4545d2305 *R/rmarkdown.R
 4df2d64fe66a6d80445b062c84166010 *R/rtf_document.R
 45b00e9615128adc36d2f680c37ae842 *R/shiny.R
@@ -43,7 +43,7 @@ d41d8cd98f00b204e9800998ecf8427e *R/shiny_module.R
 14c5c5ded68c498a593d89a66aa9f6d5 *R/slidy_presentation.R
 6877020019b49c4e292d0cb49a563692 *R/stack.R
 71e6fb9dab41b4cec31af72a61de1cb3 *R/tufte_handout.R
-a2303db309af93b8ee8b6e50e82bce4e *R/util.R
+9adbf2a2184de9211f32f5d05eb6ae18 *R/util.R
 aa574e806852178fe9f1ef2529d981a5 *R/word_document.R
 58ab4f92fc4b737ae91abe3adbef59ce *R/zzz.R
 25d039684c02cbf13eeec240a34eda6f *README.md
@@ -119,7 +119,7 @@ fa2772327f55d8198301fdb8bcfc8158 *inst/rmd/h/bootstrap/fonts/glyphicons-halfling
 ccb7f3909e30b1eb8f65a24393c6e12b *inst/rmd/h/bootstrap/js/npm.js
 ae8fceae0e07d55b5cfaa9af6bc43a6d *inst/rmd/h/bootstrap/shim/html5shiv.min.js
 506fe393e9f296d14b63733c0aff6205 *inst/rmd/h/bootstrap/shim/respond.min.js
-4df09c0a872268898608abdfd9c0f68f *inst/rmd/h/default.html
+dbc368c968f6cdea4bba52401d11f7bc *inst/rmd/h/default.html
 826c57385f3d35cfed5478ba7b1f5c03 *inst/rmd/h/fontawesome/css/all.css
 6dd334cc89ff203f10b026482960997d *inst/rmd/h/fontawesome/css/v4-shims.css
 e2a76403183eff8967cf6318c6e51509 *inst/rmd/h/fontawesome/webfonts/fa-brands-400.eot
@@ -163,7 +163,7 @@ c762a2f34b42e912713542ebdc16ba4b *inst/rmd/h/jqueryui/jquery-ui.structure.css
 c68383f6186ce6de68fdb44abdfdebce *inst/rmd/h/jqueryui/jquery-ui.structure.min.css
 f05390e630b6c940d8d86c65596f62f5 *inst/rmd/h/jqueryui/jquery-ui.theme.css
 d3ea6df653da3d8ac16cc34452214d52 *inst/rmd/h/jqueryui/jquery-ui.theme.min.css
-d6eae9aa4d058d51d19f2de5712a06d8 *inst/rmd/h/navigation-1.1/codefolding.js
+fdc9a554d4cc187261ad982dc0e6a18b *inst/rmd/h/navigation-1.1/codefolding.js
 a1a9d728fbf33ed607aa465e6e8a42ba *inst/rmd/h/navigation-1.1/sourceembed.js
 3838523138b4d71acb5ea1c5c45ecc00 *inst/rmd/h/navigation-1.1/tabsets.js
 7773d8ddc5fe6c5adbde2349b933127f *inst/rmd/h/pagedtable-1.1/css/pagedtable.css

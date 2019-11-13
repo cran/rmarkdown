@@ -1,3 +1,17 @@
+rmarkdown 1.17
+================================================================================
+
+- `html_vignette()` passes `self_contained` argument value to base format (thanks, @cderv, #1668).
+
+- `find_external_resources()` works for the `html_vignette` type again, this fixes rendering vignettes with external resources in pkgdown (regression introduced in rmarkdown 1.16, #1668).
+
+- `render(..., clean = TRUE)` may fail to clean the `*_files` directory when the output format is `prettydoc::html_pretty` (thanks, @yixuan, #1664).
+
+- For `ioslides_presentation`, images with atributes (e.g., `![](sample.png){width=80%}`) can be correctly embedded in the self-contained mode now (thanks, @hadley, #1687).
+
+- Fixed the Pandoc LaTeX templates to avoid the error `File `grffile.sty' not found`. This is because the LaTeX **grffile** is no longer available in TeX Live (thanks, @cderv #1691, @smmurphy #1692, @JacobD05 https://github.com/yihui/tinytex/issues/152).
+
+
 rmarkdown 1.16
 ================================================================================
 

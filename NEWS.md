@@ -1,3 +1,21 @@
+rmarkdown 1.18
+================================================================================
+
+- For `pdf_document()`, now we patch Pandoc's built-in LaTeX template to include the document subtitle (unnecessary with pandoc 2.6 onwards) and reduce the vertical spacing before title using `--include-in-header` rather than overwriting the built-in template, avoiding compability problems with newer versions of Pandoc (thanks, @adunning, #1563).
+
+- `find_external_resources()` works now when multiple files are specified in the `includes` option of the output format (thanks, @andrie, #1677).
+
+- `find_external_resources()` can find external resources specified in the output format's `reference_doc` or `reference_docx` option now (thanks, @jmcphers, #1696).
+
+- `rmarkdown::run(file = NULL, dir = "foo/")` failed to run Rmd files under the `foo/` directory (thanks, @jenzopr, #1703).
+
+- Reverted the fix for #1692 since it is no longer necessary (https://github.com/yihui/tinytex/issues/152#issuecomment-552796864).
+
+- The `header-includes` field in the YAML metadata will no longer be overwritten by the command-line option `--include-in-header` (thanks, @crsh @mnazarov, #1359).
+
+- Removed the `xmlns` attribute in the `<html>` tag in the default HTML template (thanks, @grady #1640, @spgarbet #995).
+
+
 rmarkdown 1.17
 ================================================================================
 
@@ -61,7 +79,7 @@ rmarkdown 1.13
 
 - For `pdf_document()`, do not override margins to 1 inch when a custom document class or geometry settings are specified in the YAML front matter (thanks, @adunning, #1550)
 
-- The default value of the `encoding` argument in all functions in this package (such as `render()` and `render_site()`) has been changed from `getOption("encoding")` to `UTF-8`. We have been hoping to support UTF-8 only in **rmarkdown**, **knitr**, and other related packages in the future. For more info, you may read https://yihui.name/en/2018/11/biggest-regret-knitr/.
+- The default value of the `encoding` argument in all functions in this package (such as `render()` and `render_site()`) has been changed from `getOption("encoding")` to `UTF-8`. We have been hoping to support UTF-8 only in **rmarkdown**, **knitr**, and other related packages in the future. For more info, you may read https://yihui.org/en/2018/11/biggest-regret-knitr/.
 
 - The option `toc_float: true` for `html_document` now preserves the text formatting (thanks, @codetrainee, #1548).
 

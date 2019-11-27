@@ -50,6 +50,7 @@
 #' @export
 beamer_presentation <- function(toc = FALSE,
                                 slide_level = NULL,
+                                number_sections = FALSE,
                                 incremental = FALSE,
                                 fig_width = 10,
                                 fig_height = 7,
@@ -89,6 +90,9 @@ beamer_presentation <- function(toc = FALSE,
   if (!is.null(slide_level))
     args <- c(args, "--slide-level", as.character(slide_level))
 
+  if (number_sections)
+    args <- c(args, "--number-sections")
+
   # incremental
   if (incremental)
     args <- c(args, "--incremental")
@@ -107,7 +111,7 @@ beamer_presentation <- function(toc = FALSE,
   args <- c(args, pandoc_highlight_args(highlight))
 
   # latex engine
-  latex_engine = match.arg(latex_engine, c("pdflatex", "lualatex", "xelatex"))
+  latex_engine <- match.arg(latex_engine, c("pdflatex", "lualatex", "xelatex"))
   args <- c(args, pandoc_latex_engine_args(latex_engine))
 
   # citation package

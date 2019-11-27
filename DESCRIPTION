@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 1.17
+Version: 1.18
 Authors@R: c(
   person("JJ", "Allaire", role = "aut", email = "jj@rstudio.com"),
   person("Yihui", "Xie", role = c("aut", "cre"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
@@ -15,6 +15,7 @@ Authors@R: c(
   person("Richard", "Iannone", role = "aut", email = "rich@rstudio.com", comment = c(ORCID = "0000-0003-3925-190X")),
   #
   # Contributors, ordered alphabetically by first name
+  person("Andrew", "Dunning", role = "ctb"),
   person("Atsushi", "Yasumoto", role = "ctb", comment = c(ORCID = "0000-0002-8335-495X")),
   person("Barret", "Schloerke", role = "ctb"),
   person("Christophe", "Dervieux", role = "ctb"),
@@ -83,11 +84,11 @@ SystemRequirements: pandoc (>= 1.12.3) - http://pandoc.org
 URL: https://github.com/rstudio/rmarkdown
 BugReports: https://github.com/rstudio/rmarkdown/issues
 License: GPL-3
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.1
 Encoding: UTF-8
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2019-11-11 17:10:34 UTC; yihui
+Packaged: 2019-11-27 00:04:07 UTC; yihui
 Author: JJ Allaire [aut],
   Yihui Xie [aut, cre] (<https://orcid.org/0000-0003-0645-5666>),
   Jonathan McPherson [aut],
@@ -98,6 +99,7 @@ Author: JJ Allaire [aut],
   Joe Cheng [aut],
   Winston Chang [aut],
   Richard Iannone [aut] (<https://orcid.org/0000-0003-3925-190X>),
+  Andrew Dunning [ctb],
   Atsushi Yasumoto [ctb] (<https://orcid.org/0000-0002-8335-495X>),
   Barret Schloerke [ctb],
   Christophe Dervieux [ctb],
@@ -133,4 +135,4 @@ Author: JJ Allaire [aut],
   Benct Philip Jonsson [ctb, cph] (pagebreak lua filter),
   Albert Krewinkel [ctb, cph] (pagebreak lua filter)
 Repository: CRAN
-Date/Publication: 2019-11-13 17:00:02 UTC
+Date/Publication: 2019-11-27 07:40:03 UTC

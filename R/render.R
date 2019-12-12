@@ -209,8 +209,7 @@ NULL
 #' @param run_pandoc An option for whether to run pandoc to convert Markdown
 #' output.
 #' @param quiet An option to suppress printing of the pandoc command line.
-#' @param encoding The encoding of the input file. See \code{\link{file}} for
-#' more information.
+#' @param encoding Ignored. The encoding is always assumed to be UTF-8.
 #' @return
 #'   When \code{run_pandoc = TRUE}, the compiled document is written into
 #'   the output file, and the path of the output file is returned. When
@@ -268,7 +267,7 @@ render <- function(input,
 
   # check for "all" output formats
   if (identical(output_format, "all")) {
-    output_format <- enumerate_output_formats(input, envir, encoding)
+    output_format <- enumerate_output_formats(input)
     if (is.null(output_format))
       output_format <- "html_document"
   }
@@ -293,8 +292,7 @@ render <- function(input,
                        knit_meta = knit_meta,
                        envir = envir,
                        run_pandoc = run_pandoc,
-                       quiet = quiet,
-                       encoding = encoding)
+                       quiet = quiet)
       outputs <- c(outputs, output)
     }
     return(invisible(outputs))
@@ -409,26 +407,25 @@ render <- function(input,
       'date: "', Sys.Date(), '"\n',
       '---\n'
     , sep = "")
-    if (!identical(encoding, "native.enc"))
-      metadata <- iconv(metadata, to = encoding)
-    cat(metadata, file = knit_input, append = TRUE)
+    input_lines <- read_utf8(knit_input)
+    write_utf8(c(input_lines, metadata), knit_input)
   }
 
   # read the input file
-  input_lines <- read_utf8(knit_input, encoding)
+  input_lines <- read_utf8(knit_input)
 
   # read the yaml front matter
-  yaml_front_matter <- parse_yaml_front_matter(input_lines)
+  front_matter <- parse_yaml_front_matter(input_lines)
 
   # metadata to be attached to the returned value of render() as an attribute
   old_output_metadata <- output_metadata$get()
   on.exit(output_metadata$restore(old_output_metadata), add = TRUE)
-  output_metadata$restore(as.list(yaml_front_matter[['rmd_output_metadata']]))
+  output_metadata$restore(as.list(front_matter[['rmd_output_metadata']]))
 
   # if this is shiny_prerendered then modify the output format to
   # be single-page and to output dependencies to the shiny.dep file
   shiny_prerendered_dependencies <- list()
-  if (requires_knit && is_shiny_prerendered(yaml_front_matter$runtime)) {
+  if (requires_knit && is_shiny_prerendered(front_matter$runtime)) {
 
     # first validate that the user hasn't passed an already created output_format
     if (is_output_format(output_format)) {
@@ -461,8 +458,7 @@ render <- function(input,
     output_format <- output_format_from_yaml_front_matter(input_lines,
                                                           output_options,
                                                           output_format,
-                                                          output_yaml,
-                                                          encoding = encoding)
+                                                          output_yaml)
     output_format <- create_output_format(output_format$name,
                                           output_format$options)
   }
@@ -500,7 +496,6 @@ render <- function(input,
       !is.null(output_format$intermediates_generator)) {
     intermediates <- c(intermediates,
                        output_format$intermediates_generator(original_input,
-                                                             encoding,
                                                              intermediates_dir))
   }
 
@@ -516,12 +511,7 @@ render <- function(input,
   # presume that we're rendering as a static document unless specified
   # otherwise in the parameters
   runtime <- match.arg(runtime)
-  if (identical(runtime, "auto")) {
-    if (!is.null(yaml_front_matter$runtime))
-      runtime <- yaml_front_matter$runtime
-    else
-      runtime <- "static"
-  }
+  if (identical(runtime, "auto")) runtime <- front_matter$runtime %||% "static"
 
   # set df_print
   context <- render_context()
@@ -535,10 +525,10 @@ render <- function(input,
   # function used to call post_knit handler
   call_post_knit_handler <- function() {
     if (!is.null(output_format$post_knit)) {
-      post_knit_extra_args <- output_format$post_knit(yaml_front_matter,
+      post_knit_extra_args <- output_format$post_knit(front_matter,
                                                       knit_input,
                                                       runtime,
-                                                      encoding = encoding)
+                                                      encoding = 'UTF-8')
     } else {
       post_knit_extra_args <- NULL
     }
@@ -593,7 +583,7 @@ render <- function(input,
     # read root directory from argument (has precedence) or front matter
     root_dir <- knit_root_dir
     if (is.null(root_dir))
-      root_dir <- yaml_front_matter$knit_root_dir
+      root_dir <- front_matter$knit_root_dir
     if (!is.null(root_dir))
       knitr::opts_knit$set(root.dir = root_dir)
 
@@ -630,7 +620,7 @@ render <- function(input,
       shiny_prerendered_remove_uncached_data(original_input)
 
       # set the cache option hook and evaluate hook
-      knitr::opts_hooks$set(label = shiny_prerendered_option_hook(original_input,encoding))
+      knitr::opts_hooks$set(label = shiny_prerendered_option_hook(original_input))
       knitr::knit_hooks$set(evaluate = shiny_prerendered_evaluate_hook(original_input))
     }
 
@@ -673,7 +663,7 @@ render <- function(input,
     # make the params available within the knit environment
     # (only do this if there are parameters in the front matter
     # so we don't require recent knitr for all users)
-    if (!is.null(yaml_front_matter$params)) {
+    if (!is.null(front_matter$params)) {
 
       params <- knit_params_get(input_lines, params)
 
@@ -709,9 +699,8 @@ render <- function(input,
       }, add = TRUE)
     }
 
-    # make the yaml_front_matter available as 'metadata' within the
-    # knit environment (unless it is already defined there in which case
-    # we emit a warning)
+    # make the front_matter available as 'metadata' within the knit environment
+    # (unless it is already defined there, in which case we emit a warning)
     env <- environment(render)
     metadata_this <- env$metadata
     do.call("unlockBinding", list("metadata", env))
@@ -722,7 +711,7 @@ render <- function(input,
       env$metadata <- metadata_this
       lockBinding("metadata", env)
     }, add = TRUE)
-    env$metadata <- yaml_front_matter
+    env$metadata <- front_matter
 
     # call onKnit hooks (normalize to list)
     sapply(as.list(getHook("rmarkdown.onKnit")), function(hook) {
@@ -740,10 +729,11 @@ render <- function(input,
     input <- knitr::knit(knit_input,
                          knit_output,
                          envir = envir,
-                         quiet = quiet,
-                         encoding = encoding)
+                         quiet = quiet)
 
     perf_timer_stop("knitr")
+
+    front_matter <- yaml_front_matter(input)
 
     # call post_knit handler
     output_format$pandoc$args <- call_post_knit_handler()
@@ -755,7 +745,7 @@ render <- function(input,
     }
 
     # pull out shiny_prerendered_contexts and append them as script tags
-    shiny_prerendered_append_contexts(runtime, input, encoding)
+    shiny_prerendered_append_contexts(runtime, input)
 
     # collect remaining knit_meta
     knit_meta <- knit_meta_reset()
@@ -768,7 +758,7 @@ render <- function(input,
   if (!(is_pandoc_to_html(output_format$pandoc) ||
         identical(tolower(tools::file_ext(output_file)), "html")))  {
     if (has_html_dependencies(knit_meta)) {
-      if (!isTRUE(yaml_front_matter$always_allow_html)) {
+      if (!isTRUE(front_matter$always_allow_html)) {
         stop("Functions that produce HTML output found in document targeting ",
              pandoc_to, " output.\nPlease change the output type ",
              "of this document to HTML. Alternatively, you can allow\n",
@@ -808,9 +798,7 @@ render <- function(input,
     )
   }
 
-  # read the input text as UTF-8 then write it back out
-  input_text <- read_utf8(input, encoding)
-  write_utf8(input_text, utf8_input)
+  file.copy(input, utf8_input, overwrite = TRUE)
 
   if (run_pandoc) {
 
@@ -818,7 +806,7 @@ render <- function(input,
 
     # call any pre_processor
     if (!is.null(output_format$pre_processor)) {
-      extra_args <- output_format$pre_processor(yaml_front_matter,
+      extra_args <- output_format$pre_processor(front_matter,
                                                 utf8_input,
                                                 runtime,
                                                 knit_meta,
@@ -850,7 +838,7 @@ render <- function(input,
         figures_dir <- gsub('/$', '', knitr::opts_chunk$get("fig.path"))
         files <- list.files(figures_dir, full.names = TRUE, recursive = TRUE)
         # https://github.com/rstudio/rmarkdown/issues/1358
-        if (citeproc) files <- c(files, yaml_front_matter[['bibliography']])
+        if (citeproc) files <- c(files, front_matter[['bibliography']])
         for (f in files) {
           intermediates <<- c(intermediates, copy_file_with_dir(f, intermediates_dir))
         }
@@ -915,13 +903,15 @@ render <- function(input,
     texfile <- file_with_ext(output_file, "tex")
     # determine whether we need to run citeproc (based on whether we have
     # references in the input)
-    run_citeproc <- citeproc_required(yaml_front_matter, input_lines)
+    run_citeproc <- citeproc_required(front_matter, input_lines)
     # if the output format is LaTeX, first convert .md to .tex, and then convert
     # .tex to .pdf via latexmk() if PDF output is requested (in rmarkdown <=
     # v1.8, we used to call Pandoc to convert .md to .tex and .pdf separately)
     if (output_format$pandoc$keep_tex || knitr::is_latex_output()) {
       # do not use pandoc-citeproc if needs to build bibliography
       convert(texfile, run_citeproc && !need_bibtex)
+      # patch the .tex output generated from the default Pandoc LaTeX template
+      if (!("--template" %in% output_format$pandoc$args)) patch_tex_output(texfile)
       # unless the output file has the extension .tex, we assume it is PDF
       if (!grepl('[.]tex$', output_file)) {
         latexmk(texfile, output_format$pandoc$latex_engine, '--biblatex' %in% output_format$pandoc$args)
@@ -948,7 +938,7 @@ render <- function(input,
 
     # if there is a post-processor then call it
     if (!is.null(output_format$post_processor))
-      output_file <- output_format$post_processor(yaml_front_matter,
+      output_file <- output_format$post_processor(front_matter,
                                                   utf8_input,
                                                   output_file,
                                                   clean,

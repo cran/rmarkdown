@@ -113,16 +113,7 @@ pdf_document <- function(toc = FALSE,
   }
 
   # template path and assets
-  if (identical(template, "default")) {
-
-    pandoc_available(error = TRUE)
-    # patch pandoc template if necessary
-    version <- pandoc_version()
-    if (version <= "2.5") args <- c(
-      args, append_in_header(file = pkg_file("rmd/latex/subtitle.tex"))
-    )
-
-  } else if (!is.null(template)) {
+  if (!is.null(template) && !identical(template, "default")) {
     args <- c(args, "--template", pandoc_path_arg(template))
   }
 
@@ -165,17 +156,16 @@ pdf_document <- function(toc = FALSE,
     # make sure --include-in-header from command line will not completely
     # override header-includes in metadata but give the latter lower precedence:
     # https://github.com/rstudio/rmarkdown/issues/1359
-    args <- append_in_header(metadata[["header-includes"]])
+    args <- append_in_header(process_header_includes(metadata))
 
     # use a geometry filter when we are using the "default" template
     if (identical(template, "default")) {
       # set the margin to 1 inch if no geometry options or document class specified
       if (!any(c("geometry", "documentclass") %in% names(metadata)))
         args <- c(args, "--variable", "geometry:margin=1in")
-
-      # use titling package to change title format to be more compact by default
-      if (!xfun::isFALSE(metadata[["compact-title"]])) args <- c(
-        args, append_in_header(file = pkg_file("rmd/latex/compact-title.tex"))
+      # support subtitle for Pandoc < 2.6
+      if (("subtitle" %in% names(metadata)) && !pandoc_available("2.6")) args <- c(
+        args, append_in_header(file = pkg_file("rmd/latex/subtitle.tex"))
       )
     }
 
@@ -218,11 +208,11 @@ pdf_document <- function(toc = FALSE,
 }
 
 general_intermediates_generator <- function(
-  saved_files_dir, original_input, encoding, intermediates_dir
+  saved_files_dir, original_input, intermediates_dir
 ) {
 
   # copy all intermediates (pandoc will need to bundle them in the PDF)
-  intermediates <- copy_render_intermediates(original_input, encoding, intermediates_dir, FALSE)
+  intermediates <- copy_render_intermediates(original_input, intermediates_dir, FALSE)
 
   # we need figures from the supporting files dir to be available during
   # render as well; if we have a files directory, copy its contents
@@ -234,6 +224,29 @@ general_intermediates_generator <- function(
   }
 
   intermediates
+}
+
+patch_tex_output <- function(file) {
+  x <- read_utf8(file)
+  if (length(i <- which(x == '\\begin{document}')) == 0) return()
+  if (length(i <- grep('^\\\\date\\{', head(x, i[1]))) == 0) return()
+
+  i <- i[1]
+  # add \author{} if missing: https://github.com/jgm/pandoc/pull/5961
+  if (length(grep('^\\\\author\\{', head(x, i))) == 0) {
+    x <- append(x, '\\author{}', i - 1)
+    i <- i + 1
+  }
+  # reduce the vertical spacing in \date{} if no author is given
+  if (any(head(x, i) == '\\author{}')) {
+    x[i] <- paste0('\\date{\\vspace{-2.5em}', sub('^\\\\date\\{', '', x[i]))
+  }
+  write_utf8(x, file)
+}
+
+process_header_includes <- function(x) {
+  x <- unlist(x[["header-includes"]])
+  gsub('(^|\n)\\s*```\\{=latex\\}\n(.+?\n)```\\s*(\n|$)', '\\1\\2\\3', x)
 }
 
 #' @param ... Arguments passed to \code{pdf_document()}.

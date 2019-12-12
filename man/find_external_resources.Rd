@@ -9,7 +9,7 @@ find_external_resources(input_file, encoding = "UTF-8")
 \arguments{
 \item{input_file}{path to the R Markdown document or HTML file to process}
 
-\item{encoding}{the encoding of the document}
+\item{encoding}{Ignored. The encoding is always assumed to be UTF-8.}
 }
 \value{
 A data frame with the following columns:

@@ -83,6 +83,7 @@ html_document_base <- function(smart = TRUE,
     # resolve and inject extras, including dependencies specified by the format
     # and dependencies specified by the user (via extra_dependencies)
     format_deps <- list()
+    format_deps <- append(format_deps, html_dependency_elevate_section_attrs())
     if (!is.null(theme)) {
       format_deps <- append(format_deps, list(html_dependency_jquery(),
                                               html_dependency_bootstrap(theme)))
@@ -114,12 +115,10 @@ html_document_base <- function(smart = TRUE,
     args
   }
 
-  intermediates_generator <- function(original_input, encoding,
-                                      intermediates_dir) {
+  intermediates_generator <- function(original_input, intermediates_dir) {
     # copy intermediates; skip web resources if not self contained (pandoc can
     # create references to web resources without the file present)
-    return(copy_render_intermediates(original_input, encoding,
-                                     intermediates_dir, !self_contained))
+    copy_render_intermediates(original_input, intermediates_dir, !self_contained)
   }
 
   post_processor <- function(metadata, input_file, output_file, clean, verbose) {
@@ -186,8 +185,6 @@ html_document_base <- function(smart = TRUE,
 }
 
 extract_preserve_chunks <- function(input_file, extract = extractPreserveChunks) {
-  # The input file is converted to UTF-8 from its native encoding prior
-  # to calling the preprocessor (see ::render)
   input_str <- read_utf8(input_file)
   preserve <- extract(input_str)
   if (!identical(preserve$value, input_str)) write_utf8(preserve$value, input_file)

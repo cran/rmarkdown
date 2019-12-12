@@ -73,19 +73,18 @@ run <- function(file = "index.Rmd", dir = dirname(file), default_file = NULL,
     allRmds <- list.files(path = dir, pattern = "^[^_].*\\.[Rr][Mm][Dd]$")
     if (length(allRmds) == 1) {
       # just one R Markdown document
-      default_file <- file.path(dir, allRmds)
+      default_file <- allRmds
     } else {
       # more than one: look for an index
       index <- which(tolower(allRmds) == "index.rmd")
       if (length(index) > 0) {
-        default_file <- file.path(dir, allRmds[index[1]])
+        default_file <- allRmds[index[1]]
       } else {
         # look for first one that has runtime: shiny
         for (rmd in allRmds) {
-          encoding <- render_args$encoding %||% "UTF-8"
-          runtime <- yaml_front_matter(file.path(dir, rmd), encoding)$runtime
+          runtime <- yaml_front_matter(file.path(dir, rmd))$runtime
           if (is_shiny(runtime)) {
-            default_file <- file.path(dir, rmd)
+            default_file <- rmd
             break
           }
         }
@@ -96,7 +95,7 @@ run <- function(file = "index.Rmd", dir = dirname(file), default_file = NULL,
   if (is.null(default_file)) {
     # no R Markdown default found; how about an HTML?
     indexHtml <- list.files(dir, "index.html?", ignore.case = TRUE)
-    if (length(indexHtml) > 0) default_file <- file.path(dir, indexHtml[1])
+    if (length(indexHtml) > 0) default_file <- indexHtml[1]
   }
 
   # form and test locations
@@ -119,20 +118,17 @@ run <- function(file = "index.Rmd", dir = dirname(file), default_file = NULL,
     }
   }
 
-  # pick up encoding
-  encoding <- render_args$encoding %||% "UTF-8"
-
   if (is.null(render_args$envir)) render_args$envir <- parent.frame()
 
   # determine the runtime of the target file
-  target_file <- file %||% default_file
-  runtime <- if (!is.null(target_file)) yaml_front_matter(target_file, encoding)$runtime
+  target_file <- file %||% file.path(dir, default_file)
+  runtime <- if (length(target_file)) yaml_front_matter(target_file)$runtime
 
   # run using the requested mode
   if (is_shiny_prerendered(runtime)) {
 
     # get the pre-rendered shiny app
-    app <- shiny_prerendered_app(target_file, encoding = encoding, render_args = render_args)
+    app <- shiny_prerendered_app(target_file, render_args = render_args)
   } else {
 
     # add rmd_resources handler on start
@@ -151,7 +147,7 @@ run <- function(file = "index.Rmd", dir = dirname(file), default_file = NULL,
                            uiPattern = "^/$|^/index\\.html?$|^(/.*\\.[Rr][Mm][Dd])$",
                            onStart = onStart,
                            server = rmarkdown_shiny_server(
-                             dir, default_file, encoding, auto_reload, render_args))
+                             dir, default_file, auto_reload, render_args))
 
     # cleanup evaluated cache when the current shiny app exits
     on.exit({
@@ -181,17 +177,12 @@ run <- function(file = "index.Rmd", dir = dirname(file), default_file = NULL,
 }
 
 # create the Shiny server function
-rmarkdown_shiny_server <- function(dir, file, encoding, auto_reload, render_args) {
+rmarkdown_shiny_server <- function(dir, file, auto_reload, render_args) {
   function(input, output, session) {
     path_info <- utils::URLdecode(session$request$PATH_INFO)
     # strip /websocket/ from the end of the request path if present
-    if (identical(substr(path_info, nchar(path_info) - 10, nchar(path_info)),
-                  "/websocket/")) {
-      path_info <- substr(path_info, 1, nchar(path_info) - 11)
-    }
-    if (!nzchar(path_info)) {
-      path_info <- file
-    }
+    path_info <- sub("/websocket/$", "", path_info)
+    if (path_info == "") path_info <- file
 
     file <- resolve_relative(dir, path_info)
     reactive_file <- if (auto_reload)
@@ -209,7 +200,7 @@ rmarkdown_shiny_server <- function(dir, file, encoding, auto_reload, render_args
     # read the contents into a reactive value
     doc <- shiny::reactive({
       # check to see whether we have cached output for this file
-      out <- rmd_cached_output(file, encoding)
+      out <- rmd_cached_output(file)
       output_dest <- out$dest
 
       # if output is cached, return it directly
@@ -322,11 +313,7 @@ rmarkdown_shiny_ui <- function(dir, file) {
 
     # request must be for an R Markdown or HTML document
     ext <- tolower(tools::file_ext(req_path))
-    if (!identical(ext, "rmd") &&
-        !identical(ext, "htm") &&
-        !identical(ext, "html")) {
-      return(NULL)
-    }
+    if (!(ext %in% c("rmd", "htm", "html"))) return(NULL)
 
     # document must exist
     target_file <- resolve_relative(dir, req_path)
@@ -380,11 +367,10 @@ shinyHTML_with_deps <- function(html_file, deps) {
   htmltools::attachDependencies(HTML(one_string(html)), deps)
 }
 
-# given an input file and its encoding, return a list with values indicating
-# whether the input file's Shiny document can be cached and, if so, its cached
-# representation if available
-#' @import utils
-rmd_cached_output <- function(input, encoding) {
+#given an input file, return a list with values indicating whether the input
+#file's Shiny document can be cached and, if so, its cached representation if
+#available ' @import utils
+rmd_cached_output <- function(input) {
   # init return values
   cacheable <- FALSE
   cached <- FALSE
@@ -392,8 +378,7 @@ rmd_cached_output <- function(input, encoding) {
   resource_folder <- ""
 
   # if the file is raw HTML, return it directly
-  if (identical(tolower(tools::file_ext(input)), "htm") ||
-      identical(tolower(tools::file_ext(input)), "html")) {
+  if (tolower(tools::file_ext(input)) %in% c("htm", "html")) {
     return(list(
       cacheable = TRUE,
       cached = TRUE,
@@ -403,7 +388,7 @@ rmd_cached_output <- function(input, encoding) {
   }
 
   # check to see if the file is a Shiny document
-  front_matter <- parse_yaml_front_matter(read_utf8(input, encoding))
+  front_matter <- yaml_front_matter(input)
   if (!is_shiny_classic(front_matter$runtime)) {
 
     # If it's not a Shiny document, then its output is cacheable. Hash the file

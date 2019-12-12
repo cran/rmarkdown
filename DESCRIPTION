@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 1.18
+Version: 2.0
 Authors@R: c(
   person("JJ", "Allaire", role = "aut", email = "jj@rstudio.com"),
   person("Yihui", "Xie", role = c("aut", "cre"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
@@ -26,6 +26,7 @@ Authors@R: c(
   person("Romain", "Lesur", role = "ctb"),
   person("Roy", "Storey", role = "ctb"),
   person("Ruben", "Arslan", role = "ctb", email = "ruben.arslan@uni-goettingen.de"),
+  person("Sergio", "Oller", role = "ctb"),
   #
   # Copyright holders
   person(family = "RStudio, Inc.", role = "cph"),
@@ -84,11 +85,11 @@ SystemRequirements: pandoc (>= 1.12.3) - http://pandoc.org
 URL: https://github.com/rstudio/rmarkdown
 BugReports: https://github.com/rstudio/rmarkdown/issues
 License: GPL-3
-RoxygenNote: 7.0.1
+RoxygenNote: 7.0.2
 Encoding: UTF-8
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2019-11-27 00:04:07 UTC; yihui
+Packaged: 2019-12-12 20:21:45 UTC; yihui
 Author: JJ Allaire [aut],
   Yihui Xie [aut, cre] (<https://orcid.org/0000-0003-0645-5666>),
   Jonathan McPherson [aut],
@@ -110,6 +111,7 @@ Author: JJ Allaire [aut],
   Romain Lesur [ctb],
   Roy Storey [ctb],
   Ruben Arslan [ctb],
+  Sergio Oller [ctb],
   RStudio, Inc. [cph],
   jQuery Foundation [cph] (jQuery library),
   jQuery contributors [ctb, cph] (jQuery library; authors listed in
@@ -135,4 +137,4 @@ Author: JJ Allaire [aut],
   Benct Philip Jonsson [ctb, cph] (pagebreak lua filter),
   Albert Krewinkel [ctb, cph] (pagebreak lua filter)
 Repository: CRAN
-Date/Publication: 2019-11-27 07:40:03 UTC
+Date/Publication: 2019-12-12 21:00:02 UTC

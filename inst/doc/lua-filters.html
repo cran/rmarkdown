@@ -344,21 +344,21 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>This will always insert a pagebreak after this div.</p>
 <p>To get more flexibility, you can use a HTML class and some custom CSS instead of an inline style. You need to add a metadata field <code>newpage_html_class</code> in your yaml header to set the class.</p>
 <p>Then you can control the behavior using custom CSS as in this example</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1"></a>---</span>
-<span id="cb3-2"><a href="#cb3-2"></a>output: </span>
-<span id="cb3-3"><a href="#cb3-3"></a>  html_document: default</span>
-<span id="cb3-4"><a href="#cb3-4"></a>newpage_html_class: page-break</span>
-<span id="cb3-5"><a href="#cb3-5"></a>---</span>
+<div class="sourceCode" id="cb3"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">---</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="an">output:</span><span class="co"> </span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">  html_document: default</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="an">newpage_html_class:</span><span class="co"> page-break</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co">---</span></span>
 <span id="cb3-6"><a href="#cb3-6"></a></span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="bn">```{css, echo = FALSE}</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="bn">// display the pagebreak only when printing the html page</span></span>
-<span id="cb3-9"><a href="#cb3-9"></a><span class="bn">@media all {</span></span>
-<span id="cb3-10"><a href="#cb3-10"></a><span class="bn">    .page-break { display: none; }</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a><span class="bn">}</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a><span class="bn">@media print {</span></span>
-<span id="cb3-13"><a href="#cb3-13"></a><span class="bn">    .page-break { display: block; break-after: page; }</span></span>
-<span id="cb3-14"><a href="#cb3-14"></a><span class="bn">}</span></span>
-<span id="cb3-15"><a href="#cb3-15"></a><span class="bn">```</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="in">```{css, echo = FALSE}</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="in">// display the pagebreak only when printing the html page</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="in">@media all {</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="in">    .page-break { display: none; }</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="in">}</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="in">@media print {</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="in">    .page-break { display: block; break-after: page; }</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a><span class="in">}</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="in">```</span></span>
 <span id="cb3-16"><a href="#cb3-16"></a></span>
 <span id="cb3-17"><a href="#cb3-17"></a><span class="fu"># Header 1</span></span>
 <span id="cb3-18"><a href="#cb3-18"></a></span>
@@ -378,14 +378,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="word" class="section level3">
 <h3>Using with Word documents</h3>
 <p>A <code>\newpage</code> or <code>\pagebreak</code> command in a rmarkdown document with output as Word document will be converted in a pagebreak for word document. Manually, this would mean adding this in your rmarkdown</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1"></a><span class="bn">```{=openxml}</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="bn">&lt;w:p&gt;&lt;w:r&gt;&lt;w:br w:type=&quot;page&quot;/&gt;&lt;/w:r&gt;&lt;/w:p&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="bn">```</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1"></a><span class="in">```{=openxml}</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="in">&lt;w:p&gt;&lt;w:r&gt;&lt;w:br w:type=&quot;page&quot;/&gt;&lt;/w:r&gt;&lt;/w:p&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="in">```</span></span></code></pre></div>
 <p>For example, using the pagebreak feature, this will add the first header in the second page of the work document</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1"></a>---</span>
-<span id="cb6-2"><a href="#cb6-2"></a>title: My main title</span>
-<span id="cb6-3"><a href="#cb6-3"></a>output: word_document</span>
-<span id="cb6-4"><a href="#cb6-4"></a>---</span>
+<div class="sourceCode" id="cb6"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">---</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="an">title:</span><span class="co"> My main title</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="an">output:</span><span class="co"> word_document</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co">---</span></span>
 <span id="cb6-5"><a href="#cb6-5"></a></span>
 <span id="cb6-6"><a href="#cb6-6"></a>\newpage</span>
 <span id="cb6-7"><a href="#cb6-7"></a></span>
@@ -396,12 +396,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>To use the pagebreak feature with <code>odt_document()</code>, you need to provide a reference document that includes a paragraph style with, by default, the name <em>Pagebreak</em>. This named paragraph style should have no extra space before or after and have a pagebreak after it. (see <a href="https://help.libreoffice.org/Writer/Text_Flow">libre office documentation</a> on how to create a style).</p>
 <p>The name of the named paragrah style could be customized using <code>newpage_odt_style</code> metadata in yaml header or <code>PANDOC_NEWPAGE_ODT_STYLE</code> environment variable (as in <a href="#html">html document</a>).</p>
 <p>As the previous one, this example will lead to a two pages document, with first header on the second page.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1"></a>---</span>
-<span id="cb7-2"><a href="#cb7-2"></a>title: My main title</span>
-<span id="cb7-3"><a href="#cb7-3"></a>output: </span>
-<span id="cb7-4"><a href="#cb7-4"></a>  odt_document:</span>
-<span id="cb7-5"><a href="#cb7-5"></a><span class="bn">    reference_odt: reference.odt</span></span>
-<span id="cb7-6"><a href="#cb7-6"></a>---</span>
+<div class="sourceCode" id="cb7"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">---</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="an">title:</span><span class="co"> My main title</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="an">output:</span><span class="co"> </span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="co">  odt_document:</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="co">    reference_odt: reference.odt</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="co">---</span></span>
 <span id="cb7-7"><a href="#cb7-7"></a></span>
 <span id="cb7-8"><a href="#cb7-8"></a>\newpage</span>
 <span id="cb7-9"><a href="#cb7-9"></a></span>

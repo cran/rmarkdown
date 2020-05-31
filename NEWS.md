@@ -1,3 +1,35 @@
+rmarkdown 2.2
+================================================================================
+
+- Exported the internal function `find_pandoc()`, and also added two arguments, `dir` and `version`, so that users can provide a custom directory under which this function may find Pandoc, as well as an expected version of Pandoc to be found (thanks, @connorp, #1785).
+
+- `pandoc_metadata_arg()` is a new Pandoc helper function to generate `--metadata` argument for Pandoc command line (thanks, @cderv, #1789).
+
+- The output format `html_vignette()` now warns against differences in the vignette title specified in the `title` field in the YAML metadata and the one specified inside `\VignetteIndexEntry{}`. Normally they are expected to be identical (#1789).
+
+- Fixed a bug with encoding when rendering `html_notebook` containing HTML widgets (thanks, @cderv, #1799).
+
+- TOC title can now be specified for `html_document` via the top-level option `toc-title` in the YAML frontmatter (thanks, @atusy, #1771).
+
+- Floating TOC can now distinguish upper/lower-cases (thanks, @atusy, #1783).
+
+- When `code_folding='show'` for the output format `html_document`, code blocks can be individually hidden initially by specifying the chunk option `class.source='fold-hide'` (thanks, @atusy, #1798).
+
+- For LaTeX/PDF output formats `pdf_document`, `beamer_presentation`, and `context_document`, the argument `citation_package = 'none'` was deprecated, and `citation_package = 'default'` should be used instead if citations are to be processed by `pandoc-citeproc` (thanks, @njbart, rstudio/bookdown#754).
+
+- `output_format()` can now inherit `keep_md` and `clean_supporting` from `base_format` when `NULL` is passed to these arguments. Previously, you must explicitly specify `keep_md` and/or `clean_supporting` as `TRUE` or `FALSE` in `output_format()` since they could not inherit the corresponding options of `base_format`. This behavior was not consisent with other arguments of `output_format()` (thanks, @atusy, #1823).
+
+- The `smart` argument of most output formats has been removed, because Pandoc's `smart` extension is enabled by default, and setting `smart: false` for an output format did not really have any effect (which could be considered a bug, but we want to get rid of this option since it existed only for a historical reason for Pandoc 1.x, and Pandoc 2.x has been released for more than two years). If you want to disable the `smart` extension, you can use the option `md_extensions: -smart` of the output format (thanks, @atusy, #1774).
+
+- `pdf_document()` should not specify the `geometry` variable when the `documentclass` variable is passed to Pandoc (thanks, @jpcirrus, #1782).
+
+- `render()` now respects the YAML metadata in the R script when rendering the script with Pandoc 2.8 or later (thanks, @nsoranzo #1740, @cderv #1741).
+
+- For `pandoc_convert()`, when the argument `to = 'pdf'`, it will be changed to `'latex'` internally (thanks, @JohannesFriedrich, #1802).
+
+- `render(run_pandoc = FALSE)` no longer cleans up the Markdown file (typically knitted from Rmd) (thanks, @BrianDiggs, #1812).
+
+
 rmarkdown 2.1
 ================================================================================
 

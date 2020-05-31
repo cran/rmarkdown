@@ -74,7 +74,7 @@ output_format <- function(knitr,
     knitr = knitr,
     pandoc = pandoc,
     keep_md = keep_md,
-    clean_supporting = clean_supporting && !keep_md,
+    clean_supporting = if (isTRUE(keep_md)) FALSE else clean_supporting,
     df_print = df_print,
     pre_knit = pre_knit,
     post_knit = post_knit,
@@ -343,11 +343,6 @@ rmarkdown_format <- function(extensions = NULL) {
   format <- c(format, extensions, recursive = TRUE)
 
   paste(format, collapse = "")
-}
-
-# Add the +smart extension for Pandoc >= 2.0
-smart_extension <- function(smart, extension) {
-  c(extension, if (smart && pandoc2.0()) "+smart")
 }
 
 #' Determine the default output format for an R Markdown document

@@ -847,12 +847,34 @@ render <- function(input,
       utf8_input <- path.expand(utf8_input)
       output     <- path.expand(output)
 
+      # in case the output format turns on the --file-scope flag, run its
+      # file_scope function to split the input into multiple files
+      pandoc_args <- output_format$pandoc$args
+      input_files <- utf8_input
+      if (!is.null(output_format$file_scope) &&
+          length(inputs <- output_format$file_scope(utf8_input)) > 1) {
+
+        # add the --file-scope option
+        pandoc_args <- c(pandoc_args, "--file-scope")
+
+        # write the split content into *.split.md files
+        input_files <- unlist(lapply(inputs, function(input) {
+          file <- file_with_meta_ext(input$name, "split", "md")
+          file <- file.path(dirname(utf8_input), file)
+          write_utf8(input$content, file)
+          file
+        }))
+
+        # cleanup the split files after render
+        on.exit(unlink(input_files), add = TRUE)
+      }
+
       # if we don't detect any invalid shell characters in the
       # target path, then just call pandoc directly
       if (!grepl(.shell_chars_regex, output) && !grepl(.shell_chars_regex, utf8_input)) {
         return(pandoc_convert(
-          utf8_input, pandoc_to, output_format$pandoc$from, output,
-          citeproc, output_format$pandoc$args, !quiet
+          input_files, pandoc_to, output_format$pandoc$from, output,
+          citeproc, pandoc_args, !quiet
         ))
       }
 
@@ -874,8 +896,8 @@ render <- function(input,
 
       # call pandoc to render file
       status <- pandoc_convert(
-        utf8_input, pandoc_to, output_format$pandoc$from, pandoc_output_tmp,
-        citeproc, output_format$pandoc$args, !quiet
+        input_files, pandoc_to, output_format$pandoc$from, pandoc_output_tmp,
+        citeproc, pandoc_args, !quiet
       )
 
       # construct output path (when passed only a file name to '--output',

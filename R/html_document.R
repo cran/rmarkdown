@@ -2,7 +2,7 @@
 #'
 #' Format for converting from R Markdown to an HTML document.
 #'
-#' See the \href{https://rmarkdown.rstudio.com/html_document_format.html}{online
+#' See the \href{https://bookdown.org/yihui/rmarkdown/html-document.html}{online
 #' documentation} for additional details on using the \code{html_document}
 #' format.
 #'
@@ -105,7 +105,7 @@
 #'  of a bootstrap navigation bar. For a simple example of including a navigation bar see
 #'  \url{https://github.com/rstudio/rmarkdown-website/blob/master/_navbar.html}.
 #'   For additional documentation on creating Bootstrap navigation bars see
-#'  \url{http://getbootstrap.com/components/#navbar}.
+#'  \url{https://getbootstrap.com/docs/4.5/components/navbar/}.
 #'
 #'
 #'@section Floating Table of Contents:
@@ -146,7 +146,7 @@
 #'
 #'  You can provide a custom HTML template to be used for rendering. The syntax
 #'  for templates is described in the
-#'  \href{http://pandoc.org/README.html}{pandoc documentation}. You can also use
+#'  \href{https://pandoc.org/MANUAL.html}{pandoc documentation}. You can also use
 #'  the basic pandoc template by passing \code{template = NULL}.
 #'
 #'  Note however that if you choose not to use the "default" HTML template then
@@ -295,7 +295,7 @@ html_document <- function(toc = FALSE,
 
   # additional css
   for (css_file in css)
-    args <- c(args, "--css", pandoc_path_arg(css_file))
+    args <- c(args, "--css", pandoc_path_arg(css_file, backslash = FALSE))
 
   # manage list of exit_actions (backing out changes to knitr options)
   exit_actions <- list()
@@ -312,7 +312,7 @@ html_document <- function(toc = FALSE,
       source_file <<- basename(input)
       source_code <<- paste0(
         '<div id="rmd-source-code">',
-        base64enc::base64encode(input),
+        xfun::base64_encode(input),
         '</div>')
     }
   }
@@ -643,6 +643,5 @@ navbar_link_text <- function(x, ...) {
   else
     tagList(x$text, ...)
 }
-
 
 

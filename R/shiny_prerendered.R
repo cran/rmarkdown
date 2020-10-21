@@ -354,9 +354,9 @@ shiny_prerendered_clean <- function(input) {
 shiny_prerendered_chunk <- function(context, code, singleton = FALSE) {
 
   # verify we are in runtime: shiny_prerendered
-  if (!identical(knitr::opts_knit$get("rmarkdown.runtime"),"shiny_prerendered"))
+  if (!is_shiny_prerendered(knitr::opts_knit$get("rmarkdown.runtime")))
       stop("The shiny_prerendered_chunk function can only be called from ",
-           "within runtime: shiny_prerendered",
+           "within runtime: shinyrmd",
            call. = FALSE)
 
   # add the prerendered chunk to knit_meta
@@ -565,7 +565,7 @@ shiny_prerendered_append_contexts <- function(runtime, file) {
 
     # validate we are in runtime: shiny_prerendered
     if (!is_shiny_prerendered(runtime)) {
-      stop("The code within this document requires runtime: shiny_prerendered",
+      stop("The code within this document requires runtime: shinyrmd",
            call. = FALSE)
     }
 
@@ -612,7 +612,7 @@ shiny_prerendered_append_context <- function(con, name, code) {
 
 # Prerendred data_dir for a given Rmd input file
 shiny_prerendered_data_dir <- function(input, create = FALSE) {
-  data_dir <- paste0(tools::file_path_sans_ext(input), "_data")
+  data_dir <- paste0(xfun::sans_ext(input), "_data")
   if (create && !dir_exists(data_dir))
     dir.create(data_dir)
   data_dir

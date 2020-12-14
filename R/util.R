@@ -33,8 +33,17 @@ pandoc_output_ext <- function(ext, to, input) {
   paste0(".", to)
 }
 
-pkg_file <- function(..., package = "rmarkdown") {
-  system.file(..., package = package)
+# needs to handle the case when this function is used in a package loaded with
+# devtools or pkgload load_all(). Required for testing with testthat also.
+# From pkgdown:
+# https://github.com/r-lib/pkgdown/blob/04d3a76892320ac4bd918b39604c157e9f83507a/R/utils-fs.R#L85
+pkg_file <- function(..., package = "rmarkdown", mustWork = FALSE) {
+  if (is.null(devtools_meta(package))) {
+    system.file(..., package = package, mustWork = mustWork)
+  } else {
+    # used only if package has been loaded with devtools or pkgload
+    file.path(getNamespaceInfo(package, "path"), "inst", ...)
+  }
 }
 
 pkg_file_arg <- function(..., package = "rmarkdown") {
@@ -56,10 +65,8 @@ pkg_file_arg <- function(..., package = "rmarkdown") {
 #'   \code{\link{pandoc_path_arg}()}, so they are ready to be used by Pandoc.
 #' @export
 #' @examples
-#' # List all Lua filters stored in the rmarkdown package
+#' # list all Lua filters stored in the rmarkdown package
 #' pkg_file_lua()
-#' # or in a specific package
-#' if (xfun::loadable("bookdown")) pkg_file_lua(package = "bookdown")
 #' # get a specific filter
 #' pkg_file_lua(c("pagebreak.lua", "latex_div.lua"))
 pkg_file_lua <- function(filters = NULL, package = "rmarkdown") {
@@ -148,6 +155,7 @@ clean_tmpfiles <- function() {
   ))
 }
 
+# test if all paths in x are directories
 dir_exists <- function(x) {
   length(x) > 0 && utils::file_test('-d', x)
 }
@@ -528,4 +536,14 @@ get_loaded_packages <- function() {
     version = version,
     row.names = NULL, stringsAsFactors = FALSE
   )
+}
+
+# devtools metadata -------------------------------------------------------
+
+# from pkgdown
+# https://github.com/r-lib/pkgdown/blob/77f909b0138a1d7191ad9bb3cf95e78d8e8d93b9/R/utils.r#L52
+
+devtools_meta <- function(package) {
+  ns <- .getNamespace(package)
+  ns[[".__DEVTOOLS__"]]
 }

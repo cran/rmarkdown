@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 2.6
+Version: 2.7
 Authors@R: c(
   person("JJ", "Allaire", role = "aut", email = "jj@rstudio.com"),
   person("Yihui", "Xie", role = c("aut", "cre"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
@@ -20,6 +20,7 @@ Authors@R: c(
          comment = c(ORCID = "0000-0002-8335-495X",
                      cph = "Number sections Lua filter")),
   person("Barret", "Schloerke", role = "ctb"),
+  person("Carson", "Sievert", role = "ctb", comment = c(ORCID = "0000-0002-4958-2844")),
   person("Christophe", "Dervieux", role = "ctb"),
   person("Frederik", "Aust", role = "ctb", email = "frederik.aust@uni-koeln.de", comment = c(ORCID = "0000-0003-4900-788X")),
   person("Jeff", "Allen", role = "ctb", email = "jeff@rstudio.com"),
@@ -82,17 +83,19 @@ Depends: R (>= 3.0)
 Imports: tools, utils, knitr (>= 1.22), yaml (>= 2.1.19), htmltools (>=
         0.3.5), evaluate (>= 0.13), jsonlite, tinytex (>= 0.11), xfun
         (>= 0.15), methods, stringr (>= 1.2.0)
-Suggests: shiny (>= 0.11), tufte, testthat (>= 2.0.0), digest,
-        dygraphs, vctrs, tibble, fs, rsconnect, withr (>= 2.3.0)
+Suggests: shiny (>= 1.6.0), tufte, testthat (>= 3.0.0), digest,
+        dygraphs, vctrs, tibble, fs, rsconnect, withr (>= 2.3.0), bslib
+        (>= 0.2.4), sass
 SystemRequirements: pandoc (>= 1.14) - http://pandoc.org
-URL: https://github.com/rstudio/rmarkdown
+URL: https://github.com/rstudio/rmarkdown,
+        https://rmarkdown.rstudio.com/docs/
 BugReports: https://github.com/rstudio/rmarkdown/issues
 License: GPL-3
 RoxygenNote: 7.1.1
 Encoding: UTF-8
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2020-12-14 16:19:32 UTC; yihui
+Packaged: 2021-02-19 04:20:47 UTC; yihui
 Author: JJ Allaire [aut],
   Yihui Xie [aut, cre] (<https://orcid.org/0000-0003-0645-5666>),
   Jonathan McPherson [aut],
@@ -107,6 +110,7 @@ Author: JJ Allaire [aut],
   Atsushi Yasumoto [ctb, cph] (<https://orcid.org/0000-0002-8335-495X>,
     Number sections Lua filter),
   Barret Schloerke [ctb],
+  Carson Sievert [ctb] (<https://orcid.org/0000-0002-4958-2844>),
   Christophe Dervieux [ctb],
   Frederik Aust [ctb] (<https://orcid.org/0000-0003-4900-788X>),
   Jeff Allen [ctb],
@@ -142,4 +146,4 @@ Author: JJ Allaire [aut],
   Benct Philip Jonsson [ctb, cph] (pagebreak Lua filter),
   Albert Krewinkel [ctb, cph] (pagebreak Lua filter)
 Repository: CRAN
-Date/Publication: 2020-12-14 18:00:03 UTC
+Date/Publication: 2021-02-19 08:10:02 UTC

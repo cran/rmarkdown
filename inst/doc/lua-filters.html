@@ -141,11 +141,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 
 
-<p>This vignettes gives some detailled information regarding the Lua filter including in the <strong>rmarkdown</strong> package. To know more about Lua filter, you can jump directly to <a href="#lua-filter">last section</a></p>
+<p>This vignettes gives some detailed information regarding the Lua filters including in the <strong>rmarkdown</strong> package. You don’t have to do anything to use them usually as they just works usaully. This document presents the features they power.</p>
+<p>To know more about Lua filters in general, you can jump directly to <a href="#lua-filter">last section</a></p>
 <div id="pagebreaks" class="section level2">
 <h2>Pagebreaks</h2>
+<p>This filter is available since <strong>rmarkdown</strong> 1.15 and works with Pandoc 2.1+ (shipped in RStudio &gt;= 1.2).</p>
 <p>Adding a pagebreak in document was always possible using custom output specific syntax in a rmarkdown file but one drawback was the compatibility with several output format.</p>
-<p>Since rmarkdown &gt;= 1.15 and with RStudio &gt;= 1.2 (or with pandoc &gt;= 2.0), it is possible to add a <code>\newpage</code> or <code>\pagebreak</code> command in a new line to include a pagebreak in any of these formats: <code>pdf_document()</code>, <code>html_document()</code>, <code>word_document()</code> and <code>odt_document()</code>.</p>
+<p>With this Lua filter, it is possible to add a <code>\newpage</code> or <code>\pagebreak</code> command in a new line to include a pagebreak in any of these formats: <code>pdf_document()</code>, <code>html_document()</code>, <code>word_document()</code> and <code>odt_document()</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Header 1</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>Some text</span>
@@ -167,7 +169,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="html" class="section level3">
 <h3>Using with HTML documents</h3>
 <p>A <code>\newpage</code> or <code>\pagebreak</code> command in a rmarkdown document with output as HTML will be converted by default in this html code with inline style using CSS rule <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/page-break-after"><code>page-break-after</code></a></p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;div</span><span class="ot"> style=</span><span class="st">&quot;page-break-after: always;&quot;</span><span class="kw">&gt;&lt;/div&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;div</span> <span class="er">style</span><span class="ot">=</span><span class="st">&quot;page-break-after: always;&quot;</span><span class="kw">&gt;&lt;/div&gt;</span></span></code></pre></div>
 <p>This will always insert a pagebreak after this div.</p>
 <p>To get more flexibility, you can use a HTML class and some custom CSS instead of an inline style. You need to add a metadata field <code>newpage_html_class</code> in your yaml header to set the class.</p>
 <p>Then you can control the behavior using custom CSS as in this example</p>
@@ -197,7 +199,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>Some other text</span></code></pre></div>
 <p><code>\newpage</code> will be converted here to</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;page-break&quot;</span><span class="kw">&gt;&lt;/div&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;div</span> <span class="er">class</span><span class="ot">=</span><span class="st">&quot;page-break&quot;</span><span class="kw">&gt;&lt;/div&gt;</span></span></code></pre></div>
 <p>and the style will be applied to this class from the CSS included in the chunk.</p>
 <p>This customisation can also be achieved by setting the environnement variable <code>PANDOC_NEWPAGE_HTML_CLASS</code> in the R session that will render the document (or in <code>.Renviron</code> file for example)</p>
 <p>Let’s note that in this example we use <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/break-after"><code>break-after</code></a> property instead of <code>page-break-after</code> as it is recommended now to use the former which is the replacement. The latter is kept around for <a href="https://caniuse.com/#search=page-break">compatibility reason with browsers</a>.</p>
@@ -237,6 +239,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="number-sections" class="section level2">
 <h2>Number sections</h2>
+<p>This filter is available since <strong>rmarkdown</strong> 2.4 and works with Pandoc 2.1+ (shipped in RStudio &gt;= 1.2).</p>
 <p>Numbering sections are supported by Pandoc for limited formats (e.g., html and pdf). The rmarkdown package adds <code>number_sections.lua</code> to support this feature in other formats (e.g., docx, odt, and so on). Users do not have to know which formats use the Pandoc’s feature or the Lua filter.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> My main title</span></span>
@@ -254,14 +257,34 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu"># Second Header</span></span></code></pre></div>
 <p>In general, numbers and titles of sections are separated by a space. An exception is the <code>word_document</code> function, which separates them by a tab in order to be consistent with Pandoc’s number sections for docx format in Pandoc &gt;= 2.10.1. If one wants to have fine controls on the format of section numbers, prepare customized docx file and specify it to the <code>reference_docx</code> argument of the <code>word_document</code> function.</p>
 </div>
+<div id="custom-environment-for-latex" class="section level2">
+<h2>Custom environment for LaTeX</h2>
+<p>This filter is available since <strong>rmarkdown</strong> 1.15 and works with Pandoc 2.1+ (shipped in RStudio &gt;= 1.2).</p>
+<p>Pandoc supports a syntax called <a href="https://pandoc.org/MANUAL.html#divs-and-spans">Fenced Divs</a> that allows to create <code>&lt;div&gt;</code> in HTML. For example, the syntax is</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>::: {#special .sidebar}</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>Here is a paragraph.</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>And another.</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>:::</span></code></pre></div>
+<p>By default, this special syntax will be ignored in LaTeX conversion for PDF output and the content of the block will be used as-is. However, this syntax could be used to create LaTeX environment.</p>
+<p>That is why <strong>rmarkdown</strong> uses a custom Lua filter to allow any Fenced Divs to be converted as a LaTeX environment (<code>\begin{env}</code> … <code>\end{env}</code>) when desired by adding a special attribute.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>::: {.verbatim data-latex=&quot;&quot;}</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>We show some _verbatim_ text here.</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>:::</span></code></pre></div>
+<p>Its LaTeX output will be:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode latex"><code class="sourceCode latex"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">\begin</span>{<span class="ex">verbatim</span>}</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="vs">We show some \emph{verbatim} text here.</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">\end</span>{<span class="ex">verbatim</span>}</span></code></pre></div>
+<p>This feature we call <em>Custom blocks</em> is documented in details in the <a href="https://bookdown.org/yihui/rmarkdown-cookbook/custom-blocks.html">R Markdown Cookbook</a></p>
+</div>
 <div id="lua-filter" class="section level2">
 <h2>About Lua filters</h2>
 <p>Since pandoc 2.0, it is possible to use Lua filters to add some extra functionality to pandoc document conversion. Adding a pagebreak command in markdown to be compatible with several output documents is one of them. You can find some more informations about Lua filters in <a href="https://pandoc.org/lua-filters.html">pandoc’s documentation</a> and also some examples in <a href="https://github.com/pandoc/lua-filters">a collection of Lua filters for pandoc</a>. These examples, and any other Lua filters, can be use in your Rmarkdown document directly by adding <a href="https://bookdown.org/yihui/rmarkdown/html-document.html#pandoc-arguments">a pandoc argument</a> in yaml header</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>output:</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  html_document:</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    pandoc_args: [&quot;--lua-filter=filter.lua&quot;]</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>---</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>output:</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  html_document:</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    pandoc_args: [&quot;--lua-filter=filter.lua&quot;]</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>---</span></code></pre></div>
 <p>You can also use a special helper using a <code>!expr</code> syntax for yaml in your header</p>
 <p>The package <a href="https://github.com/crsh/rmdfiltr">rmdfiltr</a> provides a collection of Lua filters and helpers functions to use them.</p>
 <p>Before pandoc 2.0, <a href="https://pandoc.org/filters.html">using filter</a> with pandoc was already available through programs that modifies the AST. <code>pandoc-citeproc</code> is an example used to deal with citations. The package <a href="https://cran.r-project.org/package=pandocfilters">pandocfilter</a> is useful to create filters using R.</p>
@@ -269,29 +292,29 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h3>Using filters with output format</h3>
 <p>If you want to create a format that uses a special filter, you can add it as a pandoc option if the output format.</p>
 <p>Either by modifying an existing format:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>custom_format <span class="ot">&lt;-</span> <span class="cf">function</span>(...) {</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  base_format <span class="ot">&lt;-</span> rmarkdown<span class="sc">::</span><span class="fu">html_document</span>(...)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># prepending a new Lua filter to html_document() ones</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  base_format<span class="sc">$</span>pandoc<span class="sc">$</span>lua_filters <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    rmarkdown<span class="sc">::</span><span class="fu">pandoc_path_arg</span>(<span class="st">&quot;new.lua&quot;</span>), </span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    base_format<span class="sc">$</span>pandoc<span class="sc">$</span>lua_filters)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  base_format</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="fu">basename</span>(<span class="fu">custom_format</span>()<span class="sc">$</span>pandoc<span class="sc">$</span>lua_filters)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;new.lua&quot;       &quot;pagebreak.lua&quot; &quot;latex-div.lua&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>custom_format <span class="ot">&lt;-</span> <span class="cf">function</span>(...) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  base_format <span class="ot">&lt;-</span> rmarkdown<span class="sc">::</span><span class="fu">html_document</span>(...)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># prepending a new Lua filter to html_document() ones</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  base_format<span class="sc">$</span>pandoc<span class="sc">$</span>lua_filters <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    rmarkdown<span class="sc">::</span><span class="fu">pandoc_path_arg</span>(<span class="st">&quot;new.lua&quot;</span>), </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    base_format<span class="sc">$</span>pandoc<span class="sc">$</span>lua_filters)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  base_format</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="fu">basename</span>(<span class="fu">custom_format</span>()<span class="sc">$</span>pandoc<span class="sc">$</span>lua_filters)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;new.lua&quot;       &quot;pagebreak.lua&quot; &quot;latex-div.lua&quot;</span></span></code></pre></div>
 <p>Or by creating a new format :</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>custom_format <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">toc =</span> <span class="cn">TRUE</span>, ...) {</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  rmarkdown<span class="sc">::</span><span class="fu">output_format</span>(</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">knitr =</span> rmarkdown<span class="sc">::</span><span class="fu">knitr_options</span>(),</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># a new filter will be appended to base_format ones</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">pandoc =</span> rmarkdown<span class="sc">::</span><span class="fu">pandoc_options</span>(<span class="at">to =</span> <span class="st">&quot;html&quot;</span>, <span class="at">lua_filters =</span> <span class="st">&quot;new.lua&quot;</span>),</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">base_format =</span> rmarkdown<span class="sc">::</span><span class="fu">html_document</span>(<span class="at">toc =</span> toc, ...)</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="fu">basename</span>(<span class="fu">custom_format</span>()<span class="sc">$</span>pandoc<span class="sc">$</span>lua_filters)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;pagebreak.lua&quot; &quot;latex-div.lua&quot; &quot;new.lua&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>custom_format <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">toc =</span> <span class="cn">TRUE</span>, ...) {</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  rmarkdown<span class="sc">::</span><span class="fu">output_format</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">knitr =</span> rmarkdown<span class="sc">::</span><span class="fu">knitr_options</span>(),</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># a new filter will be appended to base_format ones</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">pandoc =</span> rmarkdown<span class="sc">::</span><span class="fu">pandoc_options</span>(<span class="at">to =</span> <span class="st">&quot;html&quot;</span>, <span class="at">lua_filters =</span> <span class="st">&quot;new.lua&quot;</span>),</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">base_format =</span> rmarkdown<span class="sc">::</span><span class="fu">html_document</span>(<span class="at">toc =</span> toc, ...)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="fu">basename</span>(<span class="fu">custom_format</span>()<span class="sc">$</span>pandoc<span class="sc">$</span>lua_filters)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;pagebreak.lua&quot; &quot;latex-div.lua&quot; &quot;new.lua&quot;</span></span></code></pre></div>
 <p>As this is an advanced feature, if you want to go further, we encourage you to look at the examples of formats in packages such as <strong>rmarkdown</strong>, <strong>bookdown</strong> or <strong>pagedown</strong>.</p>
 </div>
 </div>

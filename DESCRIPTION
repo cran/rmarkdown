@@ -1,7 +1,7 @@
 Package: rmarkdown
 Type: Package
 Title: Dynamic Documents for R
-Version: 2.10
+Version: 2.11
 Authors@R: c(
   person("JJ", "Allaire", role = "aut", email = "jj@rstudio.com"),
   person("Yihui", "Xie", role = c("aut", "cre"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
@@ -35,10 +35,6 @@ Authors@R: c(
   #
   # Copyright holders
   person(family = "RStudio, PBC", role = "cph"),
-  person(family = "jQuery Foundation", role = "cph",
-         comment = "jQuery library"),
-  person(family = "jQuery contributors", role = c("ctb", "cph"),
-         comment = "jQuery library; authors listed in inst/rmd/h/jquery-AUTHORS.txt"),
   person(family = "jQuery UI contributors", role = c("ctb", "cph"),
          comment = "jQuery UI library; authors listed in inst/rmd/h/jqueryui-AUTHORS.txt"),
   person("Mark", "Otto", role = "ctb",
@@ -83,7 +79,7 @@ Description: Convert R Markdown documents into a variety of formats.
 Depends: R (>= 3.0)
 Imports: tools, utils, knitr (>= 1.22), yaml (>= 2.1.19), htmltools (>=
         0.3.5), evaluate (>= 0.13), jsonlite, tinytex (>= 0.31), xfun
-        (>= 0.21), methods, stringr (>= 1.2.0)
+        (>= 0.21), jquerylib, methods, stringr (>= 1.2.0)
 Suggests: shiny (>= 1.6.0), tufte, testthat (>= 3.0.0), digest,
         dygraphs, vctrs, tibble, fs, rsconnect, withr (>= 2.4.2), bslib
         (>= 0.2.5.1), sass (>= 0.4.0)
@@ -92,11 +88,11 @@ URL: https://github.com/rstudio/rmarkdown,
         https://pkgs.rstudio.com/rmarkdown/
 BugReports: https://github.com/rstudio/rmarkdown/issues
 License: GPL-3
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Encoding: UTF-8
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2021-08-05 23:00:13 UTC; yihui
+Packaged: 2021-09-14 13:25:46 UTC; yihui
 Author: JJ Allaire [aut],
   Yihui Xie [aut, cre] (<https://orcid.org/0000-0003-0645-5666>),
   Jonathan McPherson [aut],
@@ -124,9 +120,6 @@ Author: JJ Allaire [aut],
   Ruben Arslan [ctb],
   Sergio Oller [ctb],
   RStudio, PBC [cph],
-  jQuery Foundation [cph] (jQuery library),
-  jQuery contributors [ctb, cph] (jQuery library; authors listed in
-    inst/rmd/h/jquery-AUTHORS.txt),
   jQuery UI contributors [ctb, cph] (jQuery UI library; authors listed in
     inst/rmd/h/jqueryui-AUTHORS.txt),
   Mark Otto [ctb] (Bootstrap library),
@@ -148,4 +141,4 @@ Author: JJ Allaire [aut],
   Benct Philip Jonsson [ctb, cph] (pagebreak Lua filter),
   Albert Krewinkel [ctb, cph] (pagebreak Lua filter)
 Repository: CRAN
-Date/Publication: 2021-08-06 07:10:02 UTC
+Date/Publication: 2021-09-14 14:10:02 UTC

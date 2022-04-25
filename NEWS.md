@@ -1,3 +1,21 @@
+rmarkdown 2.14
+================================================================================
+
+- Improved highlighting theme `arrow` regarding accessibility.
+
+- Fixed an issue with `site_generator()` detection of a site project (thanks, @bhattmaulik, #2344).
+
+- Fixed an issue with Shiny prerendered documents and Pandoc not correctly rendering last Markdown paragraph in HTML (thanks, @gadenbuie, #2336).
+
+- Fixed a bug that `site_generator()` fails to detect the root dir of the site and causes infinite recursion (thanks, @fisher-j, #2339).
+
+- `html_vignette()` gains `code_folding` argument (thanks, @atusy, #2340).
+
+- `html_document()` can opt-out `code_folding = "show"` or `"hide"` for individual code blocks by adding the `fold-none` class to the code blocks (thanks, @atusy, #2348).
+
+- When using a development version of Pandoc, a `.9999` suffix is appended to version number so that `pandoc_available()` can correctly compared version with last release.
+
+
 rmarkdown 2.13
 ================================================================================
 

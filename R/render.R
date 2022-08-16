@@ -389,7 +389,7 @@ render <- function(input,
   oldwd <- setwd(dirname(abs_path(input)))
   on.exit(setwd(oldwd), add = TRUE)
 
-  # reset the name of the input file to be relative and generete the name of
+  # reset the name of the input file to be relative and generate the name of
   # the intermediate knitted file. The extension can be set as an option mainly for blogdown
   # as `.md~` will be ignored.
   input <- basename(input)
@@ -685,7 +685,7 @@ render <- function(input,
         # check for 'global' chunk label
         if (identical(knitr::opts_current$get("label"), "global")) {
 
-          # check list of previously evaludated global chunks
+          # check list of previously evaluated global chunks
           code_string <- one_string(code)
           if (!code_string %in% .globals$evaluated_global_chunks) {
 

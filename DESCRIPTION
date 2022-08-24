@@ -1,7 +1,7 @@
 Type: Package
 Package: rmarkdown
 Title: Dynamic Documents for R
-Version: 2.15
+Version: 2.16
 Authors@R: c(
     person("JJ", "Allaire", , "jj@rstudio.com", role = "aut"),
     person("Yihui", "Xie", , "xie@yihui.name", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0645-5666")),
@@ -56,7 +56,7 @@ URL: https://github.com/rstudio/rmarkdown,
         https://pkgs.rstudio.com/rmarkdown/
 BugReports: https://github.com/rstudio/rmarkdown/issues
 Depends: R (>= 3.0)
-Imports: bslib (>= 0.2.5.1), evaluate (>= 0.13), htmltools (>= 0.3.5),
+Imports: bslib (>= 0.2.5.1), evaluate (>= 0.13), htmltools (>= 0.5.1),
         jquerylib, jsonlite, knitr (>= 1.22), methods, stringr (>=
         1.2.0), tinytex (>= 0.31), tools, utils, xfun (>= 0.30), yaml
         (>= 2.1.19)
@@ -69,7 +69,7 @@ Encoding: UTF-8
 RoxygenNote: 7.2.1
 SystemRequirements: pandoc (>= 1.14) - http://pandoc.org
 NeedsCompilation: no
-Packaged: 2022-08-16 15:09:09 UTC; yihui
+Packaged: 2022-08-24 18:52:13 UTC; yihui
 Author: JJ Allaire [aut],
   Yihui Xie [aut, cre] (<https://orcid.org/0000-0003-0645-5666>),
   Jonathan McPherson [aut],
@@ -118,4 +118,4 @@ Author: JJ Allaire [aut],
   Benct Philip Jonsson [ctb, cph] (pagebreak Lua filter),
   Albert Krewinkel [ctb, cph] (pagebreak Lua filter)
 Repository: CRAN
-Date/Publication: 2022-08-16 18:30:02 UTC
+Date/Publication: 2022-08-24 19:50:02 UTC

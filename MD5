@@ -1,7 +1,7 @@
-d8895cc58f85ab4763903780be38a56d *DESCRIPTION
+e3cf70a24cc3293731604f821018fa05 *DESCRIPTION
 99a265e8e745e74f9e672fb1ccbc2996 *NAMESPACE
-8b67284327470f43bc95c00aeea541f6 *NEWS.md
-3ad8ea6eeafbe25b3209875dcbb2e2cf *R/base64.R
+976ba9da69eba78a9d26085738780b39 *NEWS.md
+9a349df369b60d6cf23b1e6f72940f34 *R/base64.R
 a7aad59a45e88c20387449253f7cdcdc *R/beamer_presentation.R
 251da2787392877ad9a410d664770512 *R/context_document.R
 8063e71b1f73980826ca226011b0e200 *R/draft.R
@@ -36,7 +36,7 @@ a4326355b87b800c7801101feda30915 *R/publish_site.R
 e6bcb9f19758aff25e44be46b3c0cae2 *R/relative_to.R
 4ed91f82febab57a37b21ebdb723f595 *R/render.R
 de40925dfab433d427907c0dae5ba9eb *R/render_html.R
-618b13a00924a484f996f540c8effa15 *R/render_site.R
+4261c6532bfc9d6adc0fd75d30201b4e *R/render_site.R
 de4986cdf6829726c2e1f1f4545d2305 *R/rmarkdown.R
 f803086d38b6a53d24e3f00145a4a9f9 *R/rtf_document.R
 4c0672a30e4ecb5c0eb512da5e98e7ac *R/shiny.R
@@ -55,10 +55,10 @@ b550b2c6aa8b6547482dc99e87039d94 *inst/COPYING
 59a0b73ba11a11a27ef15b768cc63169 *inst/NOTICE
 a591598510b1c152b4a2ff0f3ac4187a *inst/doc/lua-filters.R
 6fba8b785e9f1f8b16fda635f81319f1 *inst/doc/lua-filters.Rmd
-54978041c97d57f06fa9496dc881c7ab *inst/doc/lua-filters.html
+f853388931884d83fe8d3ab3de57694c *inst/doc/lua-filters.html
 a2e48ff933ced70912cf4a5783ba2de5 *inst/doc/rmarkdown.R
 c1b55750913d5ede3d38826bf9d5a9bc *inst/doc/rmarkdown.Rmd
-5d9e3ecb6836d80e0fd70083e6711a74 *inst/doc/rmarkdown.html
+86a6aec49e3e57b11036f72294dcaf45 *inst/doc/rmarkdown.html
 27f36cc6eeab8f77c60418ebfb5a82a7 *inst/rmarkdown/highlight/arrow.theme
 622c45fc3464787be100ae8c22bd4d19 *inst/rmarkdown/highlight/rstudio.theme
 4aa03d17ca11fe812a1972206b4a1367 *inst/rmarkdown/lua/anchor-sections.lua
@@ -135,7 +135,7 @@ fa2772327f55d8198301fdb8bcfc8158 *inst/rmd/h/bootstrap/fonts/glyphicons-halfling
 ccb7f3909e30b1eb8f65a24393c6e12b *inst/rmd/h/bootstrap/js/npm.js
 ae8fceae0e07d55b5cfaa9af6bc43a6d *inst/rmd/h/bootstrap/shim/html5shiv.min.js
 506fe393e9f296d14b63733c0aff6205 *inst/rmd/h/bootstrap/shim/respond.min.js
-8f2e9a8a7e0782f2664549369eb9da78 *inst/rmd/h/default.html
+2d72d3e019517274de71151e5b53af94 *inst/rmd/h/default.html
 826c57385f3d35cfed5478ba7b1f5c03 *inst/rmd/h/fontawesome/css/all.css
 6dd334cc89ff203f10b026482960997d *inst/rmd/h/fontawesome/css/v4-shims.css
 e2a76403183eff8967cf6318c6e51509 *inst/rmd/h/fontawesome/webfonts/fa-brands-400.eot
@@ -456,7 +456,7 @@ a0382d9a4e38ab81165ddc25f49aa5c9 *tests/testthat/test-output_format.R
 12570d6001c56e4aeb23e92102617678 *tests/testthat/test-resources.R
 37f4a8866d123785d9c1ca777b3d96ac *tests/testthat/test-shiny.R
 2c170865cb7a52e1df17fa4ba0e4e879 *tests/testthat/test-shiny_prerendered.R
-73cfeba5c7836c28ddbefbeecd320c09 *tests/testthat/test-site.R
+b853928d472415fc0707573fe326afe9 *tests/testthat/test-site.R
 99eb529124e2839da299a515d06e1a53 *tests/testthat/test-spin.R
 0d6f243e3550408edfdf1cbbab2e9ddb *tests/testthat/test-utils.R
 7f7a139f60049de769c2f8893b90f390 *tests/testthat/test-vignette.R

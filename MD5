@@ -1,6 +1,6 @@
-e3cf70a24cc3293731604f821018fa05 *DESCRIPTION
+619083b625c6d7e86dbca887f4f4dbeb *DESCRIPTION
 99a265e8e745e74f9e672fb1ccbc2996 *NAMESPACE
-976ba9da69eba78a9d26085738780b39 *NEWS.md
+db1049fb234e80555b11a8f2cd07c160 *NEWS.md
 9a349df369b60d6cf23b1e6f72940f34 *R/base64.R
 a7aad59a45e88c20387449253f7cdcdc *R/beamer_presentation.R
 251da2787392877ad9a410d664770512 *R/context_document.R
@@ -26,7 +26,7 @@ bf481301b67a542f0174e00223344b91 *R/jupyter.R
 36d1d8edabcabd992f3a21c7e0d3f362 *R/list_builder.R
 e07dffc62f670fe8fdb578d62db43311 *R/md_document.R
 5eaf717fa22c8622bab127ee0d834874 *R/odt_document.R
-e3f9923b61a3aa6088182aeb9fc4141f *R/output_format.R
+7d4d828ffc2fa8a99a1977254bc64823 *R/output_format.R
 636f2571844b9e893fc705cd487e047a *R/pandoc.R
 ea9203eb70b774e742976d46a841e28b *R/params.R
 306d69d53e47ecc82e5c3e77685c4a78 *R/pdf_document.R
@@ -34,7 +34,7 @@ c297b5021ac1f24fdc135b84711c51d4 *R/performance.R
 5c49e6f5fa9f42f7f294b3a74050082d *R/powerpoint_presentation.R
 a4326355b87b800c7801101feda30915 *R/publish_site.R
 e6bcb9f19758aff25e44be46b3c0cae2 *R/relative_to.R
-4ed91f82febab57a37b21ebdb723f595 *R/render.R
+5dff074324f19d509f0e29145fe76b59 *R/render.R
 de40925dfab433d427907c0dae5ba9eb *R/render_html.R
 4261c6532bfc9d6adc0fd75d30201b4e *R/render_site.R
 de4986cdf6829726c2e1f1f4545d2305 *R/rmarkdown.R
@@ -48,8 +48,8 @@ ce357b02452c40d9f71a05f5885dc692 *R/shiny_prerendered.R
 8fd1f6ab4cb310a082b2ca61090f66e1 *R/util.R
 e9538036792d35cd0b273859a2809588 *R/word_document.R
 58ab4f92fc4b737ae91abe3adbef59ce *R/zzz.R
-9f3e4f191223d9f18f053ac12414b581 *README.md
-664d5de82be85e14e2aac5aae03701e6 *build/vignette.rds
+cb363a99fc12413704e0b511783b848f *README.md
+020b4f5b30aa2b815c7710f10180cbd9 *build/vignette.rds
 092c4e32d8e5e2372f395ef10a809ec9 *inst/CITATION
 b550b2c6aa8b6547482dc99e87039d94 *inst/COPYING
 59a0b73ba11a11a27ef15b768cc63169 *inst/NOTICE
@@ -315,7 +315,7 @@ b4fafae614b19beb1766e5684643bd3e *man/output_metadata.Rd
 0503712d71b123b2f5ae7ca1535e8c91 *man/pandoc_citeproc_convert.Rd
 36e89bf99b7c05f739ca13bebaf53456 *man/pandoc_convert.Rd
 58724b95ffc510bee56097a34d53ca9e *man/pandoc_exec.Rd
-3d62798aa964a036e9ce0d787edc6136 *man/pandoc_options.Rd
+bce1af184ae15937fcb151403785197a *man/pandoc_options.Rd
 f11bc7328c8cab09e2c0d1cde31c49ff *man/pandoc_path_arg.Rd
 18a737edc664aee2e83fff5f1d44131a *man/pandoc_self_contained_html.Rd
 57ee1daa56578712c08f9a3f93e4cbe2 *man/pandoc_template.Rd

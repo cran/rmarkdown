@@ -1,3 +1,13 @@
+rmarkdown 2.24
+================================================================================
+
+- Fixed `file_scope` being lost when extending output formats that considers the `file_scope` using `output_format()`. Merge behavior is to apply overlay `file_scope` function onto the result of `base_format`'s `file_scope` function. This implies that `file_scope` gains second argument which receives the returned values of the base `file_scope` (thanks, @atusy, #2488).
+
+- Added `output_format_dependency()` which allows extending output format from within chunks (thanks, @atusy, #2462)
+
+- Fix an issue with shiny prerendered document where dependencies context were written twice leasing to parsing error (thanks, @gadenbuie, rstudio/learn#597, #2500).
+
+
 rmarkdown 2.23
 ================================================================================
 

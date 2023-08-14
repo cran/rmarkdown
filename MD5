@@ -1,6 +1,6 @@
-19e6619073d5bad8b13192df57f4ebcf *DESCRIPTION
-27ff7f9919171857f5ad450fb3fd76ac *NAMESPACE
-f963958e3cd5b86f368ea0723b652faa *NEWS.md
+7ea2854dc8c5aea8a13a2fc205f43f98 *DESCRIPTION
+ea9b96cdbbc63a2a145458afd37a34de *NAMESPACE
+42d2335ba186a4983c0306ca8cd6251f *NEWS.md
 9a349df369b60d6cf23b1e6f72940f34 *R/base64.R
 a7aad59a45e88c20387449253f7cdcdc *R/beamer_presentation.R
 106cc4ae877b60321732b972f9eeb997 *R/context_document.R
@@ -24,9 +24,9 @@ bf481301b67a542f0174e00223344b91 *R/jupyter.R
 0d17ac475a4f4eb28bca190dbbfe0aa4 *R/knit_print.R
 2328eb09251d38c33826e3d0d958ee97 *R/latex_dependencies.R
 36d1d8edabcabd992f3a21c7e0d3f362 *R/list_builder.R
-e07dffc62f670fe8fdb578d62db43311 *R/md_document.R
+54388ce642c7fc405b6fcf5acb60d29d *R/md_document.R
 5eaf717fa22c8622bab127ee0d834874 *R/odt_document.R
-df4d9f592c96c4427efdd41880ae6ff7 *R/output_format.R
+8afefca6ee73bfabc06ef0e2957267e5 *R/output_format.R
 45830393bc72e56d95616f1b5ee04e51 *R/pandoc.R
 ea9203eb70b774e742976d46a841e28b *R/params.R
 306d69d53e47ecc82e5c3e77685c4a78 *R/pdf_document.R
@@ -34,14 +34,14 @@ c297b5021ac1f24fdc135b84711c51d4 *R/performance.R
 1adda729a71e9725287d4e4d2f75474d *R/powerpoint_presentation.R
 a4326355b87b800c7801101feda30915 *R/publish_site.R
 96857fce191984b25bf9f7e1235c1199 *R/relative_to.R
-048e7aaa6911345c555581170d3087ed *R/render.R
+8262d5e70e4ea71a33ad3df34db71dd0 *R/render.R
 de40925dfab433d427907c0dae5ba9eb *R/render_html.R
 05e9b397e5de17c64b4a697dbc4830da *R/render_site.R
 de4986cdf6829726c2e1f1f4545d2305 *R/rmarkdown-package.R
 f803086d38b6a53d24e3f00145a4a9f9 *R/rtf_document.R
 8feca9d9d7ce530f091d7a25a84e7cba *R/shiny.R
 d41d8cd98f00b204e9800998ecf8427e *R/shiny_module.R
-1ab678169feb73e9e6d5819668078004 *R/shiny_prerendered.R
+fce7ff640322e50becff64a000b3c120 *R/shiny_prerendered.R
 59cfcfea30a8a09b84a09967fc140456 *R/slidy_presentation.R
 6877020019b49c4e292d0cb49a563692 *R/stack.R
 9a224d2ffa4ffdcf952239e443442f27 *R/util.R
@@ -49,7 +49,7 @@ e2a8647d2535419838ee859cdc3a03cb *R/version_jqueryui.R
 e9538036792d35cd0b273859a2809588 *R/word_document.R
 58ab4f92fc4b737ae91abe3adbef59ce *R/zzz.R
 197ad43cd2cd98344dff4ab3699d06fe *README.md
-c0793bf5a2043191d4eeaf76f3fbade7 *build/vignette.rds
+2c7d6f1bf4afbc4fce098c288d493e33 *build/vignette.rds
 087c572c352f1efde7b6334aa9989bab *inst/CITATION
 b550b2c6aa8b6547482dc99e87039d94 *inst/COPYING
 59a0b73ba11a11a27ef15b768cc63169 *inst/NOTICE
@@ -290,7 +290,8 @@ dda6f77fa50c171edf619a507a25f671 *man/md_document.Rd
 f3f0c519ffe5c8a22980d7736ce73765 *man/metadata.Rd
 fcad3ae45634cdc2f573d74d0b03e3ae *man/navbar_html.Rd
 6a02693be8d852487f65a802b81fc339 *man/odt_document.Rd
-bfac81d933ab3223ca76c93da3be80d5 *man/output_format.Rd
+46a367301b1a1b53021c21c720727b6d *man/output_format.Rd
+b496a0f645d98e657623c91e087f95db *man/output_format_dependency.Rd
 b4fafae614b19beb1766e5684643bd3e *man/output_metadata.Rd
 25e819ed5a4352730c96331174a48c40 *man/paged_table.Rd
 d0a0269d4dd36322c2331a107792dd1d *man/pandoc_args.Rd
@@ -337,7 +338,7 @@ f4b175455b95f84fd6b83714961ee9ce *tests/rmd/two-authors.Rmd
 6c394907bda511bc555e597dc47c5050 *tests/shiny/02-data-table.Rmd
 3c43430b42aacc3689ad04759b85d4c6 *tests/shiny/03-rm-all.Rmd
 119b221d76ca2c70b28ec3a737b921e5 *tests/shiny/04-prerendered-envir.Rmd
-84ca46808163c6d6a477584d8a333cf5 *tests/testrmd.R
+77da15863131a07e13ab81a6d1a603ed *tests/testrmd.R
 9d27bd03539ac7374925aef3cf167a71 *tests/testthat.R
 1c4f94e1abbbbeb71176d4a6f805eadb *tests/testthat/_snaps/after-pandoc-2.11.2/lua-filters.md
 9b60197e1a0566cedd578b2f9f628a1c *tests/testthat/_snaps/after-pandoc-2.18/github_document/github-toc-numbered.md
@@ -434,7 +435,7 @@ fe0f9ba026bcd3c707411aede4c6052b *tests/testthat/test-lua-filters.R
 49f33ed3711aa751781ad021372f1149 *tests/testthat/test-math.R
 5acb3f7fc2a9082bd48f1ec8db3e3530 *tests/testthat/test-md_document.R
 57f1ead9e84326bbbe449cab7139d5de *tests/testthat/test-notebook.R
-a0382d9a4e38ab81165ddc25f49aa5c9 *tests/testthat/test-output_format.R
+3fd05f9c62b4ddb9ee94a92622cd9311 *tests/testthat/test-output_format.R
 9d41438c02872b6e40dfdd020d943f76 *tests/testthat/test-pandoc.R
 2e7e6e05f1863cf0958191c80e7599ec *tests/testthat/test-params.R
 3d544317aea712f84e354f1519373e56 *tests/testthat/test-powerpoint_presentation.R

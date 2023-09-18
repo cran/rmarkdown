@@ -1,10 +1,10 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 
-## ---- results='asis', echo = FALSE, eval = FALSE------------------------------
+## ----results='asis', echo = FALSE, eval = FALSE-------------------------------
 #  # run this to update the content below
 #  xfun::pkg_attach2("xml2")
 #  html <- read_html("https://bookdown.org/yihui/rmarkdown-cookbook/")

@@ -1,7 +1,7 @@
 Type: Package
 Package: rmarkdown
 Title: Dynamic Documents for R
-Version: 2.24
+Version: 2.25
 Authors@R: c(
     person("JJ", "Allaire", , "jj@posit.co", role = "aut"),
     person("Yihui", "Xie", , "xie@yihui.name", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0645-5666")),
@@ -69,7 +69,7 @@ Encoding: UTF-8
 RoxygenNote: 7.2.3
 SystemRequirements: pandoc (>= 1.14) - http://pandoc.org
 NeedsCompilation: no
-Packaged: 2023-08-08 08:58:47 UTC; yihui
+Packaged: 2023-09-15 16:52:22 UTC; yihui
 Author: JJ Allaire [aut],
   Yihui Xie [aut, cre] (<https://orcid.org/0000-0003-0645-5666>),
   Christophe Dervieux [aut] (<https://orcid.org/0000-0003-4474-2498>),
@@ -118,4 +118,4 @@ Author: JJ Allaire [aut],
   Benct Philip Jonsson [ctb, cph] (pagebreak Lua filter),
   Albert Krewinkel [ctb, cph] (pagebreak Lua filter)
 Repository: CRAN
-Date/Publication: 2023-08-14 08:40:06 UTC
+Date/Publication: 2023-09-18 09:30:02 UTC

@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -387,7 +387,7 @@ any restriction about the version of pandoc.</p>
 <p>A <code>\newpage</code> or <code>\pagebreak</code> command in a
 rmarkdown document with output as HTML will be converted by default in
 this html code with inline style using CSS rule <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/page-break-after"><code>page-break-after</code></a></p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="kw">&lt;div</span> <span class="er">style</span><span class="ot">=</span><span class="st">&quot;page-break-after: always;&quot;</span><span class="kw">&gt;&lt;/div&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;page-break-after: always;&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span></code></pre></div>
 <p>This will always insert a pagebreak after this div.</p>
 <p>To get more flexibility, you can use a HTML class and some custom CSS
 instead of an inline style. You need to add a metadata field
@@ -421,7 +421,7 @@ example</p>
 <span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a></span>
 <span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>Some other text</span></code></pre></div>
 <p><code>\newpage</code> will be converted here to</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="kw">&lt;div</span> <span class="er">class</span><span class="ot">=</span><span class="st">&quot;page-break&quot;</span><span class="kw">&gt;&lt;/div&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;page-break&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span></code></pre></div>
 <p>and the style will be applied to this class from the CSS included in
 the chunk.</p>
 <p>This customisation can also be achieved by setting the environnement

@@ -1,3 +1,17 @@
+rmarkdown 2.30
+================================================================================
+
+- `pandoc_convert()` will throw an error if Pandoc is not available (thanks, @brianperdomo, #2600).
+
+- Use the argument `--syntax-highlighting=none` for Pandoc >= 3.8 since `--no-highlight` has been deprecated (#2602).
+
+- Dropped the temporary workaround that used to support syntax highlighting of `|>` and `=>`. The workaround has no longer been necessary since [Pandoc 2.18](https://github.com/jgm/pandoc/releases/tag/2.18), which was released more than 3 years ago (#2290).
+
+- `convert_ipynb()` no longer drops raw cells with no `format` in metadata (thanks, @katrinabrock, #2587).
+
+- Fixed a bug that prevents `render()` from working when converting `.md` input to PDF (thanks, @mrainers, #2599).
+
+
 rmarkdown 2.29
 ================================================================================
 

@@ -47,7 +47,8 @@ test_that("number_sections Lua filter works", {
   expect_snapshot_output(result, variant = pandoc_versions)
 
   # +gfm_auto_identifiers
-  skip_if_not_pandoc("2.5") # gfm_auto_identifiers is not working the same before
+  # the markdown reader rejects gfm_auto_identifiers before Pandoc 2.11 (#6604)
+  skip_if_not_pandoc("2.11")
   result <- .generate_md_and_convert(
     rmd,
     md_document(number_sections = TRUE, md_extensions = "+gfm_auto_identifiers")
@@ -134,4 +135,35 @@ test_that("formats have the expected Lua filter", {
 test_that("lua file are correctly found", {
   expect_match(basename(pkg_file_lua()),  ".*[.]lua$")
   expect_match(basename(pkg_file_lua("number-sections.lua")),  "^number-sections.lua$")
+})
+
+test_that("extract-data-uri.lua: local image paths are not copied to _files", {
+  # Regression test for https://github.com/rstudio/rmarkdown/issues/2620
+  rmd_file <- local_rmd_file("---", "title: Test", "---", "", "![](images/test.pdf)")
+  dir.create(file.path(dirname(rmd_file), "images"))
+  file.create(file.path(dirname(rmd_file), "images", "test.pdf"))
+  res <- .render_latex_check(rmd_file)
+
+  expect_false(dir.exists(res$files_dir))
+  expect_true(any(grepl("images/test", res$tex, fixed = TRUE)))
+  expect_false(any(grepl("_files", res$tex, fixed = TRUE)))
+})
+
+test_that("extract-data-uri.lua: base64 data URI images are extracted to _files", {
+  # Regression test for https://github.com/rstudio/rmarkdown/issues/2604
+  tiny_png_b64 <- paste0(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADklEQVQI12P4",
+    "z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg=="
+  )
+  rmd_file <- local_rmd_file(
+    "---", "title: Test", "---", "",
+    paste0("![](data:image/png;base64,", tiny_png_b64, ")")
+  )
+  res <- .render_latex_check(rmd_file)
+
+  expect_false(any(grepl("data:image", res$tex, fixed = TRUE)))
+  extracted <- list.files(res$files_dir, recursive = TRUE, pattern = "\\.png$", full.names = TRUE)
+  expect_gte(length(extracted), 1L)
+  if (length(extracted) >= 1L)
+    expect_true(any(grepl(basename(extracted[[1]]), res$tex, fixed = TRUE)))
 })

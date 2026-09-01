@@ -1,3 +1,29 @@
+rmarkdown 2.32
+================================================================================
+
+- LaTeX auxiliary files (`.aux`, `.log`, etc.) generated while producing PDF output are now written to the output directory instead of the input directory. Previously `latexmk()` ran in the input file's directory, so PDF rendering failed when the input directory was read-only (e.g. in production or Shiny deployments) even when `output_dir` pointed to a writable location (thanks, @cderv #1975, @siddharthab #1615).
+
+- Fixed a `cannot open file '<name>.tex'` error when rendering to PDF with the `intermediates_dir` argument set. Pandoc wrote the intermediate `.tex` into `intermediates_dir`, but `rmarkdown` looked for it in the input directory. The `.tex` is now resolved to its actual location, and with `keep_tex: true` the retained `.tex` is moved next to the output instead of being left behind in `intermediates_dir` (thanks, @beerda, #2183).
+
+- HTML output no longer errors when `lib_dir` points outside the output directory (e.g. `lib_dir = "../lib"`), so documents in sibling subdirectories can share a single library directory. Such dependencies are now referenced with an up-tree relative path instead of failing with `"The path <file> does not appear to be a descendant of <dir>"` (thanks, @gaborcsardi #146, @jonathan-g #1859 #2199).
+
+- The minimum required version of Pandoc is now 2.8 (previously 1.14). Dropping support for Pandoc 1.x and early 2.x allowed a simplification of internal version guards (#2623).
+
+- Relicensed this package to MIT (thanks, @karangattu, #2615).
+
+- Fixed a `pandoc: ... openBinaryFile: does not exist` error when calling `render()` in parallel via a fork cluster. Temp files created by `render()` are now tracked per process and cleaned up individually, instead of deleting all files matching the `rmarkdown-str*.html` pattern in the shared `tempdir()`, which could remove sibling renders' files while Pandoc still needed them (thanks, @gorgitko, #1632).
+
+- Replaced the Pandoc argument `--extract-media` with a Lua filter to fix the `*_files/` cleanup regression (thanks, @bastistician, #2620).
+
+- Fixed the bug that the `intermediates_dir` argument may delete external input files during `rmarkdown::render()` (thanks, @BerndGit, #2619).
+
+- The `html_vignette` template now uses a literal YAML block for vignette metadata, preserving the required line breaks between directives (thanks, @t-kalinowski, #2624).
+
+- Bumped the minimum version of **knitr** to 1.50 to avoid an incompatible combination of **knitr** (< 1.50) and **xfun** (>= 0.56), which fails to load because `xfun::attr()` was removed in xfun 0.56 (thanks, @jsinnett, #2627).
+
+- Fixed captioned figures disappearing from `ioslides_presentation()` output with Pandoc 3, which represents standalone captioned images as `Figure` elements not handled by the custom writer (thanks, @LeonidasZhak, #2607).
+
+
 rmarkdown 2.31
 ================================================================================
 

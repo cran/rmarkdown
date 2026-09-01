@@ -2,7 +2,7 @@
 #'
 #' Format for converting from R Markdown to an MS Word document.
 #'
-#' See the \href{https://yihui.org/rmarkdown/word-document.html}{online
+#' See the \href{https://pkg.yihui.org/rmarkdown-book/word-document.html}{online
 #' documentation} for additional details on using the \code{word_document} format.
 #'
 #' R Markdown documents can have optional metadata that is used to generate a
@@ -106,8 +106,6 @@ word_document <- function(toc = FALSE,
 
 reference_doc_args <- function(type, doc) {
   if (is.null(doc) || identical(doc, "default")) return()
-  c(paste0("--reference-", if (pandoc2.0()) "doc" else {
-    match.arg(type, c("docx", "odt", "doc"))
-  }), pandoc_path_arg(doc))
+  c("--reference-doc", pandoc_path_arg(doc))
 }
 

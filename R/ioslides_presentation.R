@@ -27,7 +27,7 @@
 #' @return R Markdown output format to pass to [render()].
 #' @details
 #'   See the [
-#'   online documentation](https://yihui.org/rmarkdown/ioslides-presentation.html) for additional details on using the
+#'   online documentation](https://pkg.yihui.org/rmarkdown-book/ioslides-presentation.html) for additional details on using the
 #'   `ioslides_presentation` format.
 #'
 #'   Note that, if a `before_body` include is specified in `includes`,
@@ -423,24 +423,6 @@ ioslides_presentation <- function(number_sections = FALSE,
 
     output_tmpfile <- tempfile("ioslides-output", fileext = ".html")
     on.exit(unlink(output_tmpfile), add = TRUE)
-
-    # on Windows, cache the current codepage and set it to 65001 (UTF-8) for the
-    # duration of the Pandoc command. Without this, Pandoc fails when attempting
-    # to hand UTF-8 encoded non-ASCII characters over to the custom Lua writer.
-    # See https://github.com/rstudio/rmarkdown/issues/134
-    if (is_windows() && !pandoc2.0()) {
-      # 'chcp' returns e.g., "Active code page: 437"; strip characters and parse
-      # the number
-      codepage <- as.numeric(gsub("\\D", "", system2("chcp", stdout = TRUE)))
-
-      if (!is.na(codepage)) {
-        # if we got a valid codepage, restore it on exit
-        on.exit(system2("chcp", args = codepage, stdout = TRUE), add = TRUE)
-
-        # change to the UTF-8 codepage
-        system2("chcp", args = 65001, stdout = TRUE)
-      }
-    }
 
     pandoc_convert(input = input_file,
                    to = relative_to(dirname(input_file), lua_writer),

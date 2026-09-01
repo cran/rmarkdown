@@ -7,7 +7,7 @@ knitr::opts_chunk$set(
 ## ----results='asis', echo = FALSE, eval = FALSE-------------------------------
 # # run this to update the content below
 # xfun::pkg_attach2("xml2")
-# html <- read_html("https://yihui.org/rmarkdown-cookbook/")
+# html <- read_html("https://pkg.yihui.org/rmarkdown-cookbook/")
 # chapters <- xml_find_all(html, "//li[@class='chapter']")
 # first_level <- chapters[which(purrr::map_lgl(xml_attr(chapters, 'data-level'), ~ grepl('^\\d+$', .x)))]
 # titles <- xml_text(xml_find_all(first_level, "a"))

@@ -4,7 +4,7 @@
 #' strict markdown or github flavored markdown)
 #'
 #' See the [online
-#' documentation](https://yihui.org/rmarkdown/markdown-document.html)
+#' documentation](https://pkg.yihui.org/rmarkdown-book/markdown-document.html)
 #' for additional details on using the `md_document()` format.
 #'
 #' R Markdown documents can have optional metadata that is used to generate a
@@ -70,11 +70,6 @@ md_document <- function(variant = "markdown_strict",
   args <- c(args, pandoc_args)
 
   # Preprocess number_sections if variant is a markdown flavor +gfm_auto_identifiers
-  if (number_sections && !pandoc_available("2.1")) {
-    warning("`number_sections = TRUE` requires at least Pandoc 2.1. The feature will be deactivated",
-            call. = FALSE)
-    number_sections <- FALSE
-  }
   pre_processor <- if (
     number_sections
     && grepl("^(commonmark|gfm|markdown)", variant)
